@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V27.0</title>
+    <title>Daguerre OS V28.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -32,7 +32,6 @@
         .btn-mini { flex: 1; padding: 10px; background: var(--gray); color: #fff; cursor: pointer; border: 1px solid #444; border-radius: 4px; font-family: monospace; font-weight: bold; }
         .btn-mini.active { background: var(--cyan); color: #000; border-color: var(--cyan); }
         
-        /* 🥷 V27 : Boutons réduits de 25% */
         .btn-icon-sm { background: #222; border: 1px solid #444; color: #fff; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 3px; font-size: 10px; cursor: pointer; }
         .btn-red { background: #421; color: var(--magenta); border-color: var(--magenta); }
 
@@ -64,7 +63,6 @@
         .quick-sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 10px 0; }
         .qs-btn { background: #222; border: 1px solid #444; color: var(--cyan); font-size: 10px; padding: 8px 0; border-radius: 3px; cursor: pointer; font-weight: bold;}
 
-        /* Dropdowns pour le Wizard */
         .m-sel { background: #222; color: var(--jaune); font-weight: bold; border: 1px solid #555; border-radius: 4px; text-align: center; height: 35px; flex: 1; }
 
         /* --- 👁️ MODAL PLEIN ECRAN --- */
@@ -82,7 +80,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V27.0</small>
+        <small>ÉDITION NUCLÉAIRE V28.0</small>
     </div>
 
     <div id="settings-area">
@@ -161,7 +159,8 @@
                 <input type="text" id="nom-projet" value="Empire_Daguerre" style="width: 100%; text-align: center;">
             </div>
             <div id="rapport-data" class="box" style="background: #000;">Forgez un mur d'abord.</div>
-            <button class="btn" style="background: var(--jaune); color: #000; margin-bottom: 10px;" onclick="exporterImage()">📸 TÉLÉCHARGER PLAN 8K</button>
+            <!-- V28 : ACTIVATION DU BOUTON TELECHARGER 8K ! -->
+            <button class="btn" style="background: var(--jaune); color: #000; margin-bottom: 10px; font-size:14px;" onclick="exporterImage()">📸 TÉLÉCHARGER PLAN 8K</button>
         </div>
     </div>
 
@@ -204,7 +203,7 @@
 
         function setCoeurDim(v) { document.getElementById('c-w').value = v; document.getElementById('c-h').value = v; }
 
-        // 🧠 L'ARCHITECTURE AUTONOME
+        // 🧠 L'ARCHITECTURE AUTONOME : EFFET CASCADE
         function getPrevTotalH(block) {
             let prev = block.previousElementSibling;
             if(prev && prev.classList.contains('block-item')) {
@@ -216,6 +215,25 @@
             return 0;
         }
 
+        function triggerCascade(startBlock) {
+            let current = startBlock.nextElementSibling;
+            while(current && current.classList.contains('block-item')) {
+                let prevTotalH = getPrevTotalH(current);
+                let val = parseFloat(current.querySelector('.s-w').value) || 10;
+                if(prevTotalH > 0 && val > 0) {
+                    if(val <= prevTotalH) {
+                        current.querySelector('.s-q').value = Math.max(1, Math.round(prevTotalH / val));
+                        setSeqDir(current.querySelector('.dir-btn'), 'V', true, false); 
+                    } else {
+                        current.querySelector('.s-q').value = 1;
+                        setSeqDir(current.querySelector('.dir-btn'), 'H', true, false);
+                    }
+                }
+                updateSeqData(current);
+                current = current.nextElementSibling;
+            }
+        }
+
         function setDim(btn, val) {
             let block = btn.closest('.block-item');
             let cadre = btn.closest('.cadre-item');
@@ -224,21 +242,18 @@
                 block.querySelector('.s-w').value = val;
                 block.querySelector('.s-h').value = val;
                 
-                // IA: Adaptation Auto
                 let prevTotalH = getPrevTotalH(block);
                 if(prevTotalH > 0 && val > 0) {
-                    if(val < prevTotalH) {
+                    if(val <= prevTotalH) {
                         block.querySelector('.s-q').value = Math.max(1, Math.round(prevTotalH / val));
-                        setSeqDir(block.querySelector('.dir-btn'), 'V', true); 
-                    } else if(val === prevTotalH) {
-                        block.querySelector('.s-q').value = 1;
-                        setSeqDir(block.querySelector('.dir-btn'), 'H', true);
+                        setSeqDir(block.querySelector('.dir-btn'), 'V', true, false); 
                     } else {
                         block.querySelector('.s-q').value = 1;
-                        setSeqDir(block.querySelector('.dir-btn'), 'H', true);
+                        setSeqDir(block.querySelector('.dir-btn'), 'H', true, false);
                     }
                 }
                 updateSeqData(block);
+                triggerCascade(block); // 🌊 DECLENCHEMENT DE LA CASCADE !
             }
             if(cadre) {
                 cadre.querySelector('.c-w').value = val;
@@ -304,19 +319,15 @@
             btn.classList.add('active');
             block.querySelector('.s-type').value = type;
             
+            // V28 : Le mode Simple (type 1) n'est plus forcé en horizontal, le dir-row est dispo pour tous !
             let dirRow = block.querySelector('.dir-row');
-            if(type === 1) {
-                dirRow.style.display = 'none';
-                setSeqDir(block.querySelector('.dir-btn'), 'H', true); // Force Horizontal
-            } else {
-                dirRow.style.display = 'flex';
-            }
+            dirRow.style.display = 'flex';
             
             renderModelSelects(block, type);
             updateSeqData(block);
         }
 
-        function setSeqDir(btn, dir, force=false) {
+        function setSeqDir(btn, dir, force=false, runCascade=true) {
             let block = btn.closest('.block-item');
             let dirRow = block.querySelector('.dir-row');
             if(dirRow) {
@@ -327,7 +338,6 @@
             
             block.querySelector('.s-dir').value = dir;
             
-            // IA: Ajustement automatique si Horizontal
             if(dir === 'H' && !force) {
                 let prevTotalH = getPrevTotalH(block);
                 if(prevTotalH > 0) {
@@ -337,6 +347,7 @@
                 }
             }
             updateSeqData(block);
+            if(runCascade) triggerCascade(block);
         }
 
         function chargerModeles(e) {
@@ -353,7 +364,6 @@
                         d.innerHTML = `<div style="position:absolute; top:-5px; left:-5px; background:var(--magenta); border-radius:50%; width:16px; height:16px; font-size:10px; color:white;">${l}</div><img src="${ev.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
                         document.getElementById('model-list').appendChild(d);
                         
-                        // Met à jour tous les selects existants
                         document.querySelectorAll('.block-item').forEach(b => {
                             let type = parseInt(b.querySelector('.s-type').value);
                             renderModelSelects(b, type);
@@ -432,9 +442,7 @@
                         <input type="hidden" class="s-type" value="${type}">
                     </div>
                     
-                    <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px;">
-                        <!-- JS Injects Selects Here -->
-                    </div>
+                    <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px;"></div>
 
                     <div class="row dir-row" style="display:none; margin-top:10px;">
                         <button class="btn-mini dir-btn" onclick="setSeqDir(this, 'H')">➡️ HORIZ.</button>
@@ -454,9 +462,9 @@
                     </div>
 
                     <div class="row">
-                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" oninput="updateSeqData(this.closest('.block-item'))" style="width:100%; text-align:center;"></div>
-                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" oninput="updateSeqData(this.closest('.block-item'))" style="width:100%; text-align:center;"></div>
-                        <div style="flex:1"><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" oninput="updateSeqData(this.closest('.block-item'))" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
                         <input type="hidden" class="s-seq" value="">
                     </div>
                 </div>
@@ -465,7 +473,8 @@
             else cont.appendChild(b);
             
             let typeBtn = b.querySelectorAll('.type-btn')[type-1];
-            setSeqMode(typeBtn, type); // Initializes everything
+            setSeqMode(typeBtn, type); 
+            triggerCascade(b); // Active la cascade sur ajout de block
         }
 
         // --- GESTION CADRES ---
@@ -537,6 +546,9 @@
         function move(el, dir) {
             if(dir==='up' && el.previousElementSibling) el.parentNode.insertBefore(el, el.previousElementSibling);
             if(dir==='down' && el.nextElementSibling) el.parentNode.insertBefore(el.nextElementSibling, el);
+            if(el.classList.contains('block-item')) {
+                triggerCascade(el.previousElementSibling || el);
+            }
         }
         
         function duplicateBlock(el) { 
@@ -547,7 +559,10 @@
                 cloneInputs[i].value = origInputs[i].value;
             }
             el.parentNode.insertBefore(clone, el.nextSibling); 
-            if(clone.classList.contains('block-item')) updateSeqData(clone);
+            if(clone.classList.contains('block-item')) {
+                updateSeqData(clone);
+                triggerCascade(clone);
+            }
             if(clone.classList.contains('cadre-item')) updateCadreTitle(clone);
         }
 
@@ -604,16 +619,11 @@
 
         function closeRender() { document.getElementById('render-modal').style.display = 'none'; }
 
-        // --- RENDERER V27 (TRIPLE HD) ---
-        function render() {
-            const canvas = document.getElementById('c');
-            const ctx = canvas.getContext('2d');
-            
-            const baseScale = 40; 
-            const dpr = window.devicePixelRatio || 2; 
-
+        // --- 🧠 LE COEUR DE PARSING UNIVERSEL ---
+        function parseWall() {
             let totalW = 0, totalH = 0;
-
+            let tiles = [];
+            
             if(mode === 'lineaire') {
                 let lines = [];
                 document.querySelectorAll('.ligne-item').forEach(li => {
@@ -622,7 +632,6 @@
                         let sequence = bl.querySelector('.s-seq').value.toUpperCase().split(' ').filter(Boolean);
                         let w = parseFloat(bl.querySelector('.s-w').value) || 10, h = parseFloat(bl.querySelector('.s-h').value) || 10, q = parseInt(bl.querySelector('.s-q').value) || 1;
                         let dir = bl.querySelector('.s-dir').value;
-                        
                         if(sequence.length === 0) sequence = [''];
                         if(q > 0) {
                             let bW = (dir === 'H') ? w * q : w;
@@ -634,9 +643,6 @@
                     lines.push({blocks, lw, lh});
                     totalW = Math.max(totalW, lw); totalH += lh;
                 });
-
-                prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
-                
                 let curY = 0;
                 lines.forEach(line => {
                     let curX = (totalW - line.lw) / 2;
@@ -646,13 +652,12 @@
                             let char = b.sequence[i % b.sequence.length];
                             let dx = startX + (b.dir==='H' ? i*b.w : 0);
                             let dy = startY + (b.dir==='V' ? i*b.h : 0);
-                            drawTile(ctx, char, dx*baseScale, dy*baseScale, b.w*baseScale, b.h*baseScale);
+                            tiles.push({l: char, x: dx, y: dy, w: b.w, h: b.h});
                         }
                         curX += b.bW;
                     });
                     curY += line.lh;
                 });
-
             } else {
                 let cw = parseFloat(document.getElementById('c-w').value) || 30;
                 let ch = parseFloat(document.getElementById('c-h').value) || 30;
@@ -670,9 +675,6 @@
                 totalW = cw; totalH = ch;
                 cadres.forEach(c => { totalW += c.w * 2; totalH += c.h * 2; });
                 
-                prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
-
-                let tiles = [];
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
                 
                 let currentTotalW = cw, currentTotalH = ch;
@@ -697,10 +699,23 @@
                     
                     currentTotalW = newTotalW; currentTotalH = newTotalH;
                 });
-
-                tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
             }
+            return { tiles, totalW, totalH };
+        }
+
+        // --- RENDERER V28 (AFFICHAGE) ---
+        function render() {
+            const canvas = document.getElementById('c');
+            const ctx = canvas.getContext('2d');
+            const baseScale = 40; 
+            const dpr = window.devicePixelRatio || 2; 
+
+            let { tiles, totalW, totalH } = parseWall();
+
+            prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
             
+            tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
+
             document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm 💎 HD`;
             document.getElementById('render-modal').style.display = 'flex';
             setTimeout(() => {
@@ -708,6 +723,42 @@
                 let cssH = (totalH || 10) * baseScale;
                 resetCamera(cssW, cssH);
             }, 50);
+        }
+
+        // 📸 L'IMPRIMERIE DAGUERRE : EXPORT 8K PUR
+        function exporterImage() {
+            let { tiles, totalW, totalH } = parseWall();
+            let baseScale = 40; 
+            
+            let pixelW = (totalW || 10) * baseScale;
+            let pixelH = (totalH || 10) * baseScale;
+            
+            // Limite absolue de sécurité 8K pour forcer le tel à exporter sans crash mémoire
+            const MAX_EXPORT = 8192; 
+            let scaleFactor = 1;
+            if(pixelW > MAX_EXPORT || pixelH > MAX_EXPORT) {
+                scaleFactor = MAX_EXPORT / Math.max(pixelW, pixelH);
+            }
+
+            let exportCanvas = document.createElement('canvas');
+            exportCanvas.width = pixelW * scaleFactor;
+            exportCanvas.height = pixelH * scaleFactor;
+            let ctx = exportCanvas.getContext('2d');
+            
+            ctx.scale(scaleFactor, scaleFactor);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            ctx.fillStyle = "#111"; 
+            ctx.fillRect(0, 0, pixelW, pixelH);
+            
+            tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
+            
+            let nom = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
+            let link = document.createElement('a');
+            link.download = nom + '_8K.jpg';
+            link.href = exportCanvas.toDataURL('image/jpeg', 0.95);
+            link.click();
         }
 
         function prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr) {
