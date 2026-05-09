@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V21.0</title>
+    <title>Daguerre OS V22.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,7 +17,6 @@
         #header h1 { margin: 0; font-size: 18px; color: var(--jaune); }
         #header small { color: #555; font-size: 10px; }
 
-        /* L'espace de réglages prend 100% de l'écran maintenant ! */
         #settings-area { flex: 1; overflow-y: auto; background: var(--panel); padding: 15px; padding-bottom: 120px; }
         
         /* --- UI COMPONENTS --- */
@@ -45,16 +44,16 @@
         /* --- FORGE SPECIFIC --- */
         .block-item { background: #111; padding: 10px; border-radius: 4px; border: 1px solid #333; margin-top: 10px; }
         .label-sm { color: #888; font-size: 9px; display: block; margin-bottom: 2px; }
-        .quick-sizes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 10px 0; }
-        .qs-btn { background: #222; border: 1px solid #444; color: #fff; font-size: 9px; padding: 6px 0; border-radius: 3px; cursor: pointer;}
+        .quick-sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 10px 0; }
+        .qs-btn { background: #222; border: 1px solid #444; color: #fff; font-size: 10px; padding: 6px 0; border-radius: 3px; cursor: pointer;}
 
-        /* --- 👁️ MODAL PLEIN ECRAN (TRIPLE HD) --- */
+        /* --- 👁️ MODAL PLEIN ECRAN --- */
         #render-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #010104; z-index: 2000; display: none; flex-direction: column; }
         #render-header { height: 60px; background: var(--panel); border-bottom: 2px solid var(--cyan); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; padding-top: env(safe-area-inset-top); }
-        #render-dim { color: var(--jaune); font-weight: bold; font-size: 14px; }
+        #render-dim { color: var(--jaune); font-weight: bold; font-size: 12px; }
         #close-render-btn { background: var(--magenta); color: #fff; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; font-family: monospace; cursor: pointer; }
         
-        #touch-zone { flex: 1; position: relative; overflow: hidden; touch-action: none; /* Crucial pour bloquer le scroll natif */ }
+        #touch-zone { flex: 1; position: relative; overflow: hidden; touch-action: none; }
         #canvas-wrapper { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
         canvas { background: #111; border: 1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
     </style>
@@ -63,7 +62,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V21.0</small>
+        <small>ÉDITION NUCLÉAIRE V22.0</small>
     </div>
 
     <div id="settings-area">
@@ -95,12 +94,12 @@
                 <div class="box">
                     <span class="label-sm">Lettre(s) du Cœur</span>
                     <input type="text" id="c-mod" value="A" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
-                    <div class="quick-sizes">
-                        <button class="qs-btn" onclick="setCoeurDim(50)">50x50</button>
-                        <button class="qs-btn" onclick="setCoeurDim(40)">40x40</button>
-                        <button class="qs-btn" onclick="setCoeurDim(30)">30x30</button>
-                        <button class="qs-btn" onclick="setCoeurDim(20)">20x20</button>
-                        <button class="qs-btn" onclick="setCoeurDim(10)">10x10</button>
+                    <div class="quick-sizes" style="grid-template-columns: repeat(5, 1fr);">
+                        <button class="qs-btn" onclick="setCoeurDim(50)">50</button>
+                        <button class="qs-btn" onclick="setCoeurDim(40)">40</button>
+                        <button class="qs-btn" onclick="setCoeurDim(30)">30</button>
+                        <button class="qs-btn" onclick="setCoeurDim(20)">20</button>
+                        <button class="qs-btn" onclick="setCoeurDim(10)">10</button>
                     </div>
                     <div class="row" style="margin-top: 5px;">
                         <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" id="c-w" value="20" style="text-align:center;"></div>
@@ -122,7 +121,11 @@
                 </div>
             </div>
 
-            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">👁️ FORGER ET VOIR LE MUR</button>
+            <!-- LES 2 BOUTONS DE FORGE -->
+            <div class="row" style="margin-top: 30px;">
+                <button class="btn" style="background: #444; color: #fff; flex: 1;" onclick="render(false)">⚡ RAPIDE</button>
+                <button class="btn" style="background: var(--jaune); color: #000; flex: 1.5;" onclick="render(true)">💎 TRIPLE HD</button>
+            </div>
         </div>
 
         <!-- --- FINITION --- -->
@@ -182,7 +185,15 @@
             ['lineaire','concentrique','fractale'].forEach(x => document.getElementById(`area-${x}`).style.display = (x===m)?'block':'none');
         }
 
+        // --- GESTION DES DIMENSIONS ---
         function setCoeurDim(v) { document.getElementById('c-w').value = v; document.getElementById('c-h').value = v; }
+        function setDim(btn, val) {
+            let container = btn.closest('.box') || btn.closest('.block-item');
+            let wInput = container.querySelector('.s-w') || container.querySelector('.c-w');
+            let hInput = container.querySelector('.s-h') || container.querySelector('.c-h');
+            if(wInput) wInput.value = val;
+            if(hInput) hInput.value = val;
+        }
 
         function chargerModeles(e) {
             if(!e.target.files.length) return;
@@ -215,10 +226,10 @@
                 <div class="row">
                     <input type="text" class="editable-name" value="LIGNE ${ligneCounter}">
                     <div style="display:flex; gap:4px;">
-                        <button class="btn-icon" onclick="move(this.parentNode.parentNode.parentNode, 'up')">↑</button>
-                        <button class="btn-icon" onclick="move(this.parentNode.parentNode.parentNode, 'down')">↓</button>
-                        <button class="btn-icon" onclick="duplicate(this.parentNode.parentNode.parentNode)">📋</button>
-                        <button class="btn-icon btn-red" onclick="this.parentNode.parentNode.parentNode.remove()">❌</button>
+                        <button class="btn-icon" onclick="move(this.closest('.ligne-item'), 'up')">↑</button>
+                        <button class="btn-icon" onclick="move(this.closest('.ligne-item'), 'down')">↓</button>
+                        <button class="btn-icon" onclick="duplicate(this.closest('.ligne-item'))">👯</button>
+                        <button class="btn-icon btn-red" onclick="this.closest('.ligne-item').remove()">❌</button>
                     </div>
                 </div>
                 <div class="blocs-container"></div>
@@ -235,9 +246,17 @@
                 <div class="row">
                     <div style="flex:1"><span class="label-sm">Séquence (ex: A B)</span><input type="text" class="s-seq" value="${seq}" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;"></div>
                     <div style="display:flex; gap:4px; margin-top:12px;">
-                        <button class="btn-icon" style="height:32px" onclick="move(this.parentNode.parentNode.parentNode, 'up')">↑</button>
-                        <button class="btn-icon btn-red" style="height:32px" onclick="this.parentNode.parentNode.parentNode.remove()">❌</button>
+                        <button class="btn-icon" style="height:32px" onclick="move(this.closest('.block-item'), 'up')">↑</button>
+                        <button class="btn-icon" style="height:32px" onclick="move(this.closest('.block-item'), 'down')">↓</button>
+                        <button class="btn-icon" style="height:32px" onclick="duplicate(this.closest('.block-item'))">👯</button>
+                        <button class="btn-icon btn-red" style="height:32px" onclick="this.closest('.block-item').remove()">❌</button>
                     </div>
+                </div>
+                <div class="quick-sizes">
+                    <button class="qs-btn" onclick="setDim(this, 2.5)">2.5x2.5</button>
+                    <button class="qs-btn" onclick="setDim(this, 5)">5x5</button>
+                    <button class="qs-btn" onclick="setDim(this, 7.5)">7.5x7.5</button>
+                    <button class="qs-btn" onclick="setDim(this, 10)">10x10</button>
                 </div>
                 <div class="row">
                     <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" style="width:100%; text-align:center;"></div>
@@ -260,15 +279,21 @@
                 <div class="row">
                     <input type="text" class="editable-name" value="BORDURE ${cadreCounter}" style="color:var(--magenta); border-color:var(--magenta);">
                     <div style="display:flex; gap:4px;">
-                        <button class="btn-icon" onclick="move(this.parentNode.parentNode.parentNode, 'up')">↑</button>
-                        <button class="btn-icon" onclick="move(this.parentNode.parentNode.parentNode, 'down')">↓</button>
-                        <button class="btn-icon" onclick="duplicate(this.parentNode.parentNode.parentNode)">📋</button>
-                        <button class="btn-icon btn-red" onclick="this.parentNode.parentNode.parentNode.remove()">❌</button>
+                        <button class="btn-icon" onclick="move(this.closest('.cadre-item'), 'up')">↑</button>
+                        <button class="btn-icon" onclick="move(this.closest('.cadre-item'), 'down')">↓</button>
+                        <button class="btn-icon" onclick="duplicate(this.closest('.cadre-item'))">👯</button>
+                        <button class="btn-icon btn-red" onclick="this.closest('.cadre-item').remove()">❌</button>
                     </div>
                 </div>
                 <div style="margin-bottom:10px;">
                     <span class="label-sm">Séquence (ex: A B C)</span>
                     <input type="text" class="c-seq" value="B C" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
+                </div>
+                <div class="quick-sizes">
+                    <button class="qs-btn" onclick="setDim(this, 2.5)">2.5x2.5</button>
+                    <button class="qs-btn" onclick="setDim(this, 5)">5x5</button>
+                    <button class="qs-btn" onclick="setDim(this, 7.5)">7.5x7.5</button>
+                    <button class="qs-btn" onclick="setDim(this, 10)">10x10</button>
                 </div>
                 <div class="row">
                     <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="10" style="width:100%; text-align:center;"></div>
@@ -278,34 +303,23 @@
             document.getElementById('cadres-container').appendChild(d);
         }
 
-        function genererFractale() {
-            setMode('concentrique');
-            document.getElementById('c-mod').value = document.getElementById('f-mod').value;
-            document.getElementById('c-w').value = document.getElementById('f-size').value;
-            document.getElementById('c-h').value = document.getElementById('f-size').value;
-            let seq = document.getElementById('f-seq').value.split(' ').filter(Boolean);
-            let n = parseInt(document.getElementById('f-iter').value);
-            document.getElementById('cadres-container').innerHTML = "";
-            let curSize = parseFloat(document.getElementById('f-size').value);
-            for(let i=0; i<n; i++) {
-                curSize = curSize / seq.length;
-                let d = ajouterCadre();
-                let lastCadre = document.getElementById('cadres-container').lastElementChild;
-                lastCadre.querySelector('.editable-name').value = `FRACTALE ${i+1}`;
-                lastCadre.querySelector('.c-seq').value = seq.join(' ');
-                lastCadre.querySelector('.c-w').value = curSize;
-                lastCadre.querySelector('.c-h').value = curSize;
-            }
-            render();
-        }
-
         function move(el, dir) {
             if(dir==='up' && el.previousElementSibling) el.parentNode.insertBefore(el, el.previousElementSibling);
             if(dir==='down' && el.nextElementSibling) el.parentNode.insertBefore(el.nextElementSibling, el);
         }
-        function duplicate(el) { let c = el.cloneNode(true); el.parentNode.insertBefore(c, el.nextSibling); }
+        
+        function duplicate(el) { 
+            let clone = el.cloneNode(true); 
+            // Fix: Récupérer les valeurs tapées par l'utilisateur
+            let origInputs = el.querySelectorAll('input, select');
+            let cloneInputs = clone.querySelectorAll('input, select');
+            for(let i=0; i<origInputs.length; i++) {
+                cloneInputs[i].value = origInputs[i].value;
+            }
+            el.parentNode.insertBefore(clone, el.nextSibling); 
+        }
 
-        // --- GESTION DU ZOOM TACTILE (Oeil du Faucon) ---
+        // --- GESTION DU ZOOM TACTILE ---
         const touchZone = document.getElementById('touch-zone');
         const canvasWrap = document.getElementById('canvas-wrapper');
         let t_scale = 1, t_posX = 0, t_posY = 0;
@@ -349,10 +363,8 @@
         function resetCamera(cssWidth, cssHeight) {
             let zoneW = touchZone.clientWidth;
             let zoneH = touchZone.clientHeight;
-            // On trouve le bon zoom pour que ça rentre parfaitement dans l'écran
             let fitScale = Math.min((zoneW - 40) / cssWidth, (zoneH - 40) / cssHeight);
             t_scale = Math.max(0.1, fitScale);
-            // On centre l'image
             t_posX = (zoneW - cssWidth * t_scale) / 2;
             t_posY = (zoneH - cssHeight * t_scale) / 2;
             updateTransform();
@@ -362,14 +374,14 @@
             document.getElementById('render-modal').style.display = 'none';
         }
 
-        // --- RENDERER TRIPLE HD ---
-        function render() {
+        // --- RENDERER A DEUX VITESSES ---
+        function render(isHD = false) {
             const canvas = document.getElementById('c');
             const ctx = canvas.getContext('2d');
             
-            // LA MAGIE TRIPLE HD : Base 40px * DevicePixel Ratio
-            const baseScale = 40; 
-            const dpr = window.devicePixelRatio || 2; 
+            // LA MAGIE DES 2 BOUTONS : Rapide = 15px/cm (1x), HD = 40px/cm (x2 ou x3 retina)
+            const baseScale = isHD ? 40 : 15; 
+            const dpr = isHD ? (window.devicePixelRatio || 2) : 1; 
 
             let totalW = 0, totalH = 0;
 
@@ -393,7 +405,6 @@
                     totalW = Math.max(totalW, lw); totalH += lh;
                 });
 
-                // Calcul de la taille CSS vs Taille interne
                 let cssW = (totalW || 10) * baseScale;
                 let cssH = (totalH || 10) * baseScale;
 
@@ -402,10 +413,9 @@
                 canvas.width = cssW * dpr;
                 canvas.height = cssH * dpr;
                 
-                // On met à l'échelle le contexte interne pour la netteté
                 ctx.scale(dpr, dpr);
                 ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
+                ctx.imageSmoothingQuality = isHD ? 'high' : 'low';
 
                 ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
                 
@@ -418,20 +428,18 @@
                             let char = b.sequence[i % b.sequence.length];
                             let dx = startX + (b.dir==='H' ? i*b.w : 0);
                             let dy = startY + (b.dir==='V' ? i*b.h : 0);
-                            drawTile(ctx, char, dx*baseScale, dy*baseScale, b.w*baseScale, b.h*baseScale);
+                            drawTile(ctx, char, dx*baseScale, dy*baseScale, b.w*baseScale, b.h*baseScale, isHD);
                         }
                         curX += b.bW;
                     });
                     curY += line.lh;
                 });
 
-                // Afficher Modal
-                document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm`;
+                document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm ` + (isHD ? "💎 HD" : "⚡ Rapide");
                 document.getElementById('render-modal').style.display = 'flex';
                 resetCamera(cssW, cssH);
 
             } else {
-                // MOTEUR CONCENTRIQUE TRIPLE HD
                 let cw = parseFloat(document.getElementById('c-w').value) || 30;
                 let ch = parseFloat(document.getElementById('c-h').value) || 30;
                 let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || 'A';
@@ -458,7 +466,7 @@
                 
                 ctx.scale(dpr, dpr);
                 ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
+                ctx.imageSmoothingQuality = isHD ? 'high' : 'low';
 
                 ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
 
@@ -488,20 +496,19 @@
                     currentTotalW = newTotalW; currentTotalH = newTotalH;
                 });
 
-                tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
+                tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale, isHD));
 
-                // Afficher Modal
-                document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm`;
+                document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm ` + (isHD ? "💎 HD" : "⚡ Rapide");
                 document.getElementById('render-modal').style.display = 'flex';
                 resetCamera(cssW, cssH);
             }
         }
 
-        function drawTile(ctx, char, x, y, w, h) {
+        function drawTile(ctx, char, x, y, w, h, isHD) {
             if(modeles[char]) {
                 ctx.drawImage(modeles[char].img, x, y, w, h);
             } else {
-                ctx.strokeStyle = 'cyan'; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
+                ctx.strokeStyle = 'cyan'; ctx.lineWidth = isHD ? 2 : 1; ctx.strokeRect(x, y, w, h);
                 ctx.fillStyle = "rgba(241, 196, 15, 0.15)"; ctx.fillRect(x, y, w, h);
                 ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(12, h/3)}px monospace`;
                 ctx.textAlign = "center"; ctx.textBaseline = "middle";
