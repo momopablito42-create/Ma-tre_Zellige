@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V23.0</title>
+    <title>Daguerre OS V24.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -40,13 +40,21 @@
 
         /* --- FORGE SPECIFIC --- */
         .blocs-container { counter-reset: seq-counter; display: flex; flex-direction: column; gap: 8px; }
-        .block-item { background: #111; border-radius: 4px; border: 1px solid #333; overflow: hidden; margin-top: 5px; }
+        #cadres-container { counter-reset: cadre-counter; display: flex; flex-direction: column; gap: 8px; }
         
-        /* Titre dynamique de séquence */
+        .block-item, .cadre-item { background: #111; border-radius: 4px; border: 1px solid #333; overflow: hidden; margin-top: 5px; }
+        .cadre-item { border-color: var(--magenta); }
+        
+        /* Titres dynamiques */
         .seq-header { background: #1a1a24; padding: 8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
         .seq-title { color: var(--jaune); font-weight: bold; font-size: 12px; display: flex; align-items: center; }
         .seq-title::before { counter-increment: seq-counter; content: counter(seq-counter) " - "; color: #888; margin-right: 4px; }
+        
+        .cadre-title { color: var(--magenta); font-weight: bold; font-size: 12px; display: flex; align-items: center; }
+        .cadre-title::before { counter-increment: cadre-counter; content: counter(cadre-counter) " - "; color: #888; margin-right: 4px; }
+
         .seq-val { color: var(--jaune); }
+        .cadre-val { color: var(--magenta); }
 
         .seq-content { padding: 10px; }
         .line-content { padding-top: 10px; }
@@ -70,7 +78,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V23.0</small>
+        <small>ÉDITION NUCLÉAIRE V24.0</small>
     </div>
 
     <div id="settings-area">
@@ -99,7 +107,7 @@
 
             <!-- Area Concentrique -->
             <div id="area-concentrique" style="display:none;">
-                <div class="box cadre-item">
+                <div class="box">
                     <span class="label-sm">Lettre(s) du Cœur</span>
                     <input type="text" id="c-mod" value="A" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
                     <div class="quick-sizes" style="grid-template-columns: repeat(5, 1fr);">
@@ -114,8 +122,9 @@
                         <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" id="c-h" value="20" style="text-align:center;"></div>
                     </div>
                 </div>
+                <!-- Fix V24: Nouveau container pour cadres -->
                 <div id="cadres-container"></div>
-                <button class="btn" style="background: var(--magenta); color: #fff;" onclick="ajouterCadre()">+ NOUVEAU CADRE</button>
+                <button class="btn" style="background: var(--magenta); color: #fff; margin-top: 10px;" onclick="ajouterCadre()">+ NOUVEAU CADRE</button>
             </div>
 
             <!-- Area Fractale -->
@@ -192,7 +201,6 @@
             ['lineaire','concentrique','fractale'].forEach(x => document.getElementById(`area-${x}`).style.display = (x===m)?'block':'none');
         }
 
-        // --- GESTION DES DIMENSIONS ---
         function setCoeurDim(v) { document.getElementById('c-w').value = v; document.getElementById('c-h').value = v; }
         function setDim(btn, val) {
             let container = btn.closest('.block-item') || btn.closest('.cadre-item');
@@ -223,23 +231,17 @@
             e.target.value = '';
         }
 
-        // --- 🪗 GESTION ACCORDÉON ULTRA SÉCURISÉE ---
         function toggleLine(btn) {
             let content = btn.closest('.ligne-item').querySelector('.line-content');
-            if (content.style.display === 'none') {
-                content.style.display = 'block'; btn.innerText = '🔽';
-            } else {
-                content.style.display = 'none'; btn.innerText = '▶️';
-            }
+            if (content.style.display === 'none') { content.style.display = 'block'; btn.innerText = '🔽'; } 
+            else { content.style.display = 'none'; btn.innerText = '▶️'; }
         }
 
         function toggleSeq(btn) {
-            let content = btn.closest('.block-item').querySelector('.seq-content');
-            if (content.style.display === 'none') {
-                content.style.display = 'block'; btn.innerText = '🔽';
-            } else {
-                content.style.display = 'none'; btn.innerText = '▶️';
-            }
+            let content = btn.closest('.block-item') || btn.closest('.cadre-item');
+            let realContent = content.querySelector('.seq-content');
+            if (realContent.style.display === 'none') { realContent.style.display = 'block'; btn.innerText = '🔽'; } 
+            else { realContent.style.display = 'none'; btn.innerText = '▶️'; }
         }
 
         // --- GESTION LIGNES & SEQUENCES ---
@@ -268,7 +270,6 @@
             ajouterSequence(d.querySelector('.blocs-container'));
         }
 
-        // 🥷 FIX V23 : Séquences Rétractables + Insertion n'importe où !
         function ajouterSequence(cont, seq="A", insertAfter = null) {
             let b = document.createElement('div');
             b.className = 'block-item';
@@ -281,7 +282,6 @@
                     <div style="display:flex; gap:4px;">
                         <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.block-item'), 'up')">↑</button>
                         <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.block-item'), 'down')">↓</button>
-                        <!-- Le Bouton Magique pour insérer juste en dessous -->
                         <button class="btn-icon" style="height:28px; width:28px; background:var(--vert); color:#000;" onclick="ajouterSequence(this.closest('.blocs-container'), 'A', this.closest('.block-item'))">➕</button>
                         <button class="btn-icon" style="height:28px; width:28px;" onclick="duplicate(this.closest('.block-item'))">👯</button>
                         <button class="btn-icon btn-red" style="height:28px; width:28px;" onclick="this.closest('.block-item').remove()">❌</button>
@@ -307,46 +307,49 @@
                     </div>
                 </div>
             `;
-            if (insertAfter) {
-                cont.insertBefore(b, insertAfter.nextSibling);
-            } else {
-                cont.appendChild(b);
-            }
+            if (insertAfter) cont.insertBefore(b, insertAfter.nextSibling);
+            else cont.appendChild(b);
         }
 
-        // --- GESTION CADRES ---
-        let cadreCounter = 0;
-        function ajouterCadre() {
-            cadreCounter++;
+        // --- GESTION CADRES ACCORDÉON (Fix V24) ---
+        function ajouterCadre(insertAfter = null, seq = "B C", w = 10, h = 10) {
             let d = document.createElement('div');
-            d.className = 'box cadre-item';
-            d.style.borderColor = "var(--magenta)";
+            d.className = 'cadre-item';
             d.innerHTML = `
-                <div class="row">
-                    <input type="text" class="editable-name" value="BORDURE ${cadreCounter}" style="color:var(--magenta); border-color:var(--magenta);">
+                <div class="seq-header" style="border-bottom-color: var(--magenta);">
+                    <div class="cadre-title">
+                        <button class="btn-icon" style="width:24px; height:24px; margin-right:8px; background:#000;" onclick="toggleSeq(this)">🔽</button>
+                        <span class="cadre-val">${seq}</span>
+                    </div>
                     <div style="display:flex; gap:4px;">
-                        <button class="btn-icon" onclick="move(this.closest('.cadre-item'), 'up')">↑</button>
-                        <button class="btn-icon" onclick="move(this.closest('.cadre-item'), 'down')">↓</button>
-                        <button class="btn-icon" onclick="duplicate(this.closest('.cadre-item'))">👯</button>
-                        <button class="btn-icon btn-red" onclick="this.closest('.cadre-item').remove()">❌</button>
+                        <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.cadre-item'), 'up')">↑</button>
+                        <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.cadre-item'), 'down')">↓</button>
+                        <button class="btn-icon" style="height:28px; width:28px; background:var(--magenta); color:#fff;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button>
+                        <button class="btn-icon" style="height:28px; width:28px;" onclick="duplicate(this.closest('.cadre-item'))">👯</button>
+                        <button class="btn-icon btn-red" style="height:28px; width:28px;" onclick="this.closest('.cadre-item').remove()">❌</button>
                     </div>
                 </div>
-                <div style="margin-bottom:10px;">
-                    <span class="label-sm">Séquence (ex: A B C)</span>
-                    <input type="text" class="c-seq" value="B C" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
-                </div>
-                <div class="quick-sizes">
-                    <button class="qs-btn" onclick="setDim(this, 2.5)">2.5</button>
-                    <button class="qs-btn" onclick="setDim(this, 5)">5</button>
-                    <button class="qs-btn" onclick="setDim(this, 7.5)">7.5</button>
-                    <button class="qs-btn" onclick="setDim(this, 10)">10</button>
-                </div>
-                <div class="row">
-                    <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="10" style="width:100%; text-align:center;"></div>
-                    <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="10" style="width:100%; text-align:center;"></div>
+                <div class="seq-content">
+                    <div class="row">
+                        <div style="flex:1"><span class="label-sm">Séquence (ex: A B C)</span>
+                        <input type="text" class="c-seq" value="${seq}" oninput="this.closest('.cadre-item').querySelector('.cadre-val').innerText = this.value || '?'" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
+                        </div>
+                    </div>
+                    <div class="quick-sizes">
+                        <button class="qs-btn" onclick="setDim(this, 2.5)">2.5</button>
+                        <button class="qs-btn" onclick="setDim(this, 5)">5</button>
+                        <button class="qs-btn" onclick="setDim(this, 7.5)">7.5</button>
+                        <button class="qs-btn" onclick="setDim(this, 10)">10</button>
+                    </div>
+                    <div class="row">
+                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" style="width:100%; text-align:center;"></div>
+                    </div>
                 </div>
             `;
-            document.getElementById('cadres-container').appendChild(d);
+            const cont = document.getElementById('cadres-container');
+            if (insertAfter) cont.insertBefore(d, insertAfter.nextSibling);
+            else cont.appendChild(d);
         }
 
         function genererFractale() {
@@ -360,12 +363,7 @@
             let curSize = parseFloat(document.getElementById('f-size').value);
             for(let i=0; i<n; i++) {
                 curSize = curSize / seq.length;
-                let d = ajouterCadre();
-                let lastCadre = document.getElementById('cadres-container').lastElementChild;
-                lastCadre.querySelector('.editable-name').value = `FRACTALE ${i+1}`;
-                lastCadre.querySelector('.c-seq').value = seq.join(' ');
-                lastCadre.querySelector('.c-w').value = curSize;
-                lastCadre.querySelector('.c-h').value = curSize;
+                ajouterCadre(null, seq.join(' '), curSize, curSize);
             }
             render(false);
         }
@@ -440,7 +438,7 @@
             document.getElementById('render-modal').style.display = 'none';
         }
 
-        // --- RENDERER A DEUX VITESSES ---
+        // --- RENDERER V24 (BOUCLIER ANTI ECRAN BLANC) ---
         function render(isHD = false) {
             const canvas = document.getElementById('c');
             const ctx = canvas.getContext('2d');
@@ -470,19 +468,7 @@
                     totalW = Math.max(totalW, lw); totalH += lh;
                 });
 
-                let cssW = (totalW || 10) * baseScale;
-                let cssH = (totalH || 10) * baseScale;
-
-                canvas.style.width = cssW + 'px';
-                canvas.style.height = cssH + 'px';
-                canvas.width = cssW * dpr;
-                canvas.height = cssH * dpr;
-                
-                ctx.scale(dpr, dpr);
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = isHD ? 'high' : 'low';
-
-                ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
+                prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr, isHD);
                 
                 let curY = 0;
                 lines.forEach(line => {
@@ -499,10 +485,6 @@
                     });
                     curY += line.lh;
                 });
-
-                document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm ` + (isHD ? "💎 HD" : "⚡ Rapide");
-                document.getElementById('render-modal').style.display = 'flex';
-                resetCamera(cssW, cssH);
 
             } else {
                 let cw = parseFloat(document.getElementById('c-w').value) || 30;
@@ -521,19 +503,7 @@
                 totalW = cw; totalH = ch;
                 cadres.forEach(c => { totalW += c.w * 2; totalH += c.h * 2; });
                 
-                let cssW = (totalW || 10) * baseScale;
-                let cssH = (totalH || 10) * baseScale;
-
-                canvas.style.width = cssW + 'px';
-                canvas.style.height = cssH + 'px';
-                canvas.width = cssW * dpr;
-                canvas.height = cssH * dpr;
-                
-                ctx.scale(dpr, dpr);
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = isHD ? 'high' : 'low';
-
-                ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
+                prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr, isHD);
 
                 let tiles = [];
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
@@ -562,11 +532,40 @@
                 });
 
                 tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale, isHD));
-
-                document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm ` + (isHD ? "💎 HD" : "⚡ Rapide");
-                document.getElementById('render-modal').style.display = 'flex';
-                resetCamera(cssW, cssH);
             }
+            
+            document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm ` + (isHD ? "💎 HD" : "⚡ Rapide");
+            document.getElementById('render-modal').style.display = 'flex';
+        }
+
+        // 🛡️ BOUCLIER ANTI ECRAN BLANC
+        function prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr, isHD) {
+            let cssW = (totalW || 10) * baseScale;
+            let cssH = (totalH || 10) * baseScale;
+            let pixelW = cssW * dpr;
+            let pixelH = cssH * dpr;
+
+            // Limite de sécurité absolue pour mobile (3500px)
+            const MAX_DIM = 3500; 
+            let scaleFactor = 1;
+            if(pixelW > MAX_DIM || pixelH > MAX_DIM) {
+                let maxCurrent = Math.max(pixelW, pixelH);
+                scaleFactor = MAX_DIM / maxCurrent;
+                pixelW = pixelW * scaleFactor;
+                pixelH = pixelH * scaleFactor;
+            }
+
+            canvas.style.width = cssW + 'px';
+            canvas.style.height = cssH + 'px';
+            canvas.width = pixelW;
+            canvas.height = pixelH;
+            
+            ctx.scale(dpr * scaleFactor, dpr * scaleFactor);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = isHD ? 'high' : 'low';
+
+            ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
+            resetCamera(cssW, cssH);
         }
 
         function drawTile(ctx, char, x, y, w, h, isHD) {
