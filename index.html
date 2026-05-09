@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V24.0</title>
+    <title>Daguerre OS V25.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -43,25 +43,25 @@
         #cadres-container { counter-reset: cadre-counter; display: flex; flex-direction: column; gap: 8px; }
         
         .block-item, .cadre-item { background: #111; border-radius: 4px; border: 1px solid #333; overflow: hidden; margin-top: 5px; }
-        .cadre-item { border-color: var(--magenta); }
+        .cadre-item { border-color: var(--vert); } /* Vert pour les Cadres ! */
         
-        /* Titres dynamiques */
         .seq-header { background: #1a1a24; padding: 8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
         .seq-title { color: var(--jaune); font-weight: bold; font-size: 12px; display: flex; align-items: center; }
         .seq-title::before { counter-increment: seq-counter; content: counter(seq-counter) " - "; color: #888; margin-right: 4px; }
         
-        .cadre-title { color: var(--magenta); font-weight: bold; font-size: 12px; display: flex; align-items: center; }
+        /* Titre Vert pour les cadres */
+        .cadre-title { color: var(--vert); font-weight: bold; font-size: 12px; display: flex; align-items: center; }
         .cadre-title::before { counter-increment: cadre-counter; content: counter(cadre-counter) " - "; color: #888; margin-right: 4px; }
 
         .seq-val { color: var(--jaune); }
-        .cadre-val { color: var(--magenta); }
+        .cadre-val { color: var(--vert); }
 
         .seq-content { padding: 10px; }
         .line-content { padding-top: 10px; }
 
         .label-sm { color: #888; font-size: 9px; display: block; margin-bottom: 2px; }
         .quick-sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 10px 0; }
-        .qs-btn { background: #222; border: 1px solid #444; color: #fff; font-size: 10px; padding: 6px 0; border-radius: 3px; cursor: pointer;}
+        .qs-btn { background: #222; border: 1px solid #444; color: var(--cyan); font-size: 10px; padding: 8px 0; border-radius: 3px; cursor: pointer; font-weight: bold;}
 
         /* --- 👁️ MODAL PLEIN ECRAN --- */
         #render-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #010104; z-index: 2000; display: none; flex-direction: column; }
@@ -78,7 +78,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V24.0</small>
+        <small>ÉDITION NUCLÉAIRE V25.0</small>
     </div>
 
     <div id="settings-area">
@@ -107,30 +107,31 @@
 
             <!-- Area Concentrique -->
             <div id="area-concentrique" style="display:none;">
-                <div class="box">
+                <div class="box cadre-item" style="border-color: var(--vert);">
                     <span class="label-sm">Lettre(s) du Cœur</span>
-                    <input type="text" id="c-mod" value="A" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
+                    <!-- Cœur vide par défaut -->
+                    <input type="text" id="c-mod" value="" placeholder="(Vide)" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
                     <div class="quick-sizes" style="grid-template-columns: repeat(5, 1fr);">
-                        <button class="qs-btn" onclick="setCoeurDim(50)">50</button>
-                        <button class="qs-btn" onclick="setCoeurDim(40)">40</button>
-                        <button class="qs-btn" onclick="setCoeurDim(30)">30</button>
-                        <button class="qs-btn" onclick="setCoeurDim(20)">20</button>
-                        <button class="qs-btn" onclick="setCoeurDim(10)">10</button>
+                        <button class="qs-btn" style="color:#fff;" onclick="setCoeurDim(50)">50</button>
+                        <button class="qs-btn" style="color:#fff;" onclick="setCoeurDim(40)">40</button>
+                        <button class="qs-btn" style="color:#fff;" onclick="setCoeurDim(30)">30</button>
+                        <button class="qs-btn" style="color:#fff;" onclick="setCoeurDim(20)">20</button>
+                        <button class="qs-btn" style="color:#fff;" onclick="setCoeurDim(10)">10</button>
                     </div>
                     <div class="row" style="margin-top: 5px;">
                         <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" id="c-w" value="20" style="text-align:center;"></div>
                         <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" id="c-h" value="20" style="text-align:center;"></div>
                     </div>
                 </div>
-                <!-- Fix V24: Nouveau container pour cadres -->
+                
                 <div id="cadres-container"></div>
-                <button class="btn" style="background: var(--magenta); color: #fff; margin-top: 10px;" onclick="ajouterCadre()">+ NOUVEAU CADRE</button>
+                <button class="btn" style="background: var(--vert); color: #000; margin-top: 10px;" onclick="ajouterCadre()">+ NOUVEAU CADRE</button>
             </div>
 
             <!-- Area Fractale -->
             <div id="area-fractale" style="display:none;">
                 <div class="box">
-                    <span class="label-sm">Modèle Cœur</span><input type="text" id="f-mod" value="A">
+                    <span class="label-sm">Modèle Cœur</span><input type="text" id="f-mod" value="">
                     <span class="label-sm" style="margin-top:10px;">Dimensions Cœur (cm)</span><input type="number" id="f-size" value="20">
                     <span class="label-sm" style="margin-top:10px;">Séquence Frise (A B)</span><input type="text" id="f-seq" value="B C">
                     <span class="label-sm" style="margin-top:10px;">Itérations (Nombre de cadres)</span><input type="number" id="f-iter" value="5">
@@ -138,10 +139,8 @@
                 </div>
             </div>
 
-            <div class="row" style="margin-top: 30px;">
-                <button class="btn" style="background: #444; color: #fff; flex: 1;" onclick="render(false)">⚡ RAPIDE</button>
-                <button class="btn" style="background: var(--jaune); color: #000; flex: 1.5;" onclick="render(true)">💎 TRIPLE HD</button>
-            </div>
+            <!-- BOUTON UNIQUE DE FORGE -->
+            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">💎 FORGER LE MUR (HD)</button>
         </div>
 
         <!-- --- FINITION --- -->
@@ -210,6 +209,19 @@
             if(hInput) hInput.value = val;
         }
 
+        // 🥷 Ajout intelligent de séquences !
+        function appendSeq(btn, str) {
+            let container = btn.closest('.seq-content');
+            let input = container.querySelector('.s-seq') || container.querySelector('.c-seq');
+            let current = input.value.trim();
+            // On fusionne l'ancienne et la nouvelle séquence avec un espace
+            let newVal = current ? current + " " + str : str;
+            input.value = newVal.replace(/\s+/g, ' '); // Sécurité pour éviter les doubles espaces
+            // Met à jour le titre dynamiquement
+            let titleVal = container.previousElementSibling.querySelector('.seq-val, .cadre-val');
+            if(titleVal) titleVal.innerText = input.value || '(Vide)';
+        }
+
         function chargerModeles(e) {
             if(!e.target.files.length) return;
             Array.from(e.target.files).forEach(f => {
@@ -267,37 +279,44 @@
                 </div>
             `;
             document.getElementById('lignes-container').appendChild(d);
-            ajouterSequence(d.querySelector('.blocs-container'));
+            ajouterSequence(d.querySelector('.blocs-container'), ""); // Sequence vide !
         }
 
-        function ajouterSequence(cont, seq="A", insertAfter = null) {
+        function ajouterSequence(cont, seq="", insertAfter = null) {
             let b = document.createElement('div');
             b.className = 'block-item';
+            let displaySeq = seq || '(Vide)';
             b.innerHTML = `
                 <div class="seq-header">
                     <div class="seq-title">
                         <button class="btn-icon" style="width:24px; height:24px; margin-right:8px; background:#000;" onclick="toggleSeq(this)">🔽</button>
-                        <span class="seq-val">${seq}</span>
+                        <span class="seq-val">${displaySeq}</span>
                     </div>
                     <div style="display:flex; gap:4px;">
                         <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.block-item'), 'up')">↑</button>
                         <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.block-item'), 'down')">↓</button>
-                        <button class="btn-icon" style="height:28px; width:28px; background:var(--vert); color:#000;" onclick="ajouterSequence(this.closest('.blocs-container'), 'A', this.closest('.block-item'))">➕</button>
+                        <button class="btn-icon" style="height:28px; width:28px; background:var(--vert); color:#000;" onclick="ajouterSequence(this.closest('.blocs-container'), '', this.closest('.block-item'))">➕</button>
                         <button class="btn-icon" style="height:28px; width:28px;" onclick="duplicate(this.closest('.block-item'))">👯</button>
                         <button class="btn-icon btn-red" style="height:28px; width:28px;" onclick="this.closest('.block-item').remove()">❌</button>
                     </div>
                 </div>
                 <div class="seq-content">
                     <div class="row">
-                        <div style="flex:1"><span class="label-sm">Séquence (ex: A B)</span>
-                        <input type="text" class="s-seq" value="${seq}" oninput="this.closest('.block-item').querySelector('.seq-val').innerText = this.value || '?'" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
+                        <div style="flex:1"><span class="label-sm">Séquence (Ajout Multiple)</span>
+                        <input type="text" class="s-seq" value="${seq}" placeholder="(Vide)" oninput="this.closest('.block-item').querySelector('.seq-val').innerText = this.value || '(Vide)'" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
                         </div>
                     </div>
                     <div class="quick-sizes">
-                        <button class="qs-btn" onclick="setDim(this, 2.5)">2.5</button>
-                        <button class="qs-btn" onclick="setDim(this, 5)">5</button>
-                        <button class="qs-btn" onclick="setDim(this, 7.5)">7.5</button>
-                        <button class="qs-btn" onclick="setDim(this, 10)">10</button>
+                        <button class="qs-btn" onclick="appendSeq(this, 'A B')">A B</button>
+                        <button class="qs-btn" onclick="appendSeq(this, 'A B C')">A B C</button>
+                        <button class="qs-btn" onclick="appendSeq(this, 'A B C D')">A B C D</button>
+                        <button class="qs-btn" onclick="appendSeq(this, 'A B A')">A B A</button>
+                    </div>
+                    <div class="quick-sizes" style="margin-top:0;">
+                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 2.5)">2.5x2.5</button>
+                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 5)">5x5</button>
+                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 7.5)">7.5x7.5</button>
+                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 10)">10x10</button>
                     </div>
                     <div class="row">
                         <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" style="width:100%; text-align:center;"></div>
@@ -311,35 +330,44 @@
             else cont.appendChild(b);
         }
 
-        // --- GESTION CADRES ACCORDÉON (Fix V24) ---
-        function ajouterCadre(insertAfter = null, seq = "B C", w = 10, h = 10) {
+        // --- GESTION CADRES ---
+        let cadreCounter = 0;
+        function ajouterCadre(insertAfter = null, seq = "", w = 10, h = 10) {
+            cadreCounter++;
             let d = document.createElement('div');
             d.className = 'cadre-item';
+            let displaySeq = seq || '(Vide)';
             d.innerHTML = `
-                <div class="seq-header" style="border-bottom-color: var(--magenta);">
+                <div class="seq-header" style="border-bottom-color: var(--vert);">
                     <div class="cadre-title">
                         <button class="btn-icon" style="width:24px; height:24px; margin-right:8px; background:#000;" onclick="toggleSeq(this)">🔽</button>
-                        <span class="cadre-val">${seq}</span>
+                        <span class="cadre-val">${displaySeq}</span>
                     </div>
                     <div style="display:flex; gap:4px;">
                         <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.cadre-item'), 'up')">↑</button>
                         <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.cadre-item'), 'down')">↓</button>
-                        <button class="btn-icon" style="height:28px; width:28px; background:var(--magenta); color:#fff;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button>
+                        <button class="btn-icon" style="height:28px; width:28px; background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button>
                         <button class="btn-icon" style="height:28px; width:28px;" onclick="duplicate(this.closest('.cadre-item'))">👯</button>
                         <button class="btn-icon btn-red" style="height:28px; width:28px;" onclick="this.closest('.cadre-item').remove()">❌</button>
                     </div>
                 </div>
                 <div class="seq-content">
                     <div class="row">
-                        <div style="flex:1"><span class="label-sm">Séquence (ex: A B C)</span>
-                        <input type="text" class="c-seq" value="${seq}" oninput="this.closest('.cadre-item').querySelector('.cadre-val').innerText = this.value || '?'" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
+                        <div style="flex:1"><span class="label-sm">Séquence (Ajout Multiple)</span>
+                        <input type="text" class="c-seq" value="${seq}" placeholder="(Vide)" oninput="this.closest('.cadre-item').querySelector('.cadre-val').innerText = this.value || '(Vide)'" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
                         </div>
                     </div>
                     <div class="quick-sizes">
-                        <button class="qs-btn" onclick="setDim(this, 2.5)">2.5</button>
-                        <button class="qs-btn" onclick="setDim(this, 5)">5</button>
-                        <button class="qs-btn" onclick="setDim(this, 7.5)">7.5</button>
-                        <button class="qs-btn" onclick="setDim(this, 10)">10</button>
+                        <button class="qs-btn" onclick="appendSeq(this, 'A B')">A B</button>
+                        <button class="qs-btn" onclick="appendSeq(this, 'A B C')">A B C</button>
+                        <button class="qs-btn" onclick="appendSeq(this, 'A B C D')">A B C D</button>
+                        <button class="qs-btn" onclick="appendSeq(this, 'A B C D E')">A B C D E</button>
+                    </div>
+                    <div class="quick-sizes" style="margin-top:0;">
+                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 2.5)">2.5x2.5</button>
+                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 5)">5x5</button>
+                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 7.5)">7.5x7.5</button>
+                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 10)">10x10</button>
                     </div>
                     <div class="row">
                         <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" style="width:100%; text-align:center;"></div>
@@ -365,7 +393,7 @@
                 curSize = curSize / seq.length;
                 ajouterCadre(null, seq.join(' '), curSize, curSize);
             }
-            render(false);
+            render();
         }
 
         function move(el, dir) {
@@ -438,13 +466,13 @@
             document.getElementById('render-modal').style.display = 'none';
         }
 
-        // --- RENDERER V24 (BOUCLIER ANTI ECRAN BLANC) ---
-        function render(isHD = false) {
+        // --- RENDERER V25 (UNIQUE HD) ---
+        function render() {
             const canvas = document.getElementById('c');
             const ctx = canvas.getContext('2d');
             
-            const baseScale = isHD ? 40 : 15; 
-            const dpr = isHD ? (window.devicePixelRatio || 2) : 1; 
+            const baseScale = 40; 
+            const dpr = window.devicePixelRatio || 2; 
 
             let totalW = 0, totalH = 0;
 
@@ -456,7 +484,10 @@
                         let sequence = bl.querySelector('.s-seq').value.toUpperCase().split(' ').filter(Boolean);
                         let w = parseFloat(bl.querySelector('.s-w').value) || 10, h = parseFloat(bl.querySelector('.s-h').value) || 10, q = parseInt(bl.querySelector('.s-q').value) || 1;
                         let dir = bl.querySelector('.btn-icon:last-child').innerText === '➡️' ? 'H' : 'V';
-                        if(sequence.length === 0) sequence = ['A'];
+                        
+                        // Si vide, on met un string vide pour afficher la cellule sans texte
+                        if(sequence.length === 0) sequence = [''];
+                        
                         if(q > 0) {
                             let bW = (dir === 'H') ? w * q : w;
                             let bH = (dir === 'V') ? h * q : h;
@@ -468,7 +499,7 @@
                     totalW = Math.max(totalW, lw); totalH += lh;
                 });
 
-                prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr, isHD);
+                prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
                 
                 let curY = 0;
                 lines.forEach(line => {
@@ -479,7 +510,7 @@
                             let char = b.sequence[i % b.sequence.length];
                             let dx = startX + (b.dir==='H' ? i*b.w : 0);
                             let dy = startY + (b.dir==='V' ? i*b.h : 0);
-                            drawTile(ctx, char, dx*baseScale, dy*baseScale, b.w*baseScale, b.h*baseScale, isHD);
+                            drawTile(ctx, char, dx*baseScale, dy*baseScale, b.w*baseScale, b.h*baseScale);
                         }
                         curX += b.bW;
                     });
@@ -489,7 +520,7 @@
             } else {
                 let cw = parseFloat(document.getElementById('c-w').value) || 30;
                 let ch = parseFloat(document.getElementById('c-h').value) || 30;
-                let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || 'A';
+                let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || '';
                 
                 let cadres = [];
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(cc => {
@@ -503,7 +534,7 @@
                 totalW = cw; totalH = ch;
                 cadres.forEach(c => { totalW += c.w * 2; totalH += c.h * 2; });
                 
-                prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr, isHD);
+                prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
 
                 let tiles = [];
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
@@ -512,7 +543,7 @@
                 
                 cadres.forEach(c => {
                     let bdW = c.w, bdH = c.h;
-                    let seq = c.seq.length > 0 ? c.seq : ['A'];
+                    let seq = c.seq.length > 0 ? c.seq : [''];
                     let newTotalW = currentTotalW + bdW * 2;
                     let newTotalH = currentTotalH + bdH * 2;
                     let shiftX = (totalW - newTotalW)/2;
@@ -531,21 +562,27 @@
                     currentTotalW = newTotalW; currentTotalH = newTotalH;
                 });
 
-                tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale, isHD));
+                tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
             }
             
-            document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm ` + (isHD ? "💎 HD" : "⚡ Rapide");
+            document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm 💎 HD`;
+            
+            // 🎯 Le FIX Ultime pour le Centrage (La pause de 50ms)
             document.getElementById('render-modal').style.display = 'flex';
+            setTimeout(() => {
+                let cssW = (totalW || 10) * baseScale;
+                let cssH = (totalH || 10) * baseScale;
+                resetCamera(cssW, cssH);
+            }, 50);
         }
 
         // 🛡️ BOUCLIER ANTI ECRAN BLANC
-        function prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr, isHD) {
+        function prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr) {
             let cssW = (totalW || 10) * baseScale;
             let cssH = (totalH || 10) * baseScale;
             let pixelW = cssW * dpr;
             let pixelH = cssH * dpr;
 
-            // Limite de sécurité absolue pour mobile (3500px)
             const MAX_DIM = 3500; 
             let scaleFactor = 1;
             if(pixelW > MAX_DIM || pixelH > MAX_DIM) {
@@ -562,21 +599,22 @@
             
             ctx.scale(dpr * scaleFactor, dpr * scaleFactor);
             ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = isHD ? 'high' : 'low';
+            ctx.imageSmoothingQuality = 'high';
 
             ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
-            resetCamera(cssW, cssH);
         }
 
-        function drawTile(ctx, char, x, y, w, h, isHD) {
-            if(modeles[char]) {
+        function drawTile(ctx, char, x, y, w, h) {
+            if(char && modeles[char]) {
                 ctx.drawImage(modeles[char].img, x, y, w, h);
             } else {
-                ctx.strokeStyle = 'cyan'; ctx.lineWidth = isHD ? 2 : 1; ctx.strokeRect(x, y, w, h);
+                ctx.strokeStyle = 'cyan'; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
                 ctx.fillStyle = "rgba(241, 196, 15, 0.15)"; ctx.fillRect(x, y, w, h);
-                ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(12, h/3)}px monospace`;
-                ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText(char, x + w/2, y + h/2);
+                if(char) {
+                    ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(12, h/3)}px monospace`;
+                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.fillText(char, x + w/2, y + h/2);
+                }
             }
         }
 
@@ -586,4 +624,3 @@
     </script>
 </body>
 </html>
-
