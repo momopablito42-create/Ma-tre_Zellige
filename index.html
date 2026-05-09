@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V20.1</title>
+    <title>Daguerre OS V21.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,22 +13,12 @@
         body { margin: 0; background: var(--bg); color: #fff; font-family: monospace; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
         /* --- LAYOUT STRUCTURE --- */
-        #header { padding: 10px; text-align: center; border-bottom: 1px solid var(--jaune); background: var(--panel); flex-shrink: 0; }
+        #header { padding: 10px; text-align: center; border-bottom: 1px solid var(--jaune); background: var(--panel); flex-shrink: 0; padding-top: env(safe-area-inset-top); }
         #header h1 { margin: 0; font-size: 18px; color: var(--jaune); }
         #header small { color: #555; font-size: 10px; }
 
-        #workspace { flex: 0.8; position: relative; background: #010104; display: flex; flex-direction: column; overflow: hidden; border-bottom: 2px solid var(--cyan); }
-        #workspace-dim { position: absolute; top: 5px; left: 10px; color: var(--jaune); font-size: 10px; font-weight: bold; z-index: 5; }
-        
-        #controls-bar { position: absolute; top: 5px; right: 5px; display: flex; gap: 5px; z-index: 10; align-items: center; }
-        .zoom-btn { background: rgba(255, 0, 85, 0.7); border: none; color: white; width: 26px; height: 26px; border-radius: 13px; font-weight: bold; cursor: pointer; }
-        .full-btn { background: var(--cyan); color: #000; font-size: 10px; font-weight: bold; padding: 0 10px; height: 26px; border-radius: 13px; border: none; cursor: pointer;}
-
-        #canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: auto; padding: 20px; }
-        canvas { background: #111; border: 1px solid #333; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-
-        /* FIX SCROLL: Padding-bottom immense pour contrer la barre d'onglets ! */
-        #settings-area { flex: 1.2; overflow-y: auto; background: var(--panel); padding: 15px; padding-bottom: 120px; }
+        /* L'espace de réglages prend 100% de l'écran maintenant ! */
+        #settings-area { flex: 1; overflow-y: auto; background: var(--panel); padding: 15px; padding-bottom: 120px; }
         
         /* --- UI COMPONENTS --- */
         .tab-content { display: none; }
@@ -57,26 +47,23 @@
         .label-sm { color: #888; font-size: 9px; display: block; margin-bottom: 2px; }
         .quick-sizes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 10px 0; }
         .qs-btn { background: #222; border: 1px solid #444; color: #fff; font-size: 9px; padding: 6px 0; border-radius: 3px; cursor: pointer;}
+
+        /* --- 👁️ MODAL PLEIN ECRAN (TRIPLE HD) --- */
+        #render-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #010104; z-index: 2000; display: none; flex-direction: column; }
+        #render-header { height: 60px; background: var(--panel); border-bottom: 2px solid var(--cyan); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; padding-top: env(safe-area-inset-top); }
+        #render-dim { color: var(--jaune); font-weight: bold; font-size: 14px; }
+        #close-render-btn { background: var(--magenta); color: #fff; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; font-family: monospace; cursor: pointer; }
+        
+        #touch-zone { flex: 1; position: relative; overflow: hidden; touch-action: none; /* Crucial pour bloquer le scroll natif */ }
+        #canvas-wrapper { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+        canvas { background: #111; border: 1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V20.1</small>
-    </div>
-
-    <div id="workspace">
-        <div id="workspace-dim">0 x 0 cm</div>
-        <div id="controls-bar">
-            <button class="zoom-btn" onclick="resetView()">🔄</button>
-            <button class="zoom-btn" onclick="changeZoom(0.5)">+</button>
-            <button class="zoom-btn" onclick="changeZoom(-0.5)">-</button>
-            <button class="full-btn" onclick="toggleSidebar()">🔽 PLEIN ÉCRAN</button>
-        </div>
-        <div id="canvas-container">
-            <canvas id="c"></canvas>
-        </div>
+        <small>ÉDITION NUCLÉAIRE V21.0</small>
     </div>
 
     <div id="settings-area">
@@ -135,7 +122,7 @@
                 </div>
             </div>
 
-            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">⚙️ FORGER LE MUR</button>
+            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">👁️ FORGER ET VOIR LE MUR</button>
         </div>
 
         <!-- --- FINITION --- -->
@@ -158,6 +145,19 @@
         </div>
     </div>
 
+    <!-- 👁️ L'ŒIL DU FAUCON (MODAL RENDU) -->
+    <div id="render-modal">
+        <div id="render-header">
+            <span id="render-dim">0 x 0 cm</span>
+            <button id="close-render-btn" onclick="closeRender()">❌ FERMER</button>
+        </div>
+        <div id="touch-zone">
+            <div id="canvas-wrapper">
+                <canvas id="c"></canvas>
+            </div>
+        </div>
+    </div>
+
     <div id="tab-bar">
         <button class="tab-btn active" onclick="switchTab('tab-armurerie', this)"><span style="font-size:16px;">⚔️</span>ARSENAL</button>
         <button class="tab-btn" onclick="switchTab('tab-forge', this)"><span style="font-size:16px;">⛩️</span>FORGE</button>
@@ -166,22 +166,7 @@
     </div>
 
     <script>
-        let modeles = {}, letterIdx = 65, mode = 'lineaire', zoom = 1.0;
-
-        // FIX PLEIN ECRAN : Vérification sur le display de settings-area
-        function toggleSidebar() {
-            const area = document.getElementById('settings-area');
-            const work = document.getElementById('workspace');
-            if(area.style.display === "none") {
-                work.style.flex = "0.8";
-                area.style.display = "block";
-                document.querySelector('.full-btn').innerText = "🔽 PLEIN ÉCRAN";
-            } else {
-                work.style.flex = "1";
-                area.style.display = "none";
-                document.querySelector('.full-btn').innerText = "🔼 QUITTER";
-            }
-        }
+        let modeles = {}, letterIdx = 65, mode = 'lineaire';
 
         function switchTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
@@ -197,8 +182,6 @@
             ['lineaire','concentrique','fractale'].forEach(x => document.getElementById(`area-${x}`).style.display = (x===m)?'block':'none');
         }
 
-        function changeZoom(v) { zoom = Math.max(0.1, zoom + v); render(); }
-        function resetView() { zoom = 1.0; render(); }
         function setCoeurDim(v) { document.getElementById('c-w').value = v; document.getElementById('c-h').value = v; }
 
         function chargerModeles(e) {
@@ -322,13 +305,73 @@
         }
         function duplicate(el) { let c = el.cloneNode(true); el.parentNode.insertBefore(c, el.nextSibling); }
 
-        // --- RENDERER 2.1 ---
+        // --- GESTION DU ZOOM TACTILE (Oeil du Faucon) ---
+        const touchZone = document.getElementById('touch-zone');
+        const canvasWrap = document.getElementById('canvas-wrapper');
+        let t_scale = 1, t_posX = 0, t_posY = 0;
+        let t_startDist = 0, t_startScale = 1;
+        let t_dragStart = {x: 0, y: 0}, t_posStart = {x: 0, y: 0};
+        let isDragging = false;
+
+        touchZone.addEventListener('touchstart', e => {
+            if(e.touches.length === 1) {
+                isDragging = true;
+                t_dragStart.x = e.touches[0].clientX;
+                t_dragStart.y = e.touches[0].clientY;
+                t_posStart.x = t_posX;
+                t_posStart.y = t_posY;
+            } else if(e.touches.length === 2) {
+                isDragging = false;
+                t_startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                t_startScale = t_scale;
+            }
+        });
+
+        touchZone.addEventListener('touchmove', e => {
+            e.preventDefault(); 
+            if(e.touches.length === 1 && isDragging) {
+                t_posX = t_posStart.x + (e.touches[0].clientX - t_dragStart.x);
+                t_posY = t_posStart.y + (e.touches[0].clientY - t_dragStart.y);
+                updateTransform();
+            } else if(e.touches.length === 2) {
+                let dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                t_scale = Math.max(0.05, Math.min(t_startScale * (dist / t_startDist), 5));
+                updateTransform();
+            }
+        }, {passive: false});
+
+        touchZone.addEventListener('touchend', e => { if(e.touches.length < 2) isDragging = false; });
+
+        function updateTransform() {
+            canvasWrap.style.transform = `translate(${t_posX}px, ${t_posY}px) scale(${t_scale})`;
+        }
+
+        function resetCamera(cssWidth, cssHeight) {
+            let zoneW = touchZone.clientWidth;
+            let zoneH = touchZone.clientHeight;
+            // On trouve le bon zoom pour que ça rentre parfaitement dans l'écran
+            let fitScale = Math.min((zoneW - 40) / cssWidth, (zoneH - 40) / cssHeight);
+            t_scale = Math.max(0.1, fitScale);
+            // On centre l'image
+            t_posX = (zoneW - cssWidth * t_scale) / 2;
+            t_posY = (zoneH - cssHeight * t_scale) / 2;
+            updateTransform();
+        }
+
+        function closeRender() {
+            document.getElementById('render-modal').style.display = 'none';
+        }
+
+        // --- RENDERER TRIPLE HD ---
         function render() {
             const canvas = document.getElementById('c');
             const ctx = canvas.getContext('2d');
-            const sc = 20 * zoom; 
+            
+            // LA MAGIE TRIPLE HD : Base 40px * DevicePixel Ratio
+            const baseScale = 40; 
+            const dpr = window.devicePixelRatio || 2; 
+
             let totalW = 0, totalH = 0;
-            ctx.clearRect(0,0,9999,9999);
 
             if(mode === 'lineaire') {
                 let lines = [];
@@ -350,8 +393,21 @@
                     totalW = Math.max(totalW, lw); totalH += lh;
                 });
 
-                canvas.width = (totalW || 10) * sc; canvas.height = (totalH || 10) * sc;
-                ctx.fillStyle = "#111"; ctx.fillRect(0,0, canvas.width, canvas.height);
+                // Calcul de la taille CSS vs Taille interne
+                let cssW = (totalW || 10) * baseScale;
+                let cssH = (totalH || 10) * baseScale;
+
+                canvas.style.width = cssW + 'px';
+                canvas.style.height = cssH + 'px';
+                canvas.width = cssW * dpr;
+                canvas.height = cssH * dpr;
+                
+                // On met à l'échelle le contexte interne pour la netteté
+                ctx.scale(dpr, dpr);
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
+                ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
                 
                 let curY = 0;
                 lines.forEach(line => {
@@ -362,14 +418,20 @@
                             let char = b.sequence[i % b.sequence.length];
                             let dx = startX + (b.dir==='H' ? i*b.w : 0);
                             let dy = startY + (b.dir==='V' ? i*b.h : 0);
-                            drawTile(ctx, char, dx*sc, dy*sc, b.w*sc, b.h*sc);
+                            drawTile(ctx, char, dx*baseScale, dy*baseScale, b.w*baseScale, b.h*baseScale);
                         }
                         curX += b.bW;
                     });
                     curY += line.lh;
                 });
+
+                // Afficher Modal
+                document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm`;
+                document.getElementById('render-modal').style.display = 'flex';
+                resetCamera(cssW, cssH);
+
             } else {
-                // FIX CADRES : Le Moteur Concentrique est de retour !
+                // MOTEUR CONCENTRIQUE TRIPLE HD
                 let cw = parseFloat(document.getElementById('c-w').value) || 30;
                 let ch = parseFloat(document.getElementById('c-h').value) || 30;
                 let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || 'A';
@@ -386,8 +448,19 @@
                 totalW = cw; totalH = ch;
                 cadres.forEach(c => { totalW += c.w * 2; totalH += c.h * 2; });
                 
-                canvas.width = (totalW || 10) * sc; canvas.height = (totalH || 10) * sc;
-                ctx.fillStyle = "#111"; ctx.fillRect(0,0, canvas.width, canvas.height);
+                let cssW = (totalW || 10) * baseScale;
+                let cssH = (totalH || 10) * baseScale;
+
+                canvas.style.width = cssW + 'px';
+                canvas.style.height = cssH + 'px';
+                canvas.width = cssW * dpr;
+                canvas.height = cssH * dpr;
+                
+                ctx.scale(dpr, dpr);
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
+                ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
 
                 let tiles = [];
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
@@ -415,19 +488,22 @@
                     currentTotalW = newTotalW; currentTotalH = newTotalH;
                 });
 
-                tiles.forEach(t => drawTile(ctx, t.l, t.x * sc, t.y * sc, t.w * sc, t.h * sc));
+                tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
+
+                // Afficher Modal
+                document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm`;
+                document.getElementById('render-modal').style.display = 'flex';
+                resetCamera(cssW, cssH);
             }
-            document.getElementById('workspace-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm`;
         }
 
         function drawTile(ctx, char, x, y, w, h) {
             if(modeles[char]) {
                 ctx.drawImage(modeles[char].img, x, y, w, h);
             } else {
-                // Design Cyber-Ninja pour les blocs vides
                 ctx.strokeStyle = 'cyan'; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
                 ctx.fillStyle = "rgba(241, 196, 15, 0.15)"; ctx.fillRect(x, y, w, h);
-                ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(10, h/2.5)}px monospace`;
+                ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(12, h/3)}px monospace`;
                 ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 ctx.fillText(char, x + w/2, y + h/2);
             }
@@ -439,4 +515,3 @@
     </script>
 </body>
 </html>
-
