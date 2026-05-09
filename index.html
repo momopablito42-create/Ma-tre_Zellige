@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Daguerre OS - V19.0</title>
+
+<!-- 🥷 LES SCEAUX DE L'ILLUSION PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#020208">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon.png">
+
+<style>
+:root { --bg: #020208; --cyan: #00ffff; --magenta: #ff0055; --jaune: #f1c40f; --vert: #2ecc71; --panel: rgba(0, 15, 25, 0.98); }
+body { margin: 0; background-color: var(--bg); color: var(--cyan); font-family: monospace; display: flex; height: 100vh; overflow: hidden; position: relative;}
+
+#menuToggle { position: absolute; top: 10px; left: 10px; z-index: 1000; background: var(--magenta); color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 4px; box-shadow: 0 0 10px rgba(255,0,85,0.5);}
+
+#sidebar { width: 450px; min-width: 450px; max-width: 90vw; background: var(--panel); border-right: 2px solid var(--cyan); display: flex; flex-direction: column; height: 100%; z-index: 10; transition: transform 0.3s ease; position: absolute; left: 0; top: 0; box-sizing: border-box; }
+#sidebar.closed { transform: translateX(-100%); }
+#sidebar-header { padding: 50px 15px 10px 15px; border-bottom: 1px solid var(--jaune); flex-shrink: 0; text-align: center;}
+
+.tabs { display: flex; background: #000; flex-shrink: 0; border-bottom: 2px solid var(--cyan);}
+.tab-btn { flex: 1; background: none; border: none; color: #555; padding: 12px 0; font-weight: bold; cursor: pointer; font-size: 10px; text-transform: uppercase; }
+.tab-btn.active { color: var(--cyan); border-bottom: 3px solid var(--cyan); background: rgba(0,255,255,0.1); }
+
+.tab-content-container { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 150px; }
+.tab-content { display: none; flex-direction: column; gap: 15px; }
+.tab-content.active { display: flex; }
+
+.section-title { color: var(--magenta); font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid var(--magenta); padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+.control-group { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 5px; border-left: 2px solid var(--cyan); margin-bottom: 10px; position: relative;}
+label { display: block; font-size: 10px; font-weight: bold; margin-bottom: 3px; color: #ccc; }
+input, select { width: 100%; padding: 8px; background: #000; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 4px; box-sizing: border-box; font-family: monospace; }
+
+.editable-name { background: transparent !important; border: none !important; border-bottom: 1px dashed inherit !important; padding: 2px !important; margin: 0 !important; font-size: 12px !important; font-weight: bold;}
+.editable-name:focus { outline: none; border-bottom-style: solid !important; background: rgba(255,255,255,0.1) !important;}
+
+button.action-btn { background: var(--cyan); color: #000; font-weight: bold; padding: 10px; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; width: 100%; font-family: monospace;}
+.magenta-btn { background: var(--magenta) !important; color: #fff !important; }
+.jaune-btn { background: var(--jaune) !important; color: #000 !important; }
+.vert-btn { background: var(--vert) !important; color: #000 !important; }
+.mini-btn { width: 28px; height: 28px; padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center; background: #222; color: #fff; border: 1px solid #444; border-radius: 3px; cursor: pointer;}
+.btn-row { display: flex; gap: 4px; justify-content: flex-end;}
+
+.blocs-container { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.symbole-bloc { display: grid; grid-template-columns: 30px 40px 40px 35px 40px auto; gap: 4px; align-items: center; background: #111; padding: 5px; border: 1px solid #333; border-radius: 4px;}
+.symbole-bloc input, .symbole-bloc select { padding: 4px; font-size: 10px; text-align: center; margin: 0;}
+.s-lettre { font-weight: bold; color: var(--jaune) !important; }
+
+.line-header { display: flex; justify-content: flex-start; align-items: center; gap: 10px; margin-bottom: 5px; background: rgba(0,0,0,0.4); padding: 5px; border-radius: 4px;}
+
+#workspace { flex: 1; display: flex; flex-direction: column; background: #010104; position: relative; width: 100%;}
+#top-bar { padding: 10px 10px 10px 140px; background: #000; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+#canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: auto; padding: 20px; }
+canvas { background: #111; border: 1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.9); object-fit: contain; max-width: 95%; max-height: 95%; }
+
+#devis-render-area { position: absolute; left: -9999px; width: 800px; padding: 40px; background: #020208; color: #fff; border: 5px solid var(--jaune); }
+</style>
+</head>
+<body>
+
+<button id="menuToggle" onclick="toggleSidebar()">❌ FERMER</button>
+
+<div id="sidebar">
+<div id="sidebar-header">
+<h1 style="color:var(--jaune);">⛩️ DAGUERRE OS V19.0</h1>
+<small style="font-size:9px; color:#555;">MÉMOIRE DE LA MATRICE</small>
+</div>
+
+<div class="tabs">
+<button class="tab-btn active" onclick="switchTab('tab-armurerie')">Armurerie</button>
+<button class="tab-btn" onclick="switchTab('tab-forge')">Forge</button>
+<button class="tab-btn" onclick="switchTab('tab-devis')">Rapport</button>
+</div>
+
+<div class="tab-content-container">
+<div id="tab-armurerie" class="tab-content active">
+<div class="section-title">⚔️ Arsenal des Sceaux</div>
+<label class="action-btn magenta-btn" style="display:block; text-align:center; padding:15px; cursor:pointer;">
++ INJECTER DES MODÈLES
+<input type="file" id="fileUploader" accept="image/*" multiple style="display:none;" onchange="chargerModeles(event)">
+</label>
+<div id="model-list" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:15px;"></div>
+</div>
+
+<div id="tab-forge" class="tab-content">
+<div style="display:flex; gap:5px; margin-bottom:15px;">
+<button class="action-btn" style="flex:1; font-size:9px;" onclick="sauvegarderTemplate()">💾 SAUVER TEMPLATE</button>
+<label class="action-btn" style="flex:1; font-size:9px; text-align:center; margin:0; padding:10px; cursor:pointer;">
+📂 CHARGER TEMPLATE
+<input type="file" style="display:none;" accept=".json" onchange="chargerTemplate(event)">
+</label>
+</div>
+
+<div style="display:flex; gap:5px; margin-bottom:10px;">
+<button id="btn-m-lin" class="action-btn mini-btn" style="flex:1;" onclick="setMode('lineaire')">LIGNES</button>
+<button id="btn-m-con" class="action-btn mini-btn" style="flex:1;" onclick="setMode('concentrique')">CADRES</button>
+<button id="btn-m-fra" class="action-btn mini-btn" style="flex:1;" onclick="setMode('fractale')">FRACTAL</button>
+</div>
+
+<div id="area-lineaire">
+<div class="section-title">Lignes de Production</div>
+<div id="lignes-container"></div>
+<button class="action-btn magenta-btn" onclick="ajouterLigne()">+ NOUVELLE LIGNE</button>
+</div>
+
+<div id="area-concentrique" style="display:none;">
+<div class="section-title">Cœur & Cadres</div>
+<div class="control-group">
+<label>Lettre du Cœur</label><input type="text" id="c-mod" value="A">
+<div style="display:flex; gap:5px; margin-top:5px;">
+<input type="number" id="c-w" value="20"> <input type="number" id="c-h" value="20">
+</div>
+</div>
+<div id="cadres-container"></div>
+<button class="action-btn magenta-btn" onclick="ajouterCadre()">+ NOUVEAU CADRE</button>
+</div>
+
+<div id="area-fractale" style="display:none;">
+<div class="section-title">Générateur Fractal Ninja</div>
+<div class="control-group">
+<label>Lettre du Cœur</label><input type="text" id="f-mod" value="A">
+<label>Dim. Cœur (cm)</label><input type="number" id="f-size" value="20">
+<label>Modèles Frise (ex: B C)</label><input type="text" id="f-seq" value="B C">
+<label>Nombre de Bordures</label><input type="number" id="f-iter" value="5">
+<button class="action-btn jaune-btn" style="margin-top:15px;" onclick="genererFractale()">⚡ GÉNÉRER FRACTALE</button>
+</div>
+</div>
+
+<button class="action-btn jaune-btn" onclick="render()" style="margin-top:20px; font-size:16px;">⚙️ FORGER LE MUR</button>
+</div>
+
+<div id="tab-devis" class="tab-content">
+<div class="section-title">📊 Rapport Financier</div>
+
+<div class="control-group" style="border-color:var(--jaune);">
+<label style="color:var(--jaune);">Nom du Projet (Pour Sauvegarde)</label>
+<input type="text" id="nom-projet" value="Mon_Chef_d_Oeuvre" style="font-weight:bold; font-size:14px; text-align:center;">
+</div>
+
+<div id="rapport-data" style="background:#000; padding:15px; border-left:3px solid var(--jaune);">Forgez un mur d'abord.</div>
+
+<button class="action-btn jaune-btn" style="margin-top:20px;" onclick="exporterImage()">📸 TÉLÉCHARGER PLAN 8K</button>
+<button class="action-btn vert-btn" style="margin-top:10px;" onclick="exporterDevis()">📄 TÉLÉCHARGER DEVIS PRO</button>
+</div>
+</div>
+</div>
+
+<div id="workspace">
+<div id="top-bar">
+<span id="dim-view" style="color:var(--jaune); font-weight:bold;">0 x 0 cm</span>
+</div>
+<div id="canvas-container"><canvas id="c"></canvas></div>
+</div>
+
+<script>
+let modeles = {}, letterIdx = 65, mode = 'lineaire', recap = {}, totalM2 = 0;
+
+function toggleSidebar() {
+const s = document.getElementById('sidebar');
+s.classList.toggle('closed');
+document.getElementById('menuToggle').innerText = s.classList.contains('closed') ? "⚙️ MENU" : "❌ FERMER";
+}
+
+function switchTab(id) {
+document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+event.target.classList.add('active');
+}
+
+function setMode(m) {
+mode = m;
+['lineaire','concentrique','fractale'].forEach(x => document.getElementById(area-${x}`).style.display = (x===m)?'block':'none');
+}
+
+function chargerModeles(e) {
+Array.from(e.target.files).forEach(f => {
+let r = new FileReader();
+r.onload = ev => {
+let i = new Image();
+i.onload = () => {
+let l = String.fromCharCode(letterIdx++);
+modeles[l] = { img: i, nom: f.name };
+let d = document.createElement('div');
+d.style.cssText = "position:relative; background:#111; border:1px solid var(--magenta); padding:5px; text-align:center;";
+d.innerHTML = <div style="position:absolute; top:-5px; left:-5px; background:var(--magenta); border-radius:50%; width:15px; height:15px; font-size:9px;"&gt;${l}</div><img src="${ev.target.result}" style="max-width:100%; height:30px;">;
+document.getElementById('model-list').appendChild(d);
+};
+i.src = ev.target.result;
+};
+r.readAsDataURL(f);
+});
+e.target.value = '';
+}
+
+function createMoveBtns(type) {
+return <div class="btn-row"&gt; &lt;button class="mini-btn" title="Monter" onclick="moveUp(this.closest('.${type}'))">↑</button>
+<button class="mini-btn" title="Descendre" onclick="moveDown(this.closest('.{type}'))">👯</button>
+<button class="mini-btn" title="Supprimer" onclick="this.closest('.${type}').remove()" style="color:red;"&gt;❌&lt;/button&gt; &lt;/div>;
+}
+
+function moveUp(el) { if(el.previousElementSibling) el.parentNode.insertBefore(el, el.previousElementSibling); }
+function moveDown(el) { if(el.nextElementSibling) el.parentNode.insertBefore(el.nextElementSibling, el); }
+function duplicate(el) { let c = el.cloneNode(true); el.parentNode.insertBefore(c, el.nextSibling); }
+
+function toggleCollapse(btn) {
+let content = btn.closest('.control-group').querySelector('.collapsible-content');
+if (content.style.display === 'none') {
+content.style.display = 'block';
+btn.innerText = '🔽';
+} else {
+content.style.display = 'none';
+btn.innerText = '▶️';
+}
+}
+
+let ligneCounter = 0;
+function ajouterLigne(nomStr = null) {
+ligneCounter++;
+let nameVal = nomStr || LIGNE${ligneCounter}`;
+let d = document.createElement('div');
+d.className = 'control-group ligne-item';
+
+d.innerHTML = &lt;div class="line-header"&gt; &lt;button class="mini-btn" onclick="toggleCollapse(this)"&gt;🔽&lt;/button&gt; &lt;input type="text" class="editable-name" value="${nameVal}" style="flex:1; color:var(--cyan); border-color:var(--cyan);">
+${createMoveBtns('ligne-item')} &lt;/div&gt; &lt;div class="collapsible-content"&gt; &lt;div class="blocs-container"&gt;&lt;/div&gt; &lt;button class="action-btn vert-btn" style="margin-top:5px;" onclick="ajouterSym(this.previousElementSibling)"&gt;+ SYMBOLE&lt;/button&gt; &lt;/div>;
+document.getElementById('lignes-container').appendChild(d);
+return d;
+}
+
+function ajouterSym(cont, l="A", w=10, h=10, q=1, dir="H") {
+let b = document.createElement('div');
+b.className = 'symbole-bloc';
+b.innerHTML = &lt;input type="text" class="s-lettre" value="${l}" title="Modèle">
+<input type="number" class="s-w" value="${w}" title="Largeur"&gt; &lt;input type="number" class="s-h" value="${h}" title="Hauteur">
+<input type="number" class="s-q" value="${q}" title="Quantité"&gt; &lt;select class="s-dir" title="Empilement"&gt;&lt;option value="H" ${dir==='H'?'selected':''}>➡️</option><option value="V" ${dir==='V'?'selected':''}&gt;⬇️&lt;/option&gt;&lt;/select&gt; ${createMoveBtns('symbole-bloc')}
+`;
+cont.appendChild(b);
+}
+
+let cadreCounter = 0;
+function ajouterCadre(nomStr = null, seq = "B", w = 10, h = 10) {
+cadreCounter++;
+let nameVal = nomStr || CADRE${cadreCounter}; let d = document.createElement('div'); d.className = 'control-group cadre-item'; d.innerHTML =
+<div class="line-header" style="background:transparent; padding:0;">
+<input type="text" class="editable-name" value="{createMoveBtns('cadre-item')}
+</div>
+<label>Séquence (A B)</label><input type="text" class="c-seq" value="{w}" title="Larg"> <input type="number" class="c-h" value="${h}" title="Haut"&gt;&lt;/div>;
+document.getElementById('cadres-container').appendChild(d);
+}
+
+function genererFractale() {
+setMode('concentrique');
+document.getElementById('c-mod').value = document.getElementById('f-mod').value;
+document.getElementById('c-w').value = document.getElementById('f-size').value;
+document.getElementById('c-h').value = document.getElementById('f-size').value;
+let seq = document.getElementById('f-seq').value.split(' ').filter(Boolean);
+let n = parseInt(document.getElementById('f-iter').value);
+document.getElementById('cadres-container').innerHTML = "";
+let curSize = parseFloat(document.getElementById('f-size').value);
+for(let i=0; i<n; i++) {
+curSize = curSize / seq.length;
+ajouterCadre(FRACTALE${i+1}`, seq.join(' '), curSize, curSize);
+}
+render();
+}
+
+function getProjectName() {
+let n = document.getElementById('nom-projet').value.trim();
+return n === "" ? "Zellige_Projet" : n.replace(/\s+/g, '_');
+}
+
+function sauvegarderTemplate() {
+let data = { mode: mode, lignes: [], coeur: {}, cadres: [] };
+document.querySelectorAll('.ligne-item').forEach(l => {
+let nom = l.querySelector('.editable-name').value;
+let blocs = [];
+l.querySelectorAll('.symbole-bloc').forEach(b => {
+blocs.push({
+l: b.querySelector('.s-lettre').value, w: b.querySelector('.s-w').value,
+h: b.querySelector('.s-h').value, q: b.querySelector('.s-q').value, dir: b.querySelector('.s-dir').value
+});
+});
+data.lignes.push({nom, blocs});
+});
+data.coeur = { m: document.getElementById('c-mod').value, w: document.getElementById('c-w').value, h: document.getElementById('c-h').value };
+document.querySelectorAll('.cadre-item').forEach(c => {
+data.cadres.push({ nom: c.querySelector('.editable-name').value, seq: c.querySelector('.c-seq').value, w: c.querySelector('.c-w').value, h: c.querySelector('.c-h').value });
+});
+let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+let link = document.createElement("a");
+link.href = URL.createObjectURL(blob); link.download = getProjectName() + "_TEMPLATE.json"; link.click();
+}
+
+function chargerTemplate(e) {
+let file = e.target.files[0];
+if(!file) return;
+let reader = new FileReader();
+reader.onload = function(event) {
+try {
+let data = JSON.parse(event.target.result);
+if(data.mode) setMode(data.mode);
+if(data.lignes && data.lignes.length > 0) {
+document.getElementById('lignes-container').innerHTML = '';
+data.lignes.forEach(lData => {
+let divLigne = ajouterLigne(lData.nom);
+let cont = divLigne.querySelector('.blocs-container');
+cont.innerHTML = '';
+lData.blocs.forEach(bData => ajouterSym(cont, bData.l, bData.w, bData.h, bData.q, bData.dir));
+});
+}
+if(data.coeur) {
+document.getElementById('c-mod').value = data.coeur.m || 'A';
+document.getElementById('c-w').value = data.coeur.w || 20; document.getElementById('c-h').value = data.coeur.h || 20;
+}
+if(data.cadres && data.cadres.length > 0) {
+document.getElementById('cadres-container').innerHTML = '';
+data.cadres.forEach(cData => ajouterCadre(cData.nom, cData.seq, cData.w, cData.h));
+}
+alert("✅ Template chargé avec succès !");
+} catch(err) { alert("⚠️ Fichier invalide."); }
+};
+reader.readAsText(file); e.target.value = '';
+}
+
+function render() {
+const canvas = document.getElementById('c'); const ctx = canvas.getContext('2d'); const sc = 20;
+recap = {}; totalM2 = 0; let totalW = 0, totalH = 0;
+function log(l, q, w, h) { let k = ${l}_${w}x${h}`; if(!recap[k]) recap[k] = {l, w, h, q:0}; recap[k].q += q; }
+ctx.clearRect(0,0,9999,9999);
+
+if(mode==='lineaire') {
+let lines = [];
+document.querySelectorAll('#lignes-container .control-group').forEach(lc => {
+let lw = 0, lh = 0, blocks = [];
+lc.querySelectorAll('.symbole-bloc').forEach(sb => {
+let l=sb.querySelector('.s-lettre').value.toUpperCase(), w=parseFloat(sb.querySelector('.s-w').value), h=parseFloat(sb.querySelector('.s-h').value), q=parseInt(sb.querySelector('.s-q').value), sDir=sb.querySelector('.s-dir').value;
+if(l && q>0) {
+let bTotalW = (sDir === 'H') ? w * q : w; let bTotalH = (sDir === 'V') ? h * q : h;
+blocks.push({l, w, h, q, sDir, bTotalW, bTotalH});
+log(l,q,w,h); lw += bTotalW; lh = Math.max(lh, bTotalH);
+}
+});
+lines.push({blocks, lw, lh}); totalW = Math.max(totalW, lw); totalH += lh;
+});
+canvas.width = (totalW || 10) * sc; canvas.height = (totalH || 10) * sc;
+ctx.fillStyle = "#111"; ctx.fillRect(0,0, canvas.width, canvas.height);
+let curY = 0;
+lines.forEach(line => {
+let curX = (totalW - line.lw) / 2;
+line.blocks.forEach(b => {
+let sX = curX; let sY = curY;
+for(let i=0; i<b.q; i++) {
+let drawX = sX + (b.sDir === 'H' ? ib.w : 0); let drawY = sY + (b.sDir === 'V' ? ib.h : 0);
+if(modeles[b.l]) ctx.drawImage(modeles[b.l].img, drawXsc, drawYsc, b.wsc, b.hsc);
+else { ctx.strokeStyle = 'cyan'; ctx.strokeRect(drawXsc, drawYsc, b.wsc, b.hsc); ctx.fillStyle="#fff"; ctx.fillText(b.l, drawXsc+2, drawYsc+10); }
+}
+curX += b.bTotalW;
+});
+curY += line.lh;
+});
+} else {
+let cMod = document.getElementById('c-mod').value.toUpperCase(), cw = parseFloat(document.getElementById('c-w').value), ch = parseFloat(document.getElementById('c-h').value);
+let cadres = [];
+document.querySelectorAll('#cadres-container .control-group').forEach(cc => { cadres.push({ seq: cc.querySelector('.c-seq').value.toUpperCase().split(' '), w: parseFloat(cc.querySelector('.c-w').value), h: parseFloat(cc.querySelector('.c-h').value) }); });
+totalW = cw; totalH = ch; cadres.forEach(c => { totalW += c.w2; totalH += c.h2; });
+canvas.width = totalWsc; canvas.height = totalHsc; let cX = canvas.width/2, cY = canvas.height/2;
+log(cMod, 1, cw, ch);
+if(modeles[cMod]) ctx.drawImage(modeles[cMod].img, cX-(cw/2)sc, cY-(ch/2)sc, cwsc, chsc);
+let curInnerW = cw, curInnerH = ch;
+cadres.forEach(c => {
+let ringW = curInnerW + c.w2, ringH = curInnerH + c.h2;
+let nx = Math.round(ringW / c.w), ny = Math.round(ringH / c.h);
+let pts = []; let sX = cX - (ringW/2)sc, sY = cY - (ringH/2)sc;
+for(let i=0; i<nx; i++) pts.push({x: sX + ic.wsc, y: sY});
+for(let i=1; i<ny-1; i++) pts.push({x: sX + (nx-1)c.wsc, y: sY + ic.hsc});
+for(let i=nx-1; i>=0; i--) pts.push({x: sX + ic.wsc, y: sY + (ny-1)c.hsc});
+for(let i=ny-2; i>=1; i--) pts.push({x: sX, y: sY + ic.hsc});
+pts.forEach((p, idx) => { let l = c.seq[idx % c.seq.length]; log(l, 1, c.w, c.h); if(modeles[l]) ctx.drawImage(modeles[l].img, p.x, p.y, c.wsc, c.hsc); });
+curInnerW = ringW; curInnerH = ringH;
+});
+}
+updateRapport(totalW, totalH);
+}
+
+function updateRapport(w, h) {
+totalM2 = (w*h)/10000;
+let html = <b style="color:var(--cyan);"&gt;MUR :${w.toFixed(1)} x {totalM2.toFixed(2)} m²)<br><br><b style="color:var(--magenta);">INVENTAIRE :</b><br>; let totalQ = 0; for(let k in recap) { let it = recap[k]; html +=- [{it.w}x{it.q}</b><br>; totalQ += it.q; } let cP = totalM2 * 21, cB = totalM2 * 15; html +=<br>Total: {cP.toFixed(2)}€<br>Bois: {(cP+cB).toFixed(2)}€</b>; document.getElementById('rapport-data').innerHTML = html; document.getElementById('dim-view').innerText ={h.toFixed(1)} cm`;
+}
+
+function exporterImage() { let l = document.createElement('a'); l.download = getProjectName() + '_PLAN.jpg'; l.href = document.getElementById('c').toDataURL('image/jpeg', 1.0); l.click(); }
+function exporterDevis() {
+let canv = document.createElement('canvas'); canv.width = 600; canv.height = 800; let tx = canv.getContext('2d');
+tx.fillStyle='#020208'; tx.fillRect(0,0,600,800); tx.fillStyle='#f1c40f'; tx.font='bold 24px monospace';
+tx.fillText("DEVIS : " + getProjectName().toUpperCase(), 30, 50); tx.fillStyle='#fff'; tx.font='16px monospace';
+let lines = document.getElementById('rapport-data').innerText.split('\n'); let y = 100;
+lines.forEach((l) => { if(l.trim() !== '') { tx.fillText(l, 30, y); y += 25; } });
+let link = document.createElement('a'); link.download = getProjectName() + '_DEVIS.png'; link.href = canv.toDataURL(); link.click();
+}
+
+let firstLine = ajouterLigne();
+ajouterSym(firstLine.querySelector('.blocs-container'));
+
+// 🥷 INVOCATION DU SERVICE WORKER (Magie PWA)
+if ('serviceWorker' in navigator) {
+window.addEventListener('load', () => {
+navigator.serviceWorker.register('./sw.js').then(reg => {
+console.log('Sceau PWA activé !', reg.scope);
+}).catch(err => {
+console.log('Erreur du Sceau PWA :', err);
+});
+});
+}
+</script>
+</body>
+</html>
