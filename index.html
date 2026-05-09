@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V22.1</title>
+    <title>Daguerre OS V23.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,14 +12,12 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: #fff; font-family: monospace; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        /* --- LAYOUT STRUCTURE --- */
         #header { padding: 10px; text-align: center; border-bottom: 1px solid var(--jaune); background: var(--panel); flex-shrink: 0; padding-top: env(safe-area-inset-top); }
         #header h1 { margin: 0; font-size: 18px; color: var(--jaune); }
         #header small { color: #555; font-size: 10px; }
 
         #settings-area { flex: 1; overflow-y: auto; background: var(--panel); padding: 15px; padding-bottom: 120px; }
         
-        /* --- UI COMPONENTS --- */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .section-title { color: var(--magenta); font-size: 14px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
@@ -36,13 +34,23 @@
         .btn-icon { background: #222; border: 1px solid #444; color: #fff; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 12px; cursor: pointer;}
         .btn-red { background: #421; color: var(--magenta); border-color: var(--magenta); }
 
-        /* --- TABS BAR --- */
         #tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #000; display: flex; border-top: 1px solid #333; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
         .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: #555; font-size: 9px; font-weight: bold; cursor: pointer;}
         .tab-btn.active { color: var(--cyan); border-top: 3px solid var(--cyan); background: rgba(0,255,255,0.05); }
 
         /* --- FORGE SPECIFIC --- */
-        .block-item { background: #111; padding: 10px; border-radius: 4px; border: 1px solid #333; margin-top: 10px; }
+        .blocs-container { counter-reset: seq-counter; display: flex; flex-direction: column; gap: 8px; }
+        .block-item { background: #111; border-radius: 4px; border: 1px solid #333; overflow: hidden; margin-top: 5px; }
+        
+        /* Titre dynamique de séquence */
+        .seq-header { background: #1a1a24; padding: 8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .seq-title { color: var(--jaune); font-weight: bold; font-size: 12px; display: flex; align-items: center; }
+        .seq-title::before { counter-increment: seq-counter; content: counter(seq-counter) " - "; color: #888; margin-right: 4px; }
+        .seq-val { color: var(--jaune); }
+
+        .seq-content { padding: 10px; }
+        .line-content { padding-top: 10px; }
+
         .label-sm { color: #888; font-size: 9px; display: block; margin-bottom: 2px; }
         .quick-sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 10px 0; }
         .qs-btn { background: #222; border: 1px solid #444; color: #fff; font-size: 10px; padding: 6px 0; border-radius: 3px; cursor: pointer;}
@@ -62,7 +70,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V22.1</small>
+        <small>ÉDITION NUCLÉAIRE V23.0</small>
     </div>
 
     <div id="settings-area">
@@ -91,7 +99,7 @@
 
             <!-- Area Concentrique -->
             <div id="area-concentrique" style="display:none;">
-                <div class="box">
+                <div class="box cadre-item">
                     <span class="label-sm">Lettre(s) du Cœur</span>
                     <input type="text" id="c-mod" value="A" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
                     <div class="quick-sizes" style="grid-template-columns: repeat(5, 1fr);">
@@ -121,7 +129,6 @@
                 </div>
             </div>
 
-            <!-- LES 2 BOUTONS DE FORGE -->
             <div class="row" style="margin-top: 30px;">
                 <button class="btn" style="background: #444; color: #fff; flex: 1;" onclick="render(false)">⚡ RAPIDE</button>
                 <button class="btn" style="background: var(--jaune); color: #000; flex: 1.5;" onclick="render(true)">💎 TRIPLE HD</button>
@@ -148,7 +155,7 @@
         </div>
     </div>
 
-    <!-- 👁️ L'ŒIL DU FAUCON (MODAL RENDU) -->
+    <!-- 👁️ L'ŒIL DU FAUCON -->
     <div id="render-modal">
         <div id="render-header">
             <span id="render-dim">0 x 0 cm</span>
@@ -187,10 +194,8 @@
 
         // --- GESTION DES DIMENSIONS ---
         function setCoeurDim(v) { document.getElementById('c-w').value = v; document.getElementById('c-h').value = v; }
-        
-        // 🥷 FIX V22.1 : Inversion de l'ordre de recherche pour cibler LE BON bloc de séquence !
         function setDim(btn, val) {
-            let container = btn.closest('.block-item') || btn.closest('.box');
+            let container = btn.closest('.block-item') || btn.closest('.cadre-item');
             let wInput = container.querySelector('.s-w') || container.querySelector('.c-w');
             let hInput = container.querySelector('.s-h') || container.querySelector('.c-h');
             if(wInput) wInput.value = val;
@@ -218,6 +223,25 @@
             e.target.value = '';
         }
 
+        // --- 🪗 GESTION ACCORDÉON ULTRA SÉCURISÉE ---
+        function toggleLine(btn) {
+            let content = btn.closest('.ligne-item').querySelector('.line-content');
+            if (content.style.display === 'none') {
+                content.style.display = 'block'; btn.innerText = '🔽';
+            } else {
+                content.style.display = 'none'; btn.innerText = '▶️';
+            }
+        }
+
+        function toggleSeq(btn) {
+            let content = btn.closest('.block-item').querySelector('.seq-content');
+            if (content.style.display === 'none') {
+                content.style.display = 'block'; btn.innerText = '🔽';
+            } else {
+                content.style.display = 'none'; btn.innerText = '▶️';
+            }
+        }
+
         // --- GESTION LIGNES & SEQUENCES ---
         let ligneCounter = 0;
         function ajouterLigne() {
@@ -225,7 +249,8 @@
             let d = document.createElement('div');
             d.className = 'box ligne-item';
             d.innerHTML = `
-                <div class="row">
+                <div class="row" style="background:#0a0a15; margin:-10px -10px 10px -10px; padding:10px; border-bottom:1px solid #333;">
+                    <button class="btn-icon" style="width:28px; height:28px;" onclick="toggleLine(this)">🔽</button>
                     <input type="text" class="editable-name" value="LIGNE ${ligneCounter}">
                     <div style="display:flex; gap:4px;">
                         <button class="btn-icon" onclick="move(this.closest('.ligne-item'), 'up')">↑</button>
@@ -234,40 +259,59 @@
                         <button class="btn-icon btn-red" onclick="this.closest('.ligne-item').remove()">❌</button>
                     </div>
                 </div>
-                <div class="blocs-container"></div>
-                <button class="btn" style="background:var(--vert); color:#000; padding:8px; margin-top:8px;" onclick="ajouterSequence(this.previousElementSibling)">+ AJOUTER SÉQUENCE</button>
+                <div class="line-content">
+                    <div class="blocs-container"></div>
+                    <button class="btn" style="background:var(--vert); color:#000; padding:8px; margin-top:8px;" onclick="ajouterSequence(this.previousElementSibling)">+ AJOUTER SÉQUENCE</button>
+                </div>
             `;
             document.getElementById('lignes-container').appendChild(d);
             ajouterSequence(d.querySelector('.blocs-container'));
         }
 
-        function ajouterSequence(cont, seq="A") {
+        // 🥷 FIX V23 : Séquences Rétractables + Insertion n'importe où !
+        function ajouterSequence(cont, seq="A", insertAfter = null) {
             let b = document.createElement('div');
             b.className = 'block-item';
             b.innerHTML = `
-                <div class="row">
-                    <div style="flex:1"><span class="label-sm">Séquence (ex: A B)</span><input type="text" class="s-seq" value="${seq}" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;"></div>
-                    <div style="display:flex; gap:4px; margin-top:12px;">
-                        <button class="btn-icon" style="height:32px" onclick="move(this.closest('.block-item'), 'up')">↑</button>
-                        <button class="btn-icon" style="height:32px" onclick="move(this.closest('.block-item'), 'down')">↓</button>
-                        <button class="btn-icon" style="height:32px" onclick="duplicate(this.closest('.block-item'))">👯</button>
-                        <button class="btn-icon btn-red" style="height:32px" onclick="this.closest('.block-item').remove()">❌</button>
+                <div class="seq-header">
+                    <div class="seq-title">
+                        <button class="btn-icon" style="width:24px; height:24px; margin-right:8px; background:#000;" onclick="toggleSeq(this)">🔽</button>
+                        <span class="seq-val">${seq}</span>
+                    </div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.block-item'), 'up')">↑</button>
+                        <button class="btn-icon" style="height:28px; width:28px;" onclick="move(this.closest('.block-item'), 'down')">↓</button>
+                        <!-- Le Bouton Magique pour insérer juste en dessous -->
+                        <button class="btn-icon" style="height:28px; width:28px; background:var(--vert); color:#000;" onclick="ajouterSequence(this.closest('.blocs-container'), 'A', this.closest('.block-item'))">➕</button>
+                        <button class="btn-icon" style="height:28px; width:28px;" onclick="duplicate(this.closest('.block-item'))">👯</button>
+                        <button class="btn-icon btn-red" style="height:28px; width:28px;" onclick="this.closest('.block-item').remove()">❌</button>
                     </div>
                 </div>
-                <div class="quick-sizes">
-                    <button class="qs-btn" onclick="setDim(this, 2.5)">2.5x2.5</button>
-                    <button class="qs-btn" onclick="setDim(this, 5)">5x5</button>
-                    <button class="qs-btn" onclick="setDim(this, 7.5)">7.5x7.5</button>
-                    <button class="qs-btn" onclick="setDim(this, 10)">10x10</button>
-                </div>
-                <div class="row">
-                    <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" style="width:100%; text-align:center;"></div>
-                    <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" style="width:100%; text-align:center;"></div>
-                    <div style="flex:1"><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" style="width:100%; text-align:center;"></div>
-                    <button class="btn-icon" style="margin-top:12px; height:32px; width:40px; font-size:16px;" onclick="this.innerText = this.innerText==='➡️'?'⬇️':'➡️'">➡️</button>
+                <div class="seq-content">
+                    <div class="row">
+                        <div style="flex:1"><span class="label-sm">Séquence (ex: A B)</span>
+                        <input type="text" class="s-seq" value="${seq}" oninput="this.closest('.block-item').querySelector('.seq-val').innerText = this.value || '?'" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
+                        </div>
+                    </div>
+                    <div class="quick-sizes">
+                        <button class="qs-btn" onclick="setDim(this, 2.5)">2.5</button>
+                        <button class="qs-btn" onclick="setDim(this, 5)">5</button>
+                        <button class="qs-btn" onclick="setDim(this, 7.5)">7.5</button>
+                        <button class="qs-btn" onclick="setDim(this, 10)">10</button>
+                    </div>
+                    <div class="row">
+                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" style="width:100%; text-align:center;"></div>
+                        <button class="btn-icon" style="margin-top:12px; height:32px; width:40px; font-size:16px;" onclick="this.innerText = this.innerText==='➡️'?'⬇️':'➡️'">➡️</button>
+                    </div>
                 </div>
             `;
-            cont.appendChild(b);
+            if (insertAfter) {
+                cont.insertBefore(b, insertAfter.nextSibling);
+            } else {
+                cont.appendChild(b);
+            }
         }
 
         // --- GESTION CADRES ---
@@ -292,10 +336,10 @@
                     <input type="text" class="c-seq" value="B C" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
                 </div>
                 <div class="quick-sizes">
-                    <button class="qs-btn" onclick="setDim(this, 2.5)">2.5x2.5</button>
-                    <button class="qs-btn" onclick="setDim(this, 5)">5x5</button>
-                    <button class="qs-btn" onclick="setDim(this, 7.5)">7.5x7.5</button>
-                    <button class="qs-btn" onclick="setDim(this, 10)">10x10</button>
+                    <button class="qs-btn" onclick="setDim(this, 2.5)">2.5</button>
+                    <button class="qs-btn" onclick="setDim(this, 5)">5</button>
+                    <button class="qs-btn" onclick="setDim(this, 7.5)">7.5</button>
+                    <button class="qs-btn" onclick="setDim(this, 10)">10</button>
                 </div>
                 <div class="row">
                     <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="10" style="width:100%; text-align:center;"></div>
