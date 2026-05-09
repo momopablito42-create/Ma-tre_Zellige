@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V20.0</title>
+    <title>Daguerre OS V20.1</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,12 +22,13 @@
         
         #controls-bar { position: absolute; top: 5px; right: 5px; display: flex; gap: 5px; z-index: 10; align-items: center; }
         .zoom-btn { background: rgba(255, 0, 85, 0.7); border: none; color: white; width: 26px; height: 26px; border-radius: 13px; font-weight: bold; cursor: pointer; }
-        .full-btn { background: var(--cyan); color: #000; font-size: 10px; font-weight: bold; padding: 0 10px; height: 26px; border-radius: 13px; border: none; }
+        .full-btn { background: var(--cyan); color: #000; font-size: 10px; font-weight: bold; padding: 0 10px; height: 26px; border-radius: 13px; border: none; cursor: pointer;}
 
         #canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; overflow: auto; padding: 20px; }
         canvas { background: #111; border: 1px solid #333; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
 
-        #settings-area { flex: 1.2; overflow-y: auto; background: var(--panel); padding: 15px; padding-bottom: 80px; }
+        /* FIX SCROLL: Padding-bottom immense pour contrer la barre d'onglets ! */
+        #settings-area { flex: 1.2; overflow-y: auto; background: var(--panel); padding: 15px; padding-bottom: 120px; }
         
         /* --- UI COMPONENTS --- */
         .tab-content { display: none; }
@@ -40,34 +41,29 @@
         input, select { background: #000; color: var(--cyan); border: 1px solid #444; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; }
         .editable-name { background: transparent; border: none; border-bottom: 1px solid var(--cyan); color: var(--cyan); font-weight: bold; width: 60%; }
 
-        .btn { border: none; border-radius: 4px; padding: 10px; font-weight: bold; font-family: monospace; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 12px; }
-        .btn-mini { flex: 1; padding: 8px; background: var(--gray); color: #fff; }
+        .btn { border: none; border-radius: 4px; padding: 12px; font-weight: bold; font-family: monospace; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 12px; }
+        .btn-mini { flex: 1; padding: 10px; background: var(--gray); color: #fff; }
         .btn-mini.active { background: var(--cyan); color: #000; }
-        .btn-icon { background: #222; border: 1px solid #444; color: #fff; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 12px; }
+        .btn-icon { background: #222; border: 1px solid #444; color: #fff; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 12px; cursor: pointer;}
         .btn-red { background: #421; color: var(--magenta); border-color: var(--magenta); }
 
-        /* --- NUMBER CONTROLS --- */
-        .num-row { display: flex; align-items: center; background: #000; border: 1px solid #444; border-radius: 4px; overflow: hidden; width: 90px; }
-        .num-btn { background: #222; color: #fff; border: none; width: 25px; height: 28px; font-weight: bold; }
-        .num-input { width: 40px !important; text-align: center; border: none !important; padding: 0 !important; }
-
         /* --- TABS BAR --- */
-        #tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #000; display: flex; border-top: 1px solid #333; z-index: 100; }
-        .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: #555; font-size: 9px; font-weight: bold; }
+        #tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #000; display: flex; border-top: 1px solid #333; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+        .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: #555; font-size: 9px; font-weight: bold; cursor: pointer;}
         .tab-btn.active { color: var(--cyan); border-top: 3px solid var(--cyan); background: rgba(0,255,255,0.05); }
 
         /* --- FORGE SPECIFIC --- */
         .block-item { background: #111; padding: 10px; border-radius: 4px; border: 1px solid #333; margin-top: 10px; }
         .label-sm { color: #888; font-size: 9px; display: block; margin-bottom: 2px; }
         .quick-sizes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 10px 0; }
-        .qs-btn { background: #222; border: 1px solid #444; color: #fff; font-size: 9px; padding: 5px 0; border-radius: 3px; }
+        .qs-btn { background: #222; border: 1px solid #444; color: #fff; font-size: 9px; padding: 6px 0; border-radius: 3px; cursor: pointer;}
     </style>
 </head>
 <body>
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V20.0</small>
+        <small>ÉDITION NUCLÉAIRE V20.1</small>
     </div>
 
     <div id="workspace">
@@ -111,7 +107,7 @@
             <div id="area-concentrique" style="display:none;">
                 <div class="box">
                     <span class="label-sm">Lettre(s) du Cœur</span>
-                    <input type="text" id="c-mod" value="A" style="width: 100%; color: var(--jaune); font-weight: bold;">
+                    <input type="text" id="c-mod" value="A" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
                     <div class="quick-sizes">
                         <button class="qs-btn" onclick="setCoeurDim(50)">50x50</button>
                         <button class="qs-btn" onclick="setCoeurDim(40)">40x40</button>
@@ -120,8 +116,8 @@
                         <button class="qs-btn" onclick="setCoeurDim(10)">10x10</button>
                     </div>
                     <div class="row" style="margin-top: 5px;">
-                        <div><span class="label-sm">Larg.</span><input type="number" id="c-w" value="20" style="width:60px;"></div>
-                        <div><span class="label-sm">Haut.</span><input type="number" id="c-h" value="20" style="width:60px;"></div>
+                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" id="c-w" value="20" style="text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" id="c-h" value="20" style="text-align:center;"></div>
                     </div>
                 </div>
                 <div id="cadres-container"></div>
@@ -132,9 +128,9 @@
             <div id="area-fractale" style="display:none;">
                 <div class="box">
                     <span class="label-sm">Modèle Cœur</span><input type="text" id="f-mod" value="A">
-                    <span class="label-sm">Dimensions</span><input type="number" id="f-size" value="20">
-                    <span class="label-sm">Séquence Frise (A B)</span><input type="text" id="f-seq" value="B C">
-                    <span class="label-sm">Itérations</span><input type="number" id="f-iter" value="5">
+                    <span class="label-sm" style="margin-top:10px;">Dimensions Cœur (cm)</span><input type="number" id="f-size" value="20">
+                    <span class="label-sm" style="margin-top:10px;">Séquence Frise (A B)</span><input type="text" id="f-seq" value="B C">
+                    <span class="label-sm" style="margin-top:10px;">Itérations (Nombre de cadres)</span><input type="number" id="f-iter" value="5">
                     <button class="btn" style="background: var(--vert); color: #000; margin-top: 15px;" onclick="genererFractale()">⚡ GÉNÉRER FRACTALE</button>
                 </div>
             </div>
@@ -163,19 +159,20 @@
     </div>
 
     <div id="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('tab-armurerie', this)"><span>⚔️</span>ARSENAL</button>
-        <button class="tab-btn" onclick="switchTab('tab-forge', this)"><span>⛩️</span>FORGE</button>
-        <button class="tab-btn" onclick="switchTab('tab-finition', this)"><span>💎</span>FINITION</button>
-        <button class="tab-btn" onclick="switchTab('tab-devis', this)"><span>📊</span>RAPPORT</button>
+        <button class="tab-btn active" onclick="switchTab('tab-armurerie', this)"><span style="font-size:16px;">⚔️</span>ARSENAL</button>
+        <button class="tab-btn" onclick="switchTab('tab-forge', this)"><span style="font-size:16px;">⛩️</span>FORGE</button>
+        <button class="tab-btn" onclick="switchTab('tab-finition', this)"><span style="font-size:16px;">💎</span>FINITION</button>
+        <button class="tab-btn" onclick="switchTab('tab-devis', this)"><span style="font-size:16px;">📊</span>RAPPORT</button>
     </div>
 
     <script>
         let modeles = {}, letterIdx = 65, mode = 'lineaire', zoom = 1.0;
 
+        // FIX PLEIN ECRAN : Vérification sur le display de settings-area
         function toggleSidebar() {
             const area = document.getElementById('settings-area');
             const work = document.getElementById('workspace');
-            if(work.style.flex === "1") {
+            if(area.style.display === "none") {
                 work.style.flex = "0.8";
                 area.style.display = "block";
                 document.querySelector('.full-btn').innerText = "🔽 PLEIN ÉCRAN";
@@ -222,6 +219,7 @@
                 };
                 r.readAsDataURL(f);
             });
+            e.target.value = '';
         }
 
         // --- GESTION LIGNES & SEQUENCES ---
@@ -241,7 +239,7 @@
                     </div>
                 </div>
                 <div class="blocs-container"></div>
-                <button class="btn" style="background:var(--vert); color:#000; padding:5px; margin-top:8px;" onclick="ajouterSequence(this.previousElementSibling)">+ AJOUTER SÉQUENCE</button>
+                <button class="btn" style="background:var(--vert); color:#000; padding:8px; margin-top:8px;" onclick="ajouterSequence(this.previousElementSibling)">+ AJOUTER SÉQUENCE</button>
             `;
             document.getElementById('lignes-container').appendChild(d);
             ajouterSequence(d.querySelector('.blocs-container'));
@@ -252,20 +250,70 @@
             b.className = 'block-item';
             b.innerHTML = `
                 <div class="row">
-                    <div style="flex:1"><span class="label-sm">Séquence (ex: A B)</span><input type="text" class="s-seq" value="${seq}" style="width:100%; color:var(--jaune); font-weight:bold;"></div>
+                    <div style="flex:1"><span class="label-sm">Séquence (ex: A B)</span><input type="text" class="s-seq" value="${seq}" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;"></div>
                     <div style="display:flex; gap:4px; margin-top:12px;">
-                        <button class="btn-icon" style="height:24px" onclick="move(this.parentNode.parentNode.parentNode, 'up')">↑</button>
-                        <button class="btn-icon btn-red" style="height:24px" onclick="this.parentNode.parentNode.parentNode.remove()">❌</button>
+                        <button class="btn-icon" style="height:32px" onclick="move(this.parentNode.parentNode.parentNode, 'up')">↑</button>
+                        <button class="btn-icon btn-red" style="height:32px" onclick="this.parentNode.parentNode.parentNode.remove()">❌</button>
                     </div>
                 </div>
                 <div class="row">
-                    <div><span class="label-sm">L</span><input type="number" class="s-w" value="10" style="width:45px"></div>
-                    <div><span class="label-sm">H</span><input type="number" class="s-h" value="10" style="width:45px"></div>
-                    <div><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" style="width:45px"></div>
-                    <button class="btn-icon" style="margin-top:12px;" onclick="this.innerText = this.innerText==='➡️'?'⬇️':'➡️'">➡️</button>
+                    <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" style="width:100%; text-align:center;"></div>
+                    <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" style="width:100%; text-align:center;"></div>
+                    <div style="flex:1"><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" style="width:100%; text-align:center;"></div>
+                    <button class="btn-icon" style="margin-top:12px; height:32px; width:40px; font-size:16px;" onclick="this.innerText = this.innerText==='➡️'?'⬇️':'➡️'">➡️</button>
                 </div>
             `;
             cont.appendChild(b);
+        }
+
+        // --- GESTION CADRES ---
+        let cadreCounter = 0;
+        function ajouterCadre() {
+            cadreCounter++;
+            let d = document.createElement('div');
+            d.className = 'box cadre-item';
+            d.style.borderColor = "var(--magenta)";
+            d.innerHTML = `
+                <div class="row">
+                    <input type="text" class="editable-name" value="BORDURE ${cadreCounter}" style="color:var(--magenta); border-color:var(--magenta);">
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn-icon" onclick="move(this.parentNode.parentNode.parentNode, 'up')">↑</button>
+                        <button class="btn-icon" onclick="move(this.parentNode.parentNode.parentNode, 'down')">↓</button>
+                        <button class="btn-icon" onclick="duplicate(this.parentNode.parentNode.parentNode)">📋</button>
+                        <button class="btn-icon btn-red" onclick="this.parentNode.parentNode.parentNode.remove()">❌</button>
+                    </div>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <span class="label-sm">Séquence (ex: A B C)</span>
+                    <input type="text" class="c-seq" value="B C" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
+                </div>
+                <div class="row">
+                    <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="10" style="width:100%; text-align:center;"></div>
+                    <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="10" style="width:100%; text-align:center;"></div>
+                </div>
+            `;
+            document.getElementById('cadres-container').appendChild(d);
+        }
+
+        function genererFractale() {
+            setMode('concentrique');
+            document.getElementById('c-mod').value = document.getElementById('f-mod').value;
+            document.getElementById('c-w').value = document.getElementById('f-size').value;
+            document.getElementById('c-h').value = document.getElementById('f-size').value;
+            let seq = document.getElementById('f-seq').value.split(' ').filter(Boolean);
+            let n = parseInt(document.getElementById('f-iter').value);
+            document.getElementById('cadres-container').innerHTML = "";
+            let curSize = parseFloat(document.getElementById('f-size').value);
+            for(let i=0; i<n; i++) {
+                curSize = curSize / seq.length;
+                let d = ajouterCadre();
+                let lastCadre = document.getElementById('cadres-container').lastElementChild;
+                lastCadre.querySelector('.editable-name').value = `FRACTALE ${i+1}`;
+                lastCadre.querySelector('.c-seq').value = seq.join(' ');
+                lastCadre.querySelector('.c-w').value = curSize;
+                lastCadre.querySelector('.c-h').value = curSize;
+            }
+            render();
         }
 
         function move(el, dir) {
@@ -274,7 +322,7 @@
         }
         function duplicate(el) { let c = el.cloneNode(true); el.parentNode.insertBefore(c, el.nextSibling); }
 
-        // --- RENDERER 2.0 ---
+        // --- RENDERER 2.1 ---
         function render() {
             const canvas = document.getElementById('c');
             const ctx = canvas.getContext('2d');
@@ -288,9 +336,10 @@
                     let lw = 0, lh = 0, blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
                         let sequence = bl.querySelector('.s-seq').value.toUpperCase().split(' ').filter(Boolean);
-                        let w = parseFloat(bl.querySelector('.s-w').value), h = parseFloat(bl.querySelector('.s-h').value), q = parseInt(bl.querySelector('.s-q').value);
+                        let w = parseFloat(bl.querySelector('.s-w').value) || 10, h = parseFloat(bl.querySelector('.s-h').value) || 10, q = parseInt(bl.querySelector('.s-q').value) || 1;
                         let dir = bl.querySelector('.btn-icon:last-child').innerText === '➡️' ? 'H' : 'V';
-                        if(sequence.length && q > 0) {
+                        if(sequence.length === 0) sequence = ['A'];
+                        if(q > 0) {
                             let bW = (dir === 'H') ? w * q : w;
                             let bH = (dir === 'V') ? h * q : h;
                             blocks.push({sequence, w, h, q, dir, bW, bH});
@@ -320,8 +369,53 @@
                     curY += line.lh;
                 });
             } else {
-                // Cadres / Fractale (Logique simplifiée pour compatibilité rapide)
-                // [Logique Cadres existante ici...]
+                // FIX CADRES : Le Moteur Concentrique est de retour !
+                let cw = parseFloat(document.getElementById('c-w').value) || 30;
+                let ch = parseFloat(document.getElementById('c-h').value) || 30;
+                let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || 'A';
+                
+                let cadres = [];
+                document.querySelectorAll('#cadres-container .cadre-item').forEach(cc => {
+                    cadres.push({
+                        seq: cc.querySelector('.c-seq').value.toUpperCase().split(' ').filter(Boolean),
+                        w: parseFloat(cc.querySelector('.c-w').value) || 10,
+                        h: parseFloat(cc.querySelector('.c-h').value) || 10
+                    });
+                });
+
+                totalW = cw; totalH = ch;
+                cadres.forEach(c => { totalW += c.w * 2; totalH += c.h * 2; });
+                
+                canvas.width = (totalW || 10) * sc; canvas.height = (totalH || 10) * sc;
+                ctx.fillStyle = "#111"; ctx.fillRect(0,0, canvas.width, canvas.height);
+
+                let tiles = [];
+                tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
+                
+                let currentTotalW = cw, currentTotalH = ch;
+                
+                cadres.forEach(c => {
+                    let bdW = c.w, bdH = c.h;
+                    let seq = c.seq.length > 0 ? c.seq : ['A'];
+                    let newTotalW = currentTotalW + bdW * 2;
+                    let newTotalH = currentTotalH + bdH * 2;
+                    let shiftX = (totalW - newTotalW)/2;
+                    let shiftY = (totalH - newTotalH)/2;
+                    
+                    let Nx = Math.max(1, Math.round(newTotalW / bdW)); let adjW = newTotalW / Nx; 
+                    let Ny = Math.max(1, Math.round(currentTotalH / bdH)); let adjH = currentTotalH / Ny;
+                    
+                    let sIdx = 0; const getL = () => seq[sIdx++ % seq.length];
+
+                    for(let i=0; i<Nx; i++) tiles.push({ x: shiftX + i*adjW, y: shiftY, w: adjW, h: bdH, l: getL() });
+                    for(let i=0; i<Ny; i++) tiles.push({ x: shiftX + newTotalW - bdW, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL() });
+                    for(let i=Nx-1; i>=0; i--) tiles.push({ x: shiftX + i*adjW, y: shiftY + newTotalH - bdH, w: adjW, h: bdH, l: getL() });
+                    for(let i=Ny-1; i>=0; i--) tiles.push({ x: shiftX, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL() });
+                    
+                    currentTotalW = newTotalW; currentTotalH = newTotalH;
+                });
+
+                tiles.forEach(t => drawTile(ctx, t.l, t.x * sc, t.y * sc, t.w * sc, t.h * sc));
             }
             document.getElementById('workspace-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm`;
         }
@@ -330,13 +424,19 @@
             if(modeles[char]) {
                 ctx.drawImage(modeles[char].img, x, y, w, h);
             } else {
-                ctx.strokeStyle = 'cyan'; ctx.strokeRect(x, y, w, h);
-                ctx.fillStyle = "#fff"; ctx.font = `${h/2}px monospace`;
-                ctx.fillText(char, x + w/4, y + h/1.5);
+                // Design Cyber-Ninja pour les blocs vides
+                ctx.strokeStyle = 'cyan'; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
+                ctx.fillStyle = "rgba(241, 196, 15, 0.15)"; ctx.fillRect(x, y, w, h);
+                ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(10, h/2.5)}px monospace`;
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillText(char, x + w/2, y + h/2);
             }
         }
 
+        // Init
         ajouterLigne();
+        ajouterCadre();
     </script>
 </body>
 </html>
+
