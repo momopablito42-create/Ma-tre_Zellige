@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V22.0</title>
+    <title>Daguerre OS V22.1</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -62,7 +62,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V22.0</small>
+        <small>ÉDITION NUCLÉAIRE V22.1</small>
     </div>
 
     <div id="settings-area">
@@ -187,8 +187,10 @@
 
         // --- GESTION DES DIMENSIONS ---
         function setCoeurDim(v) { document.getElementById('c-w').value = v; document.getElementById('c-h').value = v; }
+        
+        // 🥷 FIX V22.1 : Inversion de l'ordre de recherche pour cibler LE BON bloc de séquence !
         function setDim(btn, val) {
-            let container = btn.closest('.box') || btn.closest('.block-item');
+            let container = btn.closest('.block-item') || btn.closest('.box');
             let wInput = container.querySelector('.s-w') || container.querySelector('.c-w');
             let hInput = container.querySelector('.s-h') || container.querySelector('.c-h');
             if(wInput) wInput.value = val;
@@ -303,6 +305,27 @@
             document.getElementById('cadres-container').appendChild(d);
         }
 
+        function genererFractale() {
+            setMode('concentrique');
+            document.getElementById('c-mod').value = document.getElementById('f-mod').value;
+            document.getElementById('c-w').value = document.getElementById('f-size').value;
+            document.getElementById('c-h').value = document.getElementById('f-size').value;
+            let seq = document.getElementById('f-seq').value.split(' ').filter(Boolean);
+            let n = parseInt(document.getElementById('f-iter').value);
+            document.getElementById('cadres-container').innerHTML = "";
+            let curSize = parseFloat(document.getElementById('f-size').value);
+            for(let i=0; i<n; i++) {
+                curSize = curSize / seq.length;
+                let d = ajouterCadre();
+                let lastCadre = document.getElementById('cadres-container').lastElementChild;
+                lastCadre.querySelector('.editable-name').value = `FRACTALE ${i+1}`;
+                lastCadre.querySelector('.c-seq').value = seq.join(' ');
+                lastCadre.querySelector('.c-w').value = curSize;
+                lastCadre.querySelector('.c-h').value = curSize;
+            }
+            render(false);
+        }
+
         function move(el, dir) {
             if(dir==='up' && el.previousElementSibling) el.parentNode.insertBefore(el, el.previousElementSibling);
             if(dir==='down' && el.nextElementSibling) el.parentNode.insertBefore(el.nextElementSibling, el);
@@ -310,7 +333,6 @@
         
         function duplicate(el) { 
             let clone = el.cloneNode(true); 
-            // Fix: Récupérer les valeurs tapées par l'utilisateur
             let origInputs = el.querySelectorAll('input, select');
             let cloneInputs = clone.querySelectorAll('input, select');
             for(let i=0; i<origInputs.length; i++) {
@@ -379,7 +401,6 @@
             const canvas = document.getElementById('c');
             const ctx = canvas.getContext('2d');
             
-            // LA MAGIE DES 2 BOUTONS : Rapide = 15px/cm (1x), HD = 40px/cm (x2 ou x3 retina)
             const baseScale = isHD ? 40 : 15; 
             const dpr = isHD ? (window.devicePixelRatio || 2) : 1; 
 
@@ -522,3 +543,4 @@
     </script>
 </body>
 </html>
+
