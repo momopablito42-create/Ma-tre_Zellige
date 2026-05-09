@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daguerre-forge-v19-1';
+const CACHE_NAME = 'daguerre-mandala-v20';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
