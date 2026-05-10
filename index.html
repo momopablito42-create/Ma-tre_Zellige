@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V51.0</title>
+    <title>Daguerre OS V52.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -75,13 +75,29 @@
         #touch-zone { flex: 1; position: relative; overflow: hidden; touch-action: none; }
         #canvas-wrapper { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
         canvas { background: #111; border: 1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+
+        /* --- 🖨️ STYLES D'IMPRESSION V52 --- */
+        @media print {
+            body, #settings-area { background: #fff !important; color: #000 !important; overflow: visible !important; height: auto !important; }
+            #header, #tab-bar, #tab-armurerie, #tab-forge, #tab-finition, #tab-encadrement, .btn { display: none !important; }
+            #tab-devis { display: block !important; }
+            .box { background: #fff !important; border: 1px solid #000 !important; color: #000 !important; box-shadow: none !important; page-break-inside: avoid; }
+            * { text-shadow: none !important; color: #000 !important; }
+            .label-sm { color: #555 !important; }
+            .section-title { color: #000 !important; border-bottom: 2px solid #000; margin-bottom: 10px; }
+            #rapport-data { border: none !important; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+            th, td { border: 1px solid #aaa; padding: 6px; text-align: left; }
+            th { background: #eee !important; font-weight: bold; }
+            .total-row { font-weight: bold; background: #ddd !important; font-size: 13px; }
+        }
     </style>
 </head>
 <body>
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V51.0</small>
+        <small>ÉDITION NUCLÉAIRE V52.0</small>
     </div>
 
     <div id="settings-area">
@@ -128,6 +144,7 @@
             <div id="area-concentrique" style="display:none;">
                 <div class="box" style="border-color: var(--vert);">
                     <input type="hidden" id="c-j-color" value="#111111">
+                    <input type="hidden" id="c-j-size" value="0">
                     <input type="hidden" id="ext-j-color" value="#111111">
                     <input type="hidden" id="ext-j-size" value="0">
 
@@ -205,11 +222,11 @@
             <div class="box" style="border-color: var(--amethyst);">
                 <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Matériau Noble (textures HD)</span>
                 <select id="frame-material" class="m-sel" style="width:100%; margin-bottom:15px; font-size:14px; background:#000;">
-                    <option value="noyer">🪵 Bois de Noyer (Sombre Vénéré)</option>
-                    <option value="chene">🪵 Bois de Chêne (Clair Royal)</option>
-                    <option value="serpentine">💎 Serpentine (Pierre Verte Marbrée)</option>
-                    <option value="amethyste">💎 Améthyste (Pierre Violette Cristalline)</option>
-                    <option value="obsidienne">🌑 Obsidienne (Pierre Noire Volcanique)</option>
+                    <option value="noyer">🪵 Bois de Noyer (70€/ml)</option>
+                    <option value="chene">🪵 Bois de Chêne (45€/ml)</option>
+                    <option value="serpentine">💎 Serpentine (Placage 20€/ml)</option>
+                    <option value="obsidienne">🌑 Obsidienne (Placage 20€/ml)</option>
+                    <option value="amethyste">💎 Améthyste (Placage 35€/ml)</option>
                 </select>
 
                 <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Épaisseur du Cadre (cm)</span>
@@ -234,17 +251,22 @@
             </div>
 
             <button class="btn" style="background: var(--jaune); color: #000; margin-top: 20px; font-size: 16px; padding:20px;" onclick="exportFramedImage()">🖼️ FORGER & TÉLÉCHARGER LE CHEF-D'ŒUVRE (8K)</button>
-            <p style="font-size:10px; color:#555; text-align:center;">Génération 3D en arrière-plan pour préserver le processeur.</p>
         </div>
 
         <div id="tab-devis" class="tab-content">
             <div class="section-title">📊 Rapport & Devis</div>
             <div class="box">
-                <span class="label-sm">Nom du Projet (Base)</span>
-                <input type="text" id="nom-projet" value="Empire_Daguerre" style="width: 100%; text-align: center;">
+                <span class="label-sm">Nom du Projet pour le Devis</span>
+                <input type="text" id="devis-projet-nom" value="Empire_Daguerre" style="width: 100%; text-align: center; margin-bottom:10px;">
+                <button class="btn" style="background: var(--cyan); color: #000; margin-bottom: 10px; font-size:12px;" onclick="genererDevis()">🔄 RAFRAÎCHIR LE CALCUL</button>
             </div>
-            <div id="rapport-data" class="box" style="background: #000;">Forgez un mur d'abord.</div>
-            <button class="btn" style="background: #444; color: #fff; margin-bottom: 10px; font-size:12px;" onclick="exporterImage()">📸 TÉLÉCHARGER SANS CADRE</button>
+            
+            <div id="rapport-data" class="box" style="background: #111; padding:15px;">
+                <p style="text-align:center; color:#888; font-size:12px;">Appuyez sur "Rafraîchir" pour générer l'inventaire.</p>
+            </div>
+            
+            <button class="btn" style="background: var(--jaune); color: #000; margin-bottom: 10px; font-size:14px;" onclick="window.print()">🖨️ EXPORTER LE DEVIS (PDF)</button>
+            <button class="btn" style="background: #444; color: #fff; margin-bottom: 10px; font-size:12px;" onclick="exporterImage()">📸 TÉLÉCHARGER PLAN SANS CADRE</button>
         </div>
     </div>
 
@@ -287,6 +309,7 @@
             btn.classList.add('active');
             
             if(id === 'tab-finition') renderFinitionList();
+            if(id === 'tab-devis') genererDevis(); // 🥷 V52: Génère le devis en ouvrant l'onglet
         }
 
         function setMode(m) {
@@ -298,7 +321,102 @@
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 🎨 GESTION FINITION V51 ---
+        // --- 📊 GESTION DU RAPPORT & DEVIS V52 ---
+        function genererDevis() {
+            let { tiles, totalW, totalH } = parseWall();
+            let inventory = {};
+            let stickerAreaCm2 = 0;
+            let totalStickers = 0;
+
+            // Analyse de l'Inventaire (avec la taille exacte après grignotage)
+            tiles.forEach(t => {
+                let j = t.j || 0; // Le retrait du joint (grignotage)
+                let actualW = Math.max(0.1, t.w - j);
+                let actualH = Math.max(0.1, t.h - j);
+                
+                let letter = t.l || '?';
+                let key = `Modèle <b>${letter}</b> [${actualW.toFixed(1)} x ${actualH.toFixed(1)} cm]`;
+                
+                if(!inventory[key]) inventory[key] = 0;
+                inventory[key]++;
+                totalStickers++;
+                
+                stickerAreaCm2 += (actualW * actualH);
+            });
+
+            let stickerAreaM2 = stickerAreaCm2 / 10000;
+            let wallAreaM2 = (totalW * totalH) / 10000;
+
+            // Calcul du Cadre
+            let frameSizeCm = parseFloat(document.getElementById('frame-size').value) || 10;
+            let material = document.getElementById('frame-material').value;
+            
+            // Périmètre extérieur du mur avec le cadre
+            let extW = totalW + (frameSizeCm * 2);
+            let extH = totalH + (frameSizeCm * 2);
+            let perimeterM = ((extW + extH) * 2) / 100;
+
+            // Tarifs
+            let framePricePerM = 0;
+            let matName = "";
+            if(material === 'noyer') { framePricePerM = 70; matName = "Bois de Noyer Massif"; }
+            else if(material === 'chene') { framePricePerM = 45; matName = "Bois de Chêne Massif"; }
+            else if(material === 'serpentine') { framePricePerM = 20; matName = "Serpentine (Feuille de Pierre)"; }
+            else if(material === 'obsidienne') { framePricePerM = 20; matName = "Obsidienne (Feuille de Pierre)"; }
+            else if(material === 'amethyste') { framePricePerM = 35; matName = "Améthyste (Placage Précieux)"; }
+
+            let costImpression = stickerAreaM2 * 30;
+            let costPanneau = wallAreaM2 * 15;
+            let costVernis = wallAreaM2 * 8;
+            let costCadre = perimeterM * framePricePerM;
+            let totalTTC = costImpression + costPanneau + costVernis + costCadre;
+
+            let nomProjet = document.getElementById('devis-projet-nom').value || 'Empire_Daguerre';
+            let dateStr = new Date().toLocaleDateString('fr-FR');
+
+            // HTML du Rapport
+            let html = `
+                <div style="text-align:center; border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:15px;">
+                    <h2 style="margin:0; color:var(--jaune); font-size:16px;">DEVIS DE LA FORGE</h2>
+                    <div style="font-size:10px; color:#aaa;">Projet : ${nomProjet} | Date : ${dateStr}</div>
+                </div>
+
+                <div style="margin-bottom:15px;">
+                    <span class="label-sm" style="color:var(--cyan);">DIMENSIONS</span>
+                    <div style="font-size:12px;">Mur (Mosaïque pure) : <b>${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm</b></div>
+                    <div style="font-size:12px;">Avec Encadrement : <b>${extW.toFixed(1)} x ${extH.toFixed(1)} cm</b></div>
+                </div>
+
+                <div style="margin-bottom:15px;">
+                    <span class="label-sm" style="color:var(--cyan);">📦 INVENTAIRE DES SYMBOLES (Total: ${totalStickers})</span>
+                    <table style="width:100%; font-size:11px; color:#ddd; margin-top:5px;">
+                        <tr><th style="text-align:left; color:var(--jaune); padding-bottom:4px;">Symbole [Taille]</th><th style="text-align:right; color:var(--jaune); padding-bottom:4px;">Qté</th></tr>`;
+            
+            for(let key in inventory) {
+                html += `<tr><td style="border-top:1px dashed #333; padding:4px 0;">${key}</td><td style="border-top:1px dashed #333; text-align:right;">${inventory[key]}</td></tr>`;
+            }
+
+            html += `
+                    </table>
+                </div>
+
+                <div style="margin-bottom:10px;">
+                    <span class="label-sm" style="color:var(--cyan);">💸 DÉTAIL DES COÛTS MATÉRIAUX</span>
+                    <table style="width:100%; font-size:11px; color:#ddd; margin-top:5px;">
+                        <tr><td style="padding:4px 0;">Impression Stickers & Encre (30€/m²)</td><td style="text-align:right;">${costImpression.toFixed(2)} €</td></tr>
+                        <tr><td style="padding:4px 0;">Panneau Bois CTBX 6mm (15€/m²)</td><td style="text-align:right;">${costPanneau.toFixed(2)} €</td></tr>
+                        <tr><td style="padding:4px 0;">Vernis Protecteur Spray (8€/m²)</td><td style="text-align:right;">${costVernis.toFixed(2)} €</td></tr>
+                        <tr><td style="padding:4px 0;">Cadre ${matName} (${framePricePerM}€/ml x ${perimeterM.toFixed(2)}ml)</td><td style="text-align:right;">${costCadre.toFixed(2)} €</td></tr>
+                        <tr><td colspan="2" style="border-top:2px solid var(--jaune); padding-top:8px;"></td></tr>
+                        <tr class="total-row" style="color:var(--vert); font-size:14px; font-weight:bold;"><td style="padding-top:4px;">TOTAL ESTIMÉ</td><td style="text-align:right;">${totalTTC.toFixed(2)} €</td></tr>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('rapport-data').innerHTML = html;
+        }
+
+        // --- 🎨 GESTION FINITION ---
         function updateJointSizeUI(targetId, delta) {
             let dispInput = document.getElementById('disp-size-' + targetId);
             if(!dispInput) return;
@@ -306,7 +424,12 @@
             dispInput.value = val.toFixed(1);
             
             if(targetId === 'global') document.getElementById('joint-size').value = val.toFixed(1);
+            else if(targetId === 'coeur') document.getElementById('c-j-size').value = val.toFixed(1);
             else if(targetId === 'exterior') document.getElementById('ext-j-size').value = val.toFixed(1);
+            else if(targetId.startsWith('cadre-')) {
+                let idx = parseInt(targetId.split('-')[1]);
+                document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size').value = val.toFixed(1);
+            }
             updateAllCadresStats();
         }
 
@@ -316,7 +439,12 @@
             if(dispInput) dispInput.value = num.toFixed(1);
             
             if(targetId === 'global') document.getElementById('joint-size').value = num.toFixed(1);
+            else if(targetId === 'coeur') document.getElementById('c-j-size').value = num.toFixed(1);
             else if(targetId === 'exterior') document.getElementById('ext-j-size').value = num.toFixed(1);
+            else if(targetId.startsWith('cadre-')) {
+                let idx = parseInt(targetId.split('-')[1]);
+                document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size').value = num.toFixed(1);
+            }
             updateAllCadresStats();
         }
 
@@ -383,16 +511,12 @@
             return div;
         }
 
-        // 🥷 V51 FIX : Menu Détaillé Concentrique Épuré (Couleurs Uniquement sauf Extérieur)
         function renderFinitionList() {
             let container = document.getElementById('finition-dynamic-list'); container.innerHTML = '';
             let globalBox = document.getElementById('finition-global-box'); let mainTitle = document.getElementById('finition-main-title'); 
             
-            // Le Global Box est maintenant visible TOUT LE TEMPS
-            globalBox.style.display = 'block'; 
-            mainTitle.style.display = 'block'; 
-
             if(mode === 'lineaire') {
+                globalBox.style.display = 'block'; mainTitle.style.display = 'block'; 
                 let ligns = document.querySelectorAll('.ligne-item'); let nbJoints = Math.max(0, ligns.length - 1);
                 for(let i = 0; i < nbJoints; i++) {
                     let name1 = ligns[i].querySelector('.editable-name').value; 
@@ -401,18 +525,14 @@
                     container.appendChild(createFinitionItemUI(`Joint entre ${name1} et ${name2}`, color, `ligne-${i+1}`, null));
                 }
             } else {
-                let cColor = document.getElementById('c-j-color').value || '#111111'; 
-                // Cœur : juste la couleur, l'épaisseur est Globale
-                container.appendChild(createFinitionItemUI(`Couleur Joint Cœur`, cColor, `coeur`, null));
-                
+                globalBox.style.display = 'none'; mainTitle.style.display = 'none'; 
+                let cColor = document.getElementById('c-j-color').value || '#111111'; let cSize = document.getElementById('c-j-size').value || 0;
+                container.appendChild(createFinitionItemUI(`1ère Bordure (Autour du Cœur)`, cColor, `coeur`, cSize));
                 document.querySelectorAll('.cadre-item').forEach((ca, idx) => {
-                    let color = ca.querySelector('.j-color').value || '#111111'; 
+                    let color = ca.querySelector('.j-color').value || '#111111'; let size = ca.querySelector('.j-size').value || 0;
                     let name = ca.querySelector('.cadre-label').innerText || `Cadre ${idx+1}`;
-                    // Cadres : juste la couleur
-                    container.appendChild(createFinitionItemUI(`Couleur Joint: ${name}`, color, `cadre-${idx}`, null));
+                    container.appendChild(createFinitionItemUI(`Bordure: ${name}`, color, `cadre-${idx}`, size));
                 });
-                
-                // Extérieur : Taille + Couleur
                 let extColor = document.getElementById('ext-j-color').value || '#111111'; let extSize = document.getElementById('ext-j-size').value || 0;
                 container.appendChild(createFinitionItemUI(`Bordure Extérieure (Finition Finale)`, extColor, `exterior`, extSize));
             }
@@ -426,7 +546,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 51, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 52, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value; let jColor = li.querySelector('.j-color').value; let blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
@@ -439,12 +559,12 @@
                     });
                     data.lignes.push({name: lName, color: jColor, blocks});
                 });
-                data.coeur = { mod: document.getElementById('c-mod').value, w: parseFloat(document.getElementById('c-w').value), h: parseFloat(document.getElementById('c-h').value), color: document.getElementById('c-j-color').value };
+                data.coeur = { mod: document.getElementById('c-mod').value, w: parseFloat(document.getElementById('c-w').value), h: parseFloat(document.getElementById('c-h').value), color: document.getElementById('c-j-color').value, jSize: parseFloat(document.getElementById('c-j-size').value) || 0 };
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(ca => {
                     data.cadres.push({
                         type: parseInt(ca.querySelector('.c-type')?.value || 1), mQty: parseInt(ca.querySelector('.manual-qty')?.value || 5),
                         selects: Array.from(ca.querySelectorAll('.m-sel')).map(s=>s.value), w: parseFloat(ca.querySelector('.c-w')?.value || 10),
-                        h: parseFloat(ca.querySelector('.c-h')?.value || 10), color: ca.querySelector('.j-color').value
+                        h: parseFloat(ca.querySelector('.c-h')?.value || 10), color: ca.querySelector('.j-color').value, jSize: parseFloat(ca.querySelector('.j-size').value) || 0
                     });
                 });
                 data.finition = { jointSize: parseFloat(document.getElementById('joint-size').value) || 0, extSize: parseFloat(document.getElementById('ext-j-size').value) || 0, extColor: document.getElementById('ext-j-color').value || '#111111' };
@@ -476,12 +596,12 @@
                     });
                 });
             }
-            if(data.coeur) { document.getElementById('c-mod').value = data.coeur.mod || ''; document.getElementById('c-w').value = data.coeur.w || 20; document.getElementById('c-h').value = data.coeur.h || 20; if(data.coeur.color) document.getElementById('c-j-color').value = data.coeur.color; }
+            if(data.coeur) { document.getElementById('c-mod').value = data.coeur.mod || ''; document.getElementById('c-w').value = data.coeur.w || 20; document.getElementById('c-h').value = data.coeur.h || 20; if(data.coeur.color) document.getElementById('c-j-color').value = data.coeur.color; if(data.coeur.jSize !== undefined) document.getElementById('c-j-size').value = data.coeur.jSize; }
             if(data.cadres && data.cadres.length > 0) {
                 document.getElementById('cadres-container').innerHTML = ''; cadreCounter = 0;
                 data.cadres.forEach(c => {
                     ajouterCadre(null, c.type, c.w, c.h); let caNodes = document.querySelectorAll('.cadre-item'); let currCa = caNodes[caNodes.length - 1];
-                    if(c.color) currCa.querySelector('.j-color').value = c.color; 
+                    if(c.color) currCa.querySelector('.j-color').value = c.color; if(c.jSize !== undefined) currCa.querySelector('.j-size').value = c.jSize;
                     currCa.querySelector('.manual-qty').value = c.mQty || 5; let typeBtn = currCa.querySelectorAll('.type-btn')[c.type > 4 ? 4 : c.type - 1]; if(typeBtn) setCadreMode(typeBtn, c.type);
                     let selects = currCa.querySelectorAll('.m-sel'); if(c.selects) c.selects.forEach((val, idx) => { if(selects[idx]) selects[idx].value = val; });
                     updateCadreData(currCa);
@@ -549,16 +669,16 @@
             updateAllCadresStats();
         }
 
-        // 🥷 V51 FIX : L'épaisseur globale ne casse plus la symétrie. Le calcul se base uniquement sur c.w et c.h purs !
         function updateAllCadresStats() {
+            let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
             let cw = parseFloat(document.getElementById('c-w').value) || 20; let ch = parseFloat(document.getElementById('c-h').value) || 20;
-            let currentW = cw; let currentH = ch; 
+            let currentW = cw; let currentH = ch; let prevJoint = cJoint;
 
             document.querySelectorAll('#cadres-container .cadre-item').forEach(cadre => {
                 let bdW = parseFloat(cadre.querySelector('.c-w').value) || 10; let bdH = parseFloat(cadre.querySelector('.c-h').value) || 10;
-                
-                let newW = currentW + bdW * 2; let newH = currentH + bdH * 2;
-                let Nx = Math.max(1, Math.round(newW / bdW)); let Ny = Math.max(1, Math.round(currentH / bdH)); let totalTiles = (Nx * 2) + (Ny * 2);
+                let innerW = currentW + prevJoint * 2; let innerH = currentH + prevJoint * 2;
+                let newW = innerW + bdW * 2; let newH = innerH + bdH * 2;
+                let Nx = Math.max(1, Math.round(newW / bdW)); let Ny = Math.max(1, Math.round(innerH / bdH)); let totalTiles = (Nx * 2) + (Ny * 2);
 
                 let counterEl = cadre.querySelector('.tile-counter');
                 if(counterEl) {
@@ -566,7 +686,7 @@
                     if(seqLen > 0 && totalTiles % seqLen !== 0) { counterEl.style.color = 'var(--magenta)'; counterEl.innerText = `Périmètre : ${totalTiles} carreaux (⚠️ Reste ${totalTiles % seqLen} !)`; } 
                     else { counterEl.style.color = 'var(--vert)'; counterEl.innerText = `Périmètre : ${totalTiles} carreaux (✅ Parfait pour ${seqLen})`; }
                 }
-                currentW = newW; currentH = newH; 
+                currentW = newW; currentH = newH; prevJoint = parseFloat(cadre.querySelector('.j-size').value) || 0;
             });
         }
 
@@ -631,6 +751,7 @@
         function toggleLine(btn) { let content = btn.closest('.ligne-item').querySelector('.line-content'); if (content.style.display === 'none') { content.style.display = 'block'; btn.innerText = '🔽'; } else { content.style.display = 'none'; btn.innerText = '▶️'; } }
         function toggleSeq(btn) { let content = btn.closest('.block-item') || btn.closest('.cadre-item'); let realContent = content.querySelector('.seq-content'); if (realContent.style.display === 'none') { realContent.style.display = 'block'; btn.innerText = '🔽'; } else { realContent.style.display = 'none'; btn.innerText = '▶️'; } }
 
+        // --- GESTION LIGNES & SEQUENCES ---
         function ajouterLigne() {
             ligneCounter++; let d = document.createElement('div'); d.className = 'box ligne-item';
             d.innerHTML = `
@@ -653,7 +774,7 @@
         function ajouterCadre(insertAfter = null, type = 2, w = 10, h = 10) {
             cadreCounter++; let d = document.createElement('div'); d.className = 'cadre-item';
             d.innerHTML = `
-                <div class="seq-header" style="border-bottom-color: var(--vert);"><div class="cadre-title"><span class="cadre-label"></span></div><input type="hidden" class="j-color" value="#111111"><div style="display:flex; gap:4px; flex-shrink: 0;"><button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'down')">↓</button><button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button><button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.cadre-item'))">👯</button><button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.cadre-item').remove()">❌</button></div></div>
+                <div class="seq-header" style="border-bottom-color: var(--vert);"><div class="cadre-title"><span class="cadre-label"></span></div><input type="hidden" class="j-color" value="#111111"><input type="hidden" class="j-size" value="0"><div style="display:flex; gap:4px; flex-shrink: 0;"><button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'down')">↓</button><button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button><button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.cadre-item'))">👯</button><button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.cadre-item').remove()">❌</button></div></div>
                 <div class="seq-content"><div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;"><button class="btn-mini type-btn" onclick="setCadreMode(this, 1)">SIMPLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 2)">DOUBLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 3)">TRIPLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 4)">QUAD.</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 5)">MANUEL</button><input type="hidden" class="c-type" value="${type}"></div><div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;"><span class="label-sm" style="display:inline-block; margin-right:5px;">Nb:</span><input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;"></div><div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div><div class="tile-counter">Périmètre: Calcul en cours...</div><div class="quick-sizes" style="margin-top:15px; grid-template-columns: repeat(4, 1fr);"><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 2.5)">2.5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 5)">5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 7.5)">7.5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 10)">10</button></div><div class="row"><div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div><div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div><input type="hidden" class="c-seq" value=""></div></div>
             `;
             const cont = document.getElementById('cadres-container');
@@ -661,6 +782,7 @@
             let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1]; setCadreMode(typeBtn, type);
         }
 
+        // --- FONCTIONS DE DÉPLACEMENT RÉPARÉES ---
         function duplicateBlock(el) { 
             let clone = el.cloneNode(true); let origInputs = el.querySelectorAll('input, select'); let cloneInputs = clone.querySelectorAll('input, select');
             for(let i=0; i<origInputs.length; i++) { cloneInputs[i].value = origInputs[i].value; }
@@ -697,13 +819,12 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING V51 (LE GRIGNOTAGE SYMETRIQUE) ---
+        // --- 🧠 LE COEUR DE PARSING ---
         function parseWall() {
             let totalW = 0, totalH = 0; let tiles = []; let backgrounds = [];
             let globalJointSize = parseFloat(document.getElementById('joint-size').value) || 0;
             
             if(mode === 'lineaire') {
-                // Mode Ligne reste IDENTIQUE (Le joint écarte les lignes)
                 let lines = [];
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lw = 0, lh = 0, blocks = []; let lColor = li.querySelector('.j-color').value || '#111111';
@@ -755,7 +876,6 @@
                     curY += line.lh;
                 });
             } else {
-                // 🥷 V51 FIX : LE GRIGNOTAGE FRACTAL (Le joint mange la matière vers l'intérieur, le mur reste symétrique)
                 let cw = parseFloat(document.getElementById('c-w').value) || 30; let ch = parseFloat(document.getElementById('c-h').value) || 30;
                 let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || '';
                 let cColor = document.getElementById('c-j-color').value || '#111111'; 
@@ -766,57 +886,41 @@
                     cadres.push({ seq: selects.map(s => s.value).filter(Boolean), w: parseFloat(cc.querySelector('.c-w').value) || 10, h: parseFloat(cc.querySelector('.c-h').value) || 10, color: cc.querySelector('.j-color').value || '#111111' });
                 });
 
-                // Le mur de base (sans la bordure extérieure)
                 let coreW = cw; let coreH = ch;
                 cadres.forEach(c => { coreW += c.w * 2; coreH += c.h * 2; });
 
                 let extJoint = parseFloat(document.getElementById('ext-j-size').value) || 0; 
                 let extColor = document.getElementById('ext-j-color').value || '#111111';
                 
-                // Le mur total (seul l'extérieur a le droit d'agrandir le mur !)
                 totalW = coreW + extJoint * 2; 
                 totalH = coreH + extJoint * 2;
                 
-                // --- GENERATION DES BACKGROUNDS (Couleurs de fond pour les joints) ---
-                if (extJoint > 0) {
-                    backgrounds.push({ w: totalW, h: totalH, color: extColor }); // Fond Extérieur géant
-                }
+                if (extJoint > 0) { backgrounds.push({ w: totalW, h: totalH, color: extColor }); }
 
                 let curW = coreW; let curH = coreH;
                 for (let i = cadres.length - 1; i >= 0; i--) {
                     backgrounds.push({ w: curW, h: curH, color: cadres[i].color });
-                    curW -= cadres[i].w * 2;
-                    curH -= cadres[i].h * 2;
+                    curW -= cadres[i].w * 2; curH -= cadres[i].h * 2;
                 }
-                backgrounds.push({ w: cw, h: ch, color: cColor }); // Fond du Cœur
+                backgrounds.push({ w: cw, h: ch, color: cColor }); 
 
-                // Centrage parfait des fonds
-                backgrounds.forEach(bg => {
-                    bg.x = (totalW - bg.w) / 2;
-                    bg.y = (totalH - bg.h) / 2;
-                });
+                backgrounds.forEach(bg => { bg.x = (totalW - bg.w) / 2; bg.y = (totalH - bg.h) / 2; });
 
-                // --- GENERATION DES TUILES GRIGNOTEES ---
-                // tiles.push(l, x, y, w, h, j (shrinkage))
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter, j: globalJointSize });
                 
                 let currentTotalW = cw, currentTotalH = ch;
-                
                 cadres.forEach(c => {
                     let bdW = c.w, bdH = c.h; let seq = c.seq.length > 0 ? c.seq : [''];
                     let newTotalW = currentTotalW + bdW * 2; let newTotalH = currentTotalH + bdH * 2;
-                    
                     let shiftX = (totalW - newTotalW)/2; let shiftY = (totalH - newTotalH)/2;
                     let Nx = Math.max(1, Math.round(newTotalW / bdW)); let adjW = newTotalW / Nx; 
                     let Ny = Math.max(1, Math.round(currentTotalH / bdH)); let adjH = currentTotalH / Ny;
-                    
                     let sIdx = 0; const getL = () => seq[sIdx++ % seq.length];
                     
                     for(let i=0; i<Nx; i++) tiles.push({ x: shiftX + i*adjW, y: shiftY, w: adjW, h: bdH, l: getL(), j: globalJointSize });
                     for(let i=0; i<Ny; i++) tiles.push({ x: shiftX + newTotalW - bdW, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL(), j: globalJointSize });
                     for(let i=Nx-1; i>=0; i--) tiles.push({ x: shiftX + i*adjW, y: shiftY + newTotalH - bdH, w: adjW, h: bdH, l: getL(), j: globalJointSize });
                     for(let i=Ny-1; i>=0; i--) tiles.push({ x: shiftX, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL(), j: globalJointSize });
-                    
                     currentTotalW = newTotalW; currentTotalH = newTotalH;
                 });
             } return { tiles, backgrounds, totalW, totalH };
@@ -825,25 +929,19 @@
         function drawBackgrounds(ctx, backgrounds, baseScale, dpr) {
             backgrounds.forEach(bg => {
                 ctx.fillStyle = bg.color;
-                if(bg.linear) {
-                    ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale);
-                } else {
-                    // Les rectangles pleins centrés s'empilent parfaitement pour créer les joints !
-                    ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale);
-                }
+                if(bg.linear) { ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); } 
+                else if(bg.type === 'joint') {
+                    let bx = bg.x * baseScale, by = bg.y * baseScale, bw = bg.w * baseScale, bh = bg.h * baseScale, bt = bg.t * baseScale;
+                    ctx.fillRect(bx, by, bw, bt); ctx.fillRect(bx, by + bh - bt, bw, bt); ctx.fillRect(bx, by + bt, bt, bh - 2*bt); ctx.fillRect(bx + bw - bt, by + bt, bt, bh - 2*bt); 
+                } else { ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); }
             });
         }
 
         function drawTile(ctx, char, x, y, w, h, jointShrinkage = 0) { 
-            // V51: Le Grignotage (On réduit la taille de la tuile par l'intérieur)
-            let actualW = Math.max(0.1, w - jointShrinkage);
-            let actualH = Math.max(0.1, h - jointShrinkage);
-            let actualX = x + (jointShrinkage / 2);
-            let actualY = y + (jointShrinkage / 2);
-
-            if(char && modeles[char]) {
-                ctx.drawImage(modeles[char].img, actualX, actualY, actualW, actualH); 
-            } else { 
+            let actualW = Math.max(0.1, w - jointShrinkage); let actualH = Math.max(0.1, h - jointShrinkage);
+            let actualX = x + (jointShrinkage / 2); let actualY = y + (jointShrinkage / 2);
+            if(char && modeles[char]) { ctx.drawImage(modeles[char].img, actualX, actualY, actualW, actualH); } 
+            else { 
                 ctx.strokeStyle = 'cyan'; ctx.lineWidth = 1; ctx.strokeRect(actualX, actualY, actualW, actualH); 
                 ctx.fillStyle = "rgba(241, 196, 15, 0.15)"; ctx.fillRect(actualX, actualY, actualW, actualH); 
                 if(char) { ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(12, actualH/3)}px monospace`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(char, actualX + actualW/2, actualY + actualH/2); } 
@@ -880,7 +978,6 @@
             else if(material === 'obsidienne') patternCanvas = generateMarbleTexture(thickness*2, thickness*2, '#1a1a1a', '#050505', '#333333'); 
 
             if(patternCanvas) pattern = ctx.createPattern(patternCanvas, 'repeat');
-            
             let outT = thickness * 0.15; let inT = thickness * 0.15; 
             
             ctx.fillStyle = pattern; ctx.fillRect(0, 0, width, height);
@@ -897,15 +994,12 @@
             ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.moveTo(width-thickness,thickness); ctx.lineTo(width-thickness,height-thickness); ctx.lineTo(width-thickness+inT, height-thickness+inT); ctx.lineTo(width-thickness+inT, thickness-inT); ctx.fill();
 
             ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = thickness * 0.01;
-            ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(thickness, thickness); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(width,0); ctx.lineTo(width-thickness, thickness); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(0,height); ctx.lineTo(thickness, height-thickness); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(width,height); ctx.lineTo(width-thickness, height-thickness); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(thickness, thickness); ctx.stroke(); ctx.beginPath(); ctx.moveTo(width,0); ctx.lineTo(width-thickness, thickness); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0,height); ctx.lineTo(thickness, height-thickness); ctx.stroke(); ctx.beginPath(); ctx.moveTo(width,height); ctx.lineTo(width-thickness, height-thickness); ctx.stroke();
 
             if(usePlaque && title && title !== "") {
                 let plaqueW = width * 0.45; let plaqueH = thickness * 0.5; 
                 let plaqueX = (width - plaqueW) / 2; let plaqueY = height - thickness + (thickness * 0.25);
-
                 let gradient = ctx.createLinearGradient(plaqueX, plaqueY, plaqueX, plaqueY + plaqueH); gradient.addColorStop(0, "#f1c40f"); gradient.addColorStop(0.5, "#d3b878"); gradient.addColorStop(1, "#b39858");
                 ctx.fillStyle = gradient; ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 5; ctx.fillRect(plaqueX, plaqueY, plaqueW, plaqueH);
                 ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#5a4611'; ctx.lineWidth = 3; ctx.strokeRect(plaqueX, plaqueY, plaqueW, plaqueH);
@@ -921,7 +1015,6 @@
             let { tiles, backgrounds, totalW, totalH } = parseWall();
             prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
             drawBackgrounds(ctx, backgrounds, baseScale, dpr);
-            // On passe t.j (joint shrinkage) à drawTile !
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale, (t.j || 0) * baseScale));
             document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm 💎 HD`; document.getElementById('render-modal').style.display = 'flex';
             setTimeout(() => { let cssW = (totalW || 10) * baseScale; let cssH = (totalH || 10) * baseScale; resetCamera(cssW, cssH); }, 50);
@@ -932,14 +1025,10 @@
             let { tiles, backgrounds, totalW, totalH } = parseWall();
             let baseScale = 40; 
             let frameSizeCm = parseFloat(document.getElementById('frame-size').value) || 10;
-            let material = document.getElementById('frame-material').value;
-            let title = document.getElementById('artwork-title').value.trim();
-            let usePlaque = document.getElementById('artwork-plaque-toggle').checked;
-            let exportFileName = document.getElementById('export-filename').value.trim() || 'Chef_d_oeuvre_Daguerre';
-
+            let material = document.getElementById('frame-material').value; let title = document.getElementById('artwork-title').value.trim();
+            let usePlaque = document.getElementById('artwork-plaque-toggle').checked; let exportFileName = document.getElementById('export-filename').value.trim() || 'Chef_d_oeuvre_Daguerre';
             let pxWallW = (totalW || 10) * baseScale; let pxWallH = (totalH || 10) * baseScale;
-            let pxFrame = frameSizeCm * baseScale;
-            let totalPxW = pxWallW + (pxFrame * 2); let totalPxH = pxWallH + (pxFrame * 2);
+            let pxFrame = frameSizeCm * baseScale; let totalPxW = pxWallW + (pxFrame * 2); let totalPxH = pxWallH + (pxFrame * 2);
             
             const MAX_EXPORT = 8192; 
             let scaleFactor = 1; if(totalPxW > MAX_EXPORT || totalPxH > MAX_EXPORT) scaleFactor = MAX_EXPORT / Math.max(totalPxW, totalPxH);
@@ -948,15 +1037,12 @@
             let ctx = exportCanvas.getContext('2d'); ctx.scale(scaleFactor, scaleFactor); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
 
             draw3DFrame(ctx, totalPxW, totalPxH, pxFrame, material, title, usePlaque);
-
             ctx.save(); ctx.translate(pxFrame, pxFrame);
             ctx.shadowColor = 'rgba(0,0,0,0.95)'; ctx.shadowBlur = 40 * scaleFactor; ctx.shadowOffsetX = 10 * scaleFactor; ctx.shadowOffsetY = 15 * scaleFactor;
             ctx.fillStyle = "#111"; ctx.fillRect(0, 0, pxWallW, pxWallH); ctx.restore();
 
-            ctx.save(); ctx.translate(pxFrame, pxFrame);
-            drawBackgrounds(ctx, backgrounds, baseScale, 1);
-            tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale, (t.j || 0) * baseScale));
-            ctx.restore();
+            ctx.save(); ctx.translate(pxFrame, pxFrame); drawBackgrounds(ctx, backgrounds, baseScale, 1);
+            tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale, (t.j || 0) * baseScale)); ctx.restore();
             
             let cleanedFileName = exportFileName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '');
             let link = document.createElement('a'); link.download = cleanedFileName + '_Cadre_3D_8K.jpg'; link.href = exportCanvas.toDataURL('image/jpeg', 0.95); link.click();
