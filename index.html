@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V37.0</title>
+    <title>Daguerre OS V38.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V37.0</small>
+        <small>ÉDITION NUCLÉAIRE V38.0</small>
     </div>
 
     <div id="settings-area">
@@ -233,7 +233,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 37, mode: mode, lignes: [], coeur: {}, cadres: [] };
+                let data = { v: 38, mode: mode, lignes: [], coeur: {}, cadres: [] };
                 
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value;
@@ -259,7 +259,6 @@
                     h: parseFloat(document.getElementById('c-h').value)
                 };
                 
-                // On s'assure de ne cibler QUE les vrais cadres !
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(ca => {
                     data.cadres.push({
                         type: parseInt(ca.querySelector('.c-type')?.value || 1),
@@ -271,15 +270,14 @@
                 });
                 return data;
             } catch(e) {
-                console.error("Erreur de lecture de la Forge:", e);
-                alert("⚠️ Oups ! Une erreur s'est produite lors de l'enregistrement de la Forge.");
+                console.error("Erreur de lecture:", e);
                 return null;
             }
         }
 
         function saveToLibrary() {
             let data = getForgeData();
-            if(!data) return; // Stoppe si erreur
+            if(!data) return; 
             
             let name = prompt("Nom de ce Grimoire :");
             if(!name) return;
@@ -302,11 +300,11 @@
 
         function exportTemplate() {
             let data = getForgeData();
-            if(!data) return; // Stoppe si erreur
+            if(!data) return; 
             
             let defaultName = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
             let nom = prompt("Nom du fichier JSON à sauvegarder :", defaultName);
-            if(!nom) return; // Si on annule
+            if(!nom) return; 
             
             let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
             let link = document.createElement("a");
@@ -337,10 +335,6 @@
             let name = document.getElementById('library-select').value;
             if(!name || !library[name]) return;
             let data = library[name];
-            
-            if(!data.v || data.v < 35) {
-                alert("⚠️ Ce grimoire utilise une très ancienne architecture. Le rendu peut être incomplet.");
-            }
             
             if(data.mode) setMode(data.mode);
             
@@ -627,9 +621,6 @@
                 manualConf.style.display = 'none';
             }
 
-            let dirRow = block.querySelector('.dir-row');
-            dirRow.style.display = 'flex'; 
-            
             renderModelSelects(block, type);
         }
 
@@ -740,7 +731,6 @@
             else { realContent.style.display = 'none'; btn.innerText = '▶️'; }
         }
 
-        // --- GESTION LIGNES & SEQUENCES ---
         function ajouterLigne() {
             ligneCounter++;
             let d = document.createElement('div');
@@ -899,40 +889,7 @@
             setCadreMode(typeBtn, type);
         }
 
-        function genererFractale() {
-            setMode('concentrique');
-            document.getElementById('c-mod').value = document.getElementById('f-mod').value;
-            document.getElementById('c-w').value = document.getElementById('f-size').value;
-            document.getElementById('c-h').value = document.getElementById('f-size').value;
-            let seq = document.getElementById('f-seq').value.split(' ').filter(Boolean);
-            let n = parseInt(document.getElementById('f-iter').value);
-            document.getElementById('cadres-container').innerHTML = "";
-            let curSize = parseFloat(document.getElementById('f-size').value);
-            for(let i=0; i<n; i++) {
-                curSize = curSize / seq.length;
-                ajouterCadre(null, seq.length, curSize, curSize);
-            }
-            render();
-        }
-
-        function move(el, dir) {
-            if(dir==='up' && el.previousElementSibling) el.parentNode.insertBefore(el, el.previousElementSibling);
-            if(dir==='down' && el.nextElementSibling) el.parentNode.insertBefore(el.nextElementSibling, el);
-            if(el.classList.contains('block-item')) triggerCascade(el.previousElementSibling || el);
-            if(el.classList.contains('cadre-item')) updateAllCadresStats();
-        }
-        
-        function duplicateBlock(el) { 
-            let clone = el.cloneNode(true); 
-            let origInputs = el.querySelectorAll('input, select');
-            let cloneInputs = clone.querySelectorAll('input, select');
-            for(let i=0; i<origInputs.length; i++) { cloneInputs[i].value = origInputs[i].value; }
-            el.parentNode.insertBefore(clone, el.nextSibling); 
-            if(clone.classList.contains('block-item')) { updateSeqData(clone); triggerCascade(clone); }
-            if(clone.classList.contains('cadre-item')) { updateCadreData(clone); }
-        }
-
-        // --- GESTION DU ZOOM TACTILE ---
+        // --- ZOOM TACTILE RESTAURÉ ---
         const touchZone = document.getElementById('touch-zone');
         const canvasWrap = document.getElementById('canvas-wrapper');
         let t_scale = 1, t_posX = 0, t_posY = 0;
@@ -1124,6 +1081,47 @@
                 let cssH = (totalH || 10) * baseScale;
                 resetCamera(cssW, cssH);
             }, 50);
+        }
+
+        function prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr) {
+            let cssW = (totalW || 10) * baseScale;
+            let cssH = (totalH || 10) * baseScale;
+            let pixelW = cssW * dpr;
+            let pixelH = cssH * dpr;
+
+            const MAX_DIM = 3500; 
+            let scaleFactor = 1;
+            if(pixelW > MAX_DIM || pixelH > MAX_DIM) {
+                let maxCurrent = Math.max(pixelW, pixelH);
+                scaleFactor = MAX_DIM / maxCurrent;
+                pixelW = pixelW * scaleFactor;
+                pixelH = pixelH * scaleFactor;
+            }
+
+            canvas.style.width = cssW + 'px';
+            canvas.style.height = cssH + 'px';
+            canvas.width = pixelW;
+            canvas.height = pixelH;
+            
+            ctx.scale(dpr * scaleFactor, dpr * scaleFactor);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
+        }
+
+        function drawTile(ctx, char, x, y, w, h) {
+            if(char && modeles[char]) {
+                ctx.drawImage(modeles[char].img, x, y, w, h);
+            } else {
+                ctx.strokeStyle = 'cyan'; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
+                ctx.fillStyle = "rgba(241, 196, 15, 0.15)"; ctx.fillRect(x, y, w, h);
+                if(char) {
+                    ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(12, h/3)}px monospace`;
+                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.fillText(char, x + w/2, y + h/2);
+                }
+            }
         }
 
         window.onload = init;
