@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V47.0</title>
+    <title>Daguerre OS V48.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V47.0</small>
+        <small>ÉDITION NUCLÉAIRE V48.0</small>
     </div>
 
     <div id="settings-area">
@@ -225,13 +225,13 @@
                     <span style="font-size:12px; color:var(--cyan);">Activer la Plaque en Or ?</span>
                     <input type="checkbox" id="artwork-plaque-toggle" checked style="width:25px; height:25px; cursor:pointer;">
                 </div>
-                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Texte à graver sur la Plaque</span>
-                <textarea id="artwork-title" value="Symphonie Daguerre" style="width:100%; height:50px; text-align:center; font-size:12px; margin-bottom:10px; font-weight:bold;"></textarea>
-                <p style="font-size:9px; color:#888; text-align:center; margin-top:0;">La plaque est gravée et vissée au centre bas du cadre.</p>
+                <textarea id="artwork-title" placeholder="Titre gravé sur la plaque" style="width:100%; height:50px; text-align:center; font-size:12px; margin-bottom:10px; font-weight:bold;">Symphonie Daguerre</textarea>
                 
-                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Nom du Fichier d'Export (8K)</span>
-                <input type="text" id="export-filename" value="Chef_d_oeuvre_Daguerre" style="width:100%; text-align:center; font-size:14px; margin-bottom:15px;">
-                <p style="font-size:9px; color:#888; text-align:center; margin-top:0;">Le fichier sera téléchargé sous ce nom.</p>
+                <hr style="border-color:#333; margin:15px 0;">
+                
+                <span class="label-sm" style="color:var(--jaune); margin-bottom:5px; display:block; font-size:11px;">Nom du Fichier d'Export (8K)</span>
+                <input type="text" id="export-filename" value="Chef_d_oeuvre_Daguerre" style="width:100%; text-align:center; font-size:14px; margin-bottom:5px; border-color:var(--jaune);">
+                <p style="font-size:9px; color:#888; text-align:center; margin-top:0;">Le fichier sera enregistré sur ton téléphone sous ce nom.</p>
             </div>
 
             <button class="btn" style="background: var(--jaune); color: #000; margin-top: 20px; font-size: 16px; padding:20px;" onclick="exportFramedImage()">🖼️ FORGER & TÉLÉCHARGER LE CHEF-D'ŒUVRE (8K)</button>
@@ -241,7 +241,7 @@
         <div id="tab-devis" class="tab-content">
             <div class="section-title">📊 Rapport & Devis</div>
             <div class="box">
-                <span class="label-sm">Nom du Projet (Base)</span>
+                <span class="label-sm">Nom du Fichier (Sans Cadre)</span>
                 <input type="text" id="nom-projet" value="Empire_Daguerre" style="width: 100%; text-align: center;">
             </div>
             <div id="rapport-data" class="box" style="background: #000;">Forgez un mur d'abord.</div>
@@ -299,12 +299,10 @@
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 🎨 GESTION FINITION V47 ---
-        
+        // --- 🎨 GESTION FINITION V48 (Sans sauts de page) ---
         function updateJointSizeUI(targetId, delta) {
             let dispInput = document.getElementById('disp-size-' + targetId);
             if(!dispInput) return;
-            
             let val = Math.max(0, parseFloat(dispInput.value) + delta);
             dispInput.value = val.toFixed(1);
             
@@ -374,11 +372,7 @@
                     </div>
                 </div>`;
             }
-            
-            let div = document.createElement('div');
-            div.className = 'box';
-            div.id = 'finition-item-' + targetId;
-            div.style.borderColor = 'var(--amethyst)';
+            let div = document.createElement('div'); div.className = 'box'; div.id = 'finition-item-' + targetId; div.style.borderColor = 'var(--amethyst)';
             div.innerHTML = `
                 <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block; font-size:11px;">${title}</span>
                 ${sizeUI}
@@ -401,701 +395,273 @@
         }
 
         function renderFinitionList() {
-            let container = document.getElementById('finition-dynamic-list');
-            container.innerHTML = '';
-            let globalBox = document.getElementById('finition-global-box');
-            let mainTitle = document.getElementById('finition-main-title'); 
+            let container = document.getElementById('finition-dynamic-list'); container.innerHTML = '';
+            let globalBox = document.getElementById('finition-global-box'); let mainTitle = document.getElementById('finition-main-title'); 
             
             if(mode === 'lineaire') {
-                globalBox.style.display = 'block';
-                mainTitle.style.display = 'block'; 
-
-                let ligns = document.querySelectorAll('.ligne-item');
-                let nbLignes = ligns.length;
-                let nbJoints = Math.max(0, nbLignes - 1);
-
+                globalBox.style.display = 'block'; mainTitle.style.display = 'block'; 
+                let ligns = document.querySelectorAll('.ligne-item'); let nbJoints = Math.max(0, ligns.length - 1);
                 for(let i = 0; i < nbJoints; i++) {
-                    let li = ligns[i];
-                    let liNext = ligns[i+1];
-                    let name1 = li.querySelector('.editable-name').value;
-                    let name2 = liNext.querySelector('.editable-name').value;
-                    
-                    let color = li.querySelector('.j-color').value || '#111111';
-                    let title = `Joint entre ${name1} et ${name2}`;
-                    container.appendChild(createFinitionItemUI(title, color, `ligne-${i}`, null));
+                    let name1 = ligns[i].querySelector('.editable-name').value; let name2 = ligns[i+1].querySelector('.editable-name').value;
+                    let color = ligns[i].querySelector('.j-color').value || '#111111';
+                    container.appendChild(createFinitionItemUI(`Joint entre ${name1} et ${name2}`, color, `ligne-${i}`, null));
                 }
             } else {
-                globalBox.style.display = 'none'; 
-                mainTitle.style.display = 'none'; 
-
-                let cColor = document.getElementById('c-j-color').value || '#111111';
-                let cSize = document.getElementById('c-j-size').value || 0;
+                globalBox.style.display = 'none'; mainTitle.style.display = 'none'; 
+                let cColor = document.getElementById('c-j-color').value || '#111111'; let cSize = document.getElementById('c-j-size').value || 0;
                 container.appendChild(createFinitionItemUI(`1ère Bordure (Autour du Cœur)`, cColor, `coeur`, cSize));
-                
                 document.querySelectorAll('.cadre-item').forEach((ca, idx) => {
-                    let color = ca.querySelector('.j-color').value || '#111111';
-                    let size = ca.querySelector('.j-size').value || 0;
+                    let color = ca.querySelector('.j-color').value || '#111111'; let size = ca.querySelector('.j-size').value || 0;
                     let name = ca.querySelector('.cadre-label').innerText || `Cadre ${idx+1}`;
                     container.appendChild(createFinitionItemUI(`Bordure: ${name}`, color, `cadre-${idx}`, size));
                 });
-                
-                let extColor = document.getElementById('ext-j-color').value || '#111111';
-                let extSize = document.getElementById('ext-j-size').value || 0;
+                let extColor = document.getElementById('ext-j-color').value || '#111111'; let extSize = document.getElementById('ext-j-size').value || 0;
                 container.appendChild(createFinitionItemUI(`Bordure Extérieure (Finition Finale)`, extColor, `exterior`, extSize));
             }
         }
 
         // --- 💾 GESTION DE LA BIBLIOTHÈQUE ---
         function updateLibraryUI() {
-            let sel = document.getElementById('library-select');
-            sel.innerHTML = '<option value="">-- Choisir un Grimoire --</option>';
-            for(let name in library) {
-                sel.innerHTML += `<option value="${name}">${name}</option>`;
-            }
+            let sel = document.getElementById('library-select'); sel.innerHTML = '<option value="">-- Choisir un Grimoire --</option>';
+            for(let name in library) sel.innerHTML += `<option value="${name}">${name}</option>`;
         }
 
         function getForgeData() {
             try {
-                let data = { v: 47, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
-                
+                let data = { v: 48, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 document.querySelectorAll('.ligne-item').forEach(li => {
-                    let lName = li.querySelector('.editable-name').value;
-                    let jColor = li.querySelector('.j-color').value;
-                    let blocks = [];
+                    let lName = li.querySelector('.editable-name').value; let jColor = li.querySelector('.j-color').value; let blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
                         blocks.push({
-                            type: parseInt(bl.querySelector('.s-type')?.value || 1),
-                            mQty: parseInt(bl.querySelector('.manual-qty')?.value || 5),
-                            selects: Array.from(bl.querySelectorAll('.m-sel')).map(s=>s.value),
-                            dir: bl.querySelector('.s-dir')?.value || 'H',
-                            multi: bl.querySelector('.s-h-multi')?.value || '',
-                            w: parseFloat(bl.querySelector('.s-w')?.value || 10),
-                            h: parseFloat(bl.querySelector('.s-h')?.value || 10),
-                            q: parseInt(bl.querySelector('.s-q')?.value || 1)
+                            type: parseInt(bl.querySelector('.s-type')?.value || 1), mQty: parseInt(bl.querySelector('.manual-qty')?.value || 5),
+                            selects: Array.from(bl.querySelectorAll('.m-sel')).map(s=>s.value), dir: bl.querySelector('.s-dir')?.value || 'H',
+                            multi: bl.querySelector('.s-h-multi')?.value || '', w: parseFloat(bl.querySelector('.s-w')?.value || 10),
+                            h: parseFloat(bl.querySelector('.s-h')?.value || 10), q: parseInt(bl.querySelector('.s-q')?.value || 1)
                         });
                     });
                     data.lignes.push({name: lName, color: jColor, blocks});
                 });
-                
-                data.coeur = {
-                    mod: document.getElementById('c-mod').value,
-                    w: parseFloat(document.getElementById('c-w').value),
-                    h: parseFloat(document.getElementById('c-h').value),
-                    color: document.getElementById('c-j-color').value,
-                    jSize: parseFloat(document.getElementById('c-j-size').value) || 0
-                };
-                
+                data.coeur = { mod: document.getElementById('c-mod').value, w: parseFloat(document.getElementById('c-w').value), h: parseFloat(document.getElementById('c-h').value), color: document.getElementById('c-j-color').value, jSize: parseFloat(document.getElementById('c-j-size').value) || 0 };
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(ca => {
                     data.cadres.push({
-                        type: parseInt(ca.querySelector('.c-type')?.value || 1),
-                        mQty: parseInt(ca.querySelector('.manual-qty')?.value || 5),
-                        selects: Array.from(ca.querySelectorAll('.m-sel')).map(s=>s.value),
-                        w: parseFloat(ca.querySelector('.c-w')?.value || 10),
-                        h: parseFloat(ca.querySelector('.c-h')?.value || 10),
-                        color: ca.querySelector('.j-color').value,
-                        jSize: parseFloat(ca.querySelector('.j-size').value) || 0
+                        type: parseInt(ca.querySelector('.c-type')?.value || 1), mQty: parseInt(ca.querySelector('.manual-qty')?.value || 5),
+                        selects: Array.from(ca.querySelectorAll('.m-sel')).map(s=>s.value), w: parseFloat(ca.querySelector('.c-w')?.value || 10),
+                        h: parseFloat(ca.querySelector('.c-h')?.value || 10), color: ca.querySelector('.j-color').value, jSize: parseFloat(ca.querySelector('.j-size').value) || 0
                     });
                 });
-                
-                data.finition = { 
-                    jointSize: parseFloat(document.getElementById('joint-size').value) || 0,
-                    extSize: parseFloat(document.getElementById('ext-j-size').value) || 0,
-                    extColor: document.getElementById('ext-j-color').value || '#111111'
-                };
+                data.finition = { jointSize: parseFloat(document.getElementById('joint-size').value) || 0, extSize: parseFloat(document.getElementById('ext-j-size').value) || 0, extColor: document.getElementById('ext-j-color').value || '#111111' };
                 return data;
             } catch(e) { return null; }
         }
 
-        function saveToLibrary() {
-            let data = getForgeData();
-            if(!data) return; 
-            let name = prompt("Nom de ce Grimoire :");
-            if(!name) return;
-            library[name] = data;
-            localStorage.setItem('daguerre_lib', JSON.stringify(library));
-            updateLibraryUI();
-            alert("✅ Grimoire sauvegardé !");
-        }
-
-        function deleteFromLibrary() {
-            let name = document.getElementById('library-select').value;
-            if(!name) return;
-            if(confirm(`Es-tu sûr de vouloir brûler le grimoire "${name}" ?`)) {
-                delete library[name];
-                localStorage.setItem('daguerre_lib', JSON.stringify(library));
-                updateLibraryUI();
-            }
-        }
-
-        function exportTemplate() {
-            let data = getForgeData();
-            if(!data) return; 
-            let defaultName = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
-            let nom = prompt("Nom du fichier JSON à sauvegarder :", defaultName);
-            if(!nom) return; 
-            
-            let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob); 
-            link.download = nom + ".json"; 
-            link.click();
-        }
-
-        function importTemplate(e) {
-            let file = e.target.files[0];
-            if(!file) return;
-            let reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    let data = JSON.parse(event.target.result);
-                    let name = file.name.replace('.json', '');
-                    library[name] = data;
-                    localStorage.setItem('daguerre_lib', JSON.stringify(library));
-                    updateLibraryUI();
-                    alert(`✅ Grimoire '${name}' importé !`);
-                } catch(err) { alert("⚠️ Fichier invalide."); }
-            };
-            reader.readAsText(file); 
-            e.target.value = '';
-        }
+        function saveToLibrary() { let data = getForgeData(); if(!data) return; let name = prompt("Nom de ce Grimoire :"); if(!name) return; library[name] = data; localStorage.setItem('daguerre_lib', JSON.stringify(library)); updateLibraryUI(); alert("✅ Grimoire sauvegardé !"); }
+        function deleteFromLibrary() { let name = document.getElementById('library-select').value; if(!name) return; if(confirm(`Es-tu sûr de vouloir brûler le grimoire "${name}" ?`)) { delete library[name]; localStorage.setItem('daguerre_lib', JSON.stringify(library)); updateLibraryUI(); } }
+        function exportTemplate() { let data = getForgeData(); if(!data) return; let defaultName = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre'; let nom = prompt("Nom du fichier JSON à sauvegarder :", defaultName); if(!nom) return; let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"}); let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = nom + ".json"; link.click(); }
+        function importTemplate(e) { let file = e.target.files[0]; if(!file) return; let reader = new FileReader(); reader.onload = function(event) { try { let data = JSON.parse(event.target.result); let name = file.name.replace('.json', ''); library[name] = data; localStorage.setItem('daguerre_lib', JSON.stringify(library)); updateLibraryUI(); alert(`✅ Grimoire '${name}' importé !`); } catch(err) { alert("⚠️ Fichier invalide."); } }; reader.readAsText(file); e.target.value = ''; }
 
         function loadFromLibrary() {
-            let name = document.getElementById('library-select').value;
-            if(!name || !library[name]) return;
-            let data = library[name];
-            
+            let name = document.getElementById('library-select').value; if(!name || !library[name]) return; let data = library[name];
             if(data.mode) setMode(data.mode);
-            
             if(data.lignes && data.lignes.length > 0) {
-                document.getElementById('lignes-container').innerHTML = '';
-                ligneCounter = 0;
+                document.getElementById('lignes-container').innerHTML = ''; ligneCounter = 0;
                 data.lignes.forEach(l => {
-                    ajouterLigne();
-                    let liNodes = document.querySelectorAll('.ligne-item');
-                    let currentLi = liNodes[liNodes.length - 1];
-                    currentLi.querySelector('.editable-name').value = l.name;
-                    if(l.color) currentLi.querySelector('.j-color').value = l.color;
-                    
-                    let cont = currentLi.querySelector('.blocs-container');
-                    cont.innerHTML = ''; 
-                    
+                    ajouterLigne(); let liNodes = document.querySelectorAll('.ligne-item'); let currentLi = liNodes[liNodes.length - 1];
+                    currentLi.querySelector('.editable-name').value = l.name; if(l.color) currentLi.querySelector('.j-color').value = l.color;
+                    let cont = currentLi.querySelector('.blocs-container'); cont.innerHTML = ''; 
                     l.blocks.forEach(b => {
-                        ajouterSequence(cont, b.type);
-                        let blNodes = cont.querySelectorAll('.block-item');
-                        let currBl = blNodes[blNodes.length - 1];
-                        
-                        currBl.querySelector('.manual-qty').value = b.mQty || 5;
-                        let typeBtn = currBl.querySelectorAll('.type-btn')[b.type > 4 ? 4 : b.type - 1];
-                        if(typeBtn) setSeqMode(typeBtn, b.type);
-                        
-                        let selects = currBl.querySelectorAll('.m-sel');
-                        if(b.selects) b.selects.forEach((val, idx) => { if(selects[idx]) selects[idx].value = val; });
-                        
-                        currBl.querySelector('.s-h-multi').value = b.multi || '';
-                        currBl.querySelector('.s-w').value = b.w || 10;
-                        currBl.querySelector('.s-h').value = b.h || 10;
-                        currBl.querySelector('.s-q').value = b.q || 1;
-                        
-                        let dirBtn = Array.from(currBl.querySelectorAll('.dir-btn')).find(btn => {
-                            if(b.dir==='H' && btn.innerText.includes('HORIZ')) return true;
-                            if(b.dir==='V' && btn.innerText.includes('VERTI')) return true;
-                            if(b.dir==='M' && btn.innerText.includes('MULTI')) return true;
-                            return false;
-                        });
+                        ajouterSequence(cont, b.type); let blNodes = cont.querySelectorAll('.block-item'); let currBl = blNodes[blNodes.length - 1];
+                        currBl.querySelector('.manual-qty').value = b.mQty || 5; let typeBtn = currBl.querySelectorAll('.type-btn')[b.type > 4 ? 4 : b.type - 1]; if(typeBtn) setSeqMode(typeBtn, b.type);
+                        let selects = currBl.querySelectorAll('.m-sel'); if(b.selects) b.selects.forEach((val, idx) => { if(selects[idx]) selects[idx].value = val; });
+                        currBl.querySelector('.s-h-multi').value = b.multi || ''; currBl.querySelector('.s-w').value = b.w || 10; currBl.querySelector('.s-h').value = b.h || 10; currBl.querySelector('.s-q').value = b.q || 1;
+                        let dirBtn = Array.from(currBl.querySelectorAll('.dir-btn')).find(btn => { if(b.dir==='H' && btn.innerText.includes('HORIZ')) return true; if(b.dir==='V' && btn.innerText.includes('VERTI')) return true; if(b.dir==='M' && btn.innerText.includes('MULTI')) return true; return false; });
                         if(dirBtn) setSeqDir(dirBtn, b.dir, true, false);
                     });
                 });
             }
-
-            if(data.coeur) {
-                document.getElementById('c-mod').value = data.coeur.mod || '';
-                document.getElementById('c-w').value = data.coeur.w || 20;
-                document.getElementById('c-h').value = data.coeur.h || 20;
-                if(data.coeur.color) document.getElementById('c-j-color').value = data.coeur.color;
-                if(data.coeur.jSize !== undefined) document.getElementById('c-j-size').value = data.coeur.jSize;
-            }
+            if(data.coeur) { document.getElementById('c-mod').value = data.coeur.mod || ''; document.getElementById('c-w').value = data.coeur.w || 20; document.getElementById('c-h').value = data.coeur.h || 20; if(data.coeur.color) document.getElementById('c-j-color').value = data.coeur.color; if(data.coeur.jSize !== undefined) document.getElementById('c-j-size').value = data.coeur.jSize; }
             if(data.cadres && data.cadres.length > 0) {
-                document.getElementById('cadres-container').innerHTML = '';
-                cadreCounter = 0;
+                document.getElementById('cadres-container').innerHTML = ''; cadreCounter = 0;
                 data.cadres.forEach(c => {
-                    ajouterCadre(null, c.type, c.w, c.h);
-                    let caNodes = document.querySelectorAll('.cadre-item');
-                    let currCa = caNodes[caNodes.length - 1];
-                    
-                    if(c.color) currCa.querySelector('.j-color').value = c.color;
-                    if(c.jSize !== undefined) currCa.querySelector('.j-size').value = c.jSize;
-                    
-                    currCa.querySelector('.manual-qty').value = c.mQty || 5;
-                    let typeBtn = currCa.querySelectorAll('.type-btn')[c.type > 4 ? 4 : c.type - 1];
-                    if(typeBtn) setCadreMode(typeBtn, c.type);
-                    
-                    let selects = currCa.querySelectorAll('.m-sel');
-                    if(c.selects) c.selects.forEach((val, idx) => { if(selects[idx]) selects[idx].value = val; });
+                    ajouterCadre(null, c.type, c.w, c.h); let caNodes = document.querySelectorAll('.cadre-item'); let currCa = caNodes[caNodes.length - 1];
+                    if(c.color) currCa.querySelector('.j-color').value = c.color; if(c.jSize !== undefined) currCa.querySelector('.j-size').value = c.jSize;
+                    currCa.querySelector('.manual-qty').value = c.mQty || 5; let typeBtn = currCa.querySelectorAll('.type-btn')[c.type > 4 ? 4 : c.type - 1]; if(typeBtn) setCadreMode(typeBtn, c.type);
+                    let selects = currCa.querySelectorAll('.m-sel'); if(c.selects) c.selects.forEach((val, idx) => { if(selects[idx]) selects[idx].value = val; });
                     updateCadreData(currCa);
                 });
             }
-            
             if(data.finition) {
-                document.getElementById('joint-size').value = data.finition.jointSize || 0;
-                let dispG = document.getElementById('disp-size-global');
-                if(dispG) dispG.value = data.finition.jointSize || 0;
-                
-                document.getElementById('ext-j-size').value = data.finition.extSize || 0;
-                if(data.finition.extColor) document.getElementById('ext-j-color').value = data.finition.extColor;
+                document.getElementById('joint-size').value = data.finition.jointSize || 0; let dispG = document.getElementById('disp-size-global'); if(dispG) dispG.value = data.finition.jointSize || 0;
+                document.getElementById('ext-j-size').value = data.finition.extSize || 0; if(data.finition.extColor) document.getElementById('ext-j-color').value = data.finition.extColor;
             }
-            
             switchTab('tab-forge', document.querySelectorAll('.tab-btn')[1]);
         }
 
-        // --- OUTILS FORGE V47 ---
+        // --- OUTILS FORGE ---
         function getPrevTotalH(block) {
             let prev = block.previousElementSibling;
             if(prev && prev.classList.contains('block-item')) {
                 let pDir = prev.querySelector('.s-dir').value;
-                if(pDir === 'M') {
-                    let multiParts = prev.querySelector('.s-h-multi').value.split(' ').filter(Boolean);
-                    let multiTotalH = 0;
-                    multiParts.forEach(part => {
-                        let h = parseFloat(part.split('x')[0]); 
-                        if(h) multiTotalH += h;
-                    });
-                    return multiTotalH;
-                } else {
-                    let pH = parseFloat(prev.querySelector('.s-h').value) || 10;
-                    let pQ = parseInt(prev.querySelector('.s-q').value) || 1;
-                    return (pDir === 'V') ? (pH * pQ) : pH;
-                }
-            }
-            return 0;
+                if(pDir === 'M') { let multiParts = prev.querySelector('.s-h-multi').value.split(' ').filter(Boolean); let multiTotalH = 0; multiParts.forEach(part => { let h = parseFloat(part.split('x')[0]); if(h) multiTotalH += h; }); return multiTotalH; } 
+                else { let pH = parseFloat(prev.querySelector('.s-h').value) || 10; let pQ = parseInt(prev.querySelector('.s-q').value) || 1; return (pDir === 'V') ? (pH * pQ) : pH; }
+            } return 0;
         }
 
         function triggerCascade(startBlock) {
             let current = startBlock.nextElementSibling;
             while(current && current.classList.contains('block-item')) {
-                let prevTotalH = getPrevTotalH(current);
-                let cDir = current.querySelector('.s-dir').value;
-                
+                let prevTotalH = getPrevTotalH(current); let cDir = current.querySelector('.s-dir').value;
                 if(cDir !== 'M') {
                     let val = parseFloat(current.querySelector('.s-w').value) || 10;
-                    if(prevTotalH > 0 && val > 0) {
-                        if(val <= prevTotalH) {
-                            current.querySelector('.s-q').value = Math.max(1, Math.round(prevTotalH / val));
-                            setSeqDir(current.querySelector('.dir-btn'), 'V', true, false); 
-                        } else {
-                            current.querySelector('.s-q').value = 1;
-                            setSeqDir(current.querySelector('.dir-btn'), 'H', true, false);
-                        }
-                    }
-                }
-                updateSeqData(current);
-                current = current.nextElementSibling;
+                    if(prevTotalH > 0 && val > 0) { if(val <= prevTotalH) { current.querySelector('.s-q').value = Math.max(1, Math.round(prevTotalH / val)); setSeqDir(current.querySelector('.dir-btn'), 'V', true, false); } else { current.querySelector('.s-q').value = 1; setSeqDir(current.querySelector('.dir-btn'), 'H', true, false); } }
+                } updateSeqData(current); current = current.nextElementSibling;
             }
         }
 
         function setDim(btn, val) {
-            let block = btn.closest('.block-item');
-            let cadre = btn.closest('.cadre-item');
-            
+            let block = btn.closest('.block-item'); let cadre = btn.closest('.cadre-item');
             if(block) {
-                block.querySelector('.s-w').value = val;
-                block.querySelector('.s-h').value = val;
-                
+                block.querySelector('.s-w').value = val; block.querySelector('.s-h').value = val;
                 let prevTotalH = getPrevTotalH(block);
-                if(prevTotalH > 0 && val > 0) {
-                    if(val <= prevTotalH) {
-                        block.querySelector('.s-q').value = Math.max(1, Math.round(prevTotalH / val));
-                        setSeqDir(block.querySelector('.dir-btn'), 'V', true, false); 
-                    } else {
-                        block.querySelector('.s-q').value = 1;
-                        setSeqDir(block.querySelector('.dir-btn'), 'H', true, false);
-                    }
-                }
-                updateSeqData(block);
-                triggerCascade(block);
+                if(prevTotalH > 0 && val > 0) { if(val <= prevTotalH) { block.querySelector('.s-q').value = Math.max(1, Math.round(prevTotalH / val)); setSeqDir(block.querySelector('.dir-btn'), 'V', true, false); } else { block.querySelector('.s-q').value = 1; setSeqDir(block.querySelector('.dir-btn'), 'H', true, false); } }
+                updateSeqData(block); triggerCascade(block);
             }
-            if(cadre) {
-                cadre.querySelector('.c-w').value = val;
-                cadre.querySelector('.c-h').value = val;
-                updateCadreData(cadre);
-            }
+            if(cadre) { cadre.querySelector('.c-w').value = val; cadre.querySelector('.c-h').value = val; updateCadreData(cadre); }
         }
 
         function setGraphikaMulti(btn) {
-            let block = btn.closest('.block-item');
-            if(!block) return;
-            let prevTotalH = getPrevTotalH(block);
-            if(prevTotalH <= 5) prevTotalH = 10; 
-            let hCenter = prevTotalH - 5; 
-            let wCurrent = hCenter; 
-            let qBorder = Math.max(1, Math.round(wCurrent / 2.5));
-            let formule = `2.5x${qBorder} ${hCenter}x1 2.5x${qBorder}`;
-            
-            block.querySelector('.s-h-multi').value = formule;
-            block.querySelector('.s-w').value = wCurrent; 
-            updateSeqData(block);
-            triggerCascade(block);
+            let block = btn.closest('.block-item'); if(!block) return;
+            let prevTotalH = getPrevTotalH(block); if(prevTotalH <= 5) prevTotalH = 10; 
+            let hCenter = prevTotalH - 5; let wCurrent = hCenter; let qBorder = Math.max(1, Math.round(wCurrent / 2.5));
+            block.querySelector('.s-h-multi').value = `2.5x${qBorder} ${hCenter}x1 2.5x${qBorder}`; block.querySelector('.s-w').value = wCurrent; 
+            updateSeqData(block); triggerCascade(block);
         }
 
         function updateSeqData(block) {
-            let selects = Array.from(block.querySelectorAll('.m-sel'));
-            let seq = selects.map(s => s.value).join(' ');
-            block.querySelector('.s-seq').value = seq;
-            
-            let dir = block.querySelector('.s-dir').value;
-            let w = block.querySelector('.s-w').value || '?';
-            
-            if(dir === 'M') {
-                let multiArr = block.querySelector('.s-h-multi').value.trim().split(/\s+/);
-                let displayH = multiArr.join('+');
-                block.querySelector('.seq-label').innerText = `${seq || '(Vide)'} [${w}x(${displayH})] ✂️`;
-            } else {
-                let h = block.querySelector('.s-h').value || '?';
-                let q = block.querySelector('.s-q').value || '1';
-                let dirIcon = dir === 'H' ? '➡️' : '⬇️';
-                block.querySelector('.seq-label').innerText = `${seq || '(Vide)'} [${w}x${h}] x${q} ${dirIcon}`;
-            }
+            let selects = Array.from(block.querySelectorAll('.m-sel')); let seq = selects.map(s => s.value).join(' '); block.querySelector('.s-seq').value = seq;
+            let dir = block.querySelector('.s-dir').value; let w = block.querySelector('.s-w').value || '?';
+            if(dir === 'M') { let multiArr = block.querySelector('.s-h-multi').value.trim().split(/\s+/); let displayH = multiArr.join('+'); block.querySelector('.seq-label').innerText = `${seq || '(Vide)'} [${w}x(${displayH})] ✂️`; } 
+            else { let h = block.querySelector('.s-h').value || '?'; let q = block.querySelector('.s-q').value || '1'; let dirIcon = dir === 'H' ? '➡️' : '⬇️'; block.querySelector('.seq-label').innerText = `${seq || '(Vide)'} [${w}x${h}] x${q} ${dirIcon}`; }
         }
 
         function updateCadreData(cadre) {
-            let selects = Array.from(cadre.querySelectorAll('.m-sel'));
-            let seq = selects.map(s => s.value).join(' ');
+            let selects = Array.from(cadre.querySelectorAll('.m-sel')); let seq = selects.map(s => s.value).join(' ');
             cadre.querySelector('.c-seq').value = seq;
-            
-            let w = cadre.querySelector('.c-w').value || '?';
-            let h = cadre.querySelector('.c-h').value || '?';
+            let w = cadre.querySelector('.c-w').value || '?'; let h = cadre.querySelector('.c-h').value || '?';
             cadre.querySelector('.cadre-label').innerText = `${seq || '(Vide)'} [${w}x${h}]`;
             updateAllCadresStats();
         }
 
         function updateAllCadresStats() {
             let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
-            let cw = parseFloat(document.getElementById('c-w').value) || 20;
-            let ch = parseFloat(document.getElementById('c-h').value) || 20;
-            
-            let currentW = cw;
-            let currentH = ch;
-            let prevJoint = cJoint;
+            let cw = parseFloat(document.getElementById('c-w').value) || 20; let ch = parseFloat(document.getElementById('c-h').value) || 20;
+            let currentW = cw; let currentH = ch; let prevJoint = cJoint;
 
             document.querySelectorAll('#cadres-container .cadre-item').forEach(cadre => {
-                let bdW = parseFloat(cadre.querySelector('.c-w').value) || 10;
-                let bdH = parseFloat(cadre.querySelector('.c-h').value) || 10;
-                
-                let innerW = currentW + prevJoint * 2;
-                let innerH = currentH + prevJoint * 2;
-                
-                let newW = innerW + bdW * 2;
-                let newH = innerH + bdH * 2;
-
-                let Nx = Math.max(1, Math.round(newW / bdW));
-                let Ny = Math.max(1, Math.round(innerH / bdH));
-                let totalTiles = (Nx * 2) + (Ny * 2);
+                let bdW = parseFloat(cadre.querySelector('.c-w').value) || 10; let bdH = parseFloat(cadre.querySelector('.c-h').value) || 10;
+                let innerW = currentW + prevJoint * 2; let innerH = currentH + prevJoint * 2;
+                let newW = innerW + bdW * 2; let newH = innerH + bdH * 2;
+                let Nx = Math.max(1, Math.round(newW / bdW)); let Ny = Math.max(1, Math.round(innerH / bdH)); let totalTiles = (Nx * 2) + (Ny * 2);
 
                 let counterEl = cadre.querySelector('.tile-counter');
                 if(counterEl) {
-                    let selects = Array.from(cadre.querySelectorAll('.m-sel'));
-                    let seqLen = selects.length;
-                    
-                    if(seqLen > 0 && totalTiles % seqLen !== 0) {
-                         counterEl.style.color = 'var(--magenta)';
-                         counterEl.innerText = `Périmètre : ${totalTiles} carreaux (⚠️ Reste ${totalTiles % seqLen} !)`;
-                    } else {
-                         counterEl.style.color = 'var(--vert)';
-                         counterEl.innerText = `Périmètre : ${totalTiles} carreaux (✅ Parfait pour ${seqLen})`;
-                    }
+                    let seqLen = Array.from(cadre.querySelectorAll('.m-sel')).length;
+                    if(seqLen > 0 && totalTiles % seqLen !== 0) { counterEl.style.color = 'var(--magenta)'; counterEl.innerText = `Périmètre : ${totalTiles} carreaux (⚠️ Reste ${totalTiles % seqLen} !)`; } 
+                    else { counterEl.style.color = 'var(--vert)'; counterEl.innerText = `Périmètre : ${totalTiles} carreaux (✅ Parfait pour ${seqLen})`; }
                 }
-                currentW = newW;
-                currentH = newH;
-                prevJoint = parseFloat(cadre.querySelector('.j-size').value) || 0;
+                currentW = newW; currentH = newH; prevJoint = parseFloat(cadre.querySelector('.j-size').value) || 0;
             });
         }
 
         function getModelsOptionsHTML(defaultChar) {
-            let keys = Object.keys(modeles);
-            if(keys.length === 0) keys = ['A', 'B', 'C', 'D'];
-            if(!keys.includes(defaultChar)) keys.push(defaultChar);
+            let keys = Object.keys(modeles); if(keys.length === 0) keys = ['A', 'B', 'C', 'D']; if(!keys.includes(defaultChar)) keys.push(defaultChar);
             return keys.map(k => `<option value="${k}" ${k === defaultChar ? 'selected' : ''}>${k}</option>`).join('');
         }
 
         function renderModelSelects(container, typeStr) {
-            let block = container.closest('.block-item');
-            let cadre = container.closest('.cadre-item');
-            let item = block || cadre;
-            
-            let cont = item.querySelector('.models-container');
-            let type = parseInt(typeStr);
-            let currentSelects = Array.from(cont.querySelectorAll('.m-sel')).map(s => s.value);
-            let defaults = ['A', 'B', 'C', 'D', 'E'];
-            let html = '';
+            let block = container.closest('.block-item'); let cadre = container.closest('.cadre-item'); let item = block || cadre;
+            let cont = item.querySelector('.models-container'); let type = parseInt(typeStr);
+            let currentSelects = Array.from(cont.querySelectorAll('.m-sel')).map(s => s.value); let defaults = ['A', 'B', 'C', 'D', 'E']; let html = '';
             for(let i=0; i<type; i++) {
                 let char = currentSelects[i] || defaults[i % defaults.length];
                 let isBlock = block ? "updateSeqData(this.closest('.block-item'))" : "updateCadreData(this.closest('.cadre-item'))";
                 html += `<select class="m-sel" onchange="${isBlock}">${getModelsOptionsHTML(char)}</select>`;
-            }
-            cont.innerHTML = html;
-            
-            if(block) updateSeqData(block);
-            if(cadre) updateCadreData(cadre);
+            } cont.innerHTML = html;
+            if(block) updateSeqData(block); if(cadre) updateCadreData(cadre);
         }
 
         function setSeqMode(btn, type) {
-            let block = btn.closest('.block-item');
-            block.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            block.querySelector('.s-type').value = type;
-            
-            let manualConf = block.querySelector('.manual-config');
-            if(type === 5) {
-                manualConf.style.display = 'block';
-                type = parseInt(block.querySelector('.manual-qty').value);
-            } else { manualConf.style.display = 'none'; }
-
-            let dirRow = block.querySelector('.dir-row');
-            dirRow.style.display = 'flex'; 
-            renderModelSelects(block, type);
+            let block = btn.closest('.block-item'); block.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); block.querySelector('.s-type').value = type;
+            let manualConf = block.querySelector('.manual-config'); if(type === 5) { manualConf.style.display = 'block'; type = parseInt(block.querySelector('.manual-qty').value); } else { manualConf.style.display = 'none'; }
+            block.querySelector('.dir-row').style.display = 'flex'; renderModelSelects(block, type);
         }
 
         function setCadreMode(btn, type) {
-            let cadre = btn.closest('.cadre-item');
-            cadre.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            cadre.querySelector('.c-type').value = type;
-            
-            let manualConf = cadre.querySelector('.manual-config');
-            if(type === 5) {
-                manualConf.style.display = 'block';
-                type = parseInt(cadre.querySelector('.manual-qty').value);
-            } else { manualConf.style.display = 'none'; }
-            
+            let cadre = btn.closest('.cadre-item'); cadre.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); cadre.querySelector('.c-type').value = type;
+            let manualConf = cadre.querySelector('.manual-config'); if(type === 5) { manualConf.style.display = 'block'; type = parseInt(cadre.querySelector('.manual-qty').value); } else { manualConf.style.display = 'none'; }
             renderModelSelects(cadre, type);
         }
 
         function setSeqDir(btn, dir, force=false, runCascade=true) {
-            let block = btn.closest('.block-item');
-            let dirRow = block.querySelector('.dir-row');
-            if(dirRow) {
-                dirRow.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
-                let targetBtn = Array.from(dirRow.querySelectorAll('.dir-btn')).find(b => {
-                    if(dir==='H' && b.innerText.includes('HORIZ')) return true;
-                    if(dir==='V' && b.innerText.includes('VERTI')) return true;
-                    if(dir==='M' && b.innerText.includes('MULTI')) return true;
-                    return false;
-                });
-                if(targetBtn) targetBtn.classList.add('active');
-            }
-            
+            let block = btn.closest('.block-item'); let dirRow = block.querySelector('.dir-row');
+            if(dirRow) { dirRow.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active')); let targetBtn = Array.from(dirRow.querySelectorAll('.dir-btn')).find(b => { if(dir==='H' && b.innerText.includes('HORIZ')) return true; if(dir==='V' && b.innerText.includes('VERTI')) return true; if(dir==='M' && b.innerText.includes('MULTI')) return true; return false; }); if(targetBtn) targetBtn.classList.add('active'); }
             block.querySelector('.s-dir').value = dir;
-            
-            let colH = block.querySelector('.dim-h-col');
-            let colQ = block.querySelector('.dim-q-col');
-            let multiZone = block.querySelector('.multi-dims-zone');
-            let quickSizes = block.querySelector('.classic-sizes');
-            
-            if(dir === 'M') {
-                colH.style.display = 'none';
-                colQ.style.display = 'none';
-                quickSizes.style.display = 'none';
-                multiZone.style.display = 'block';
-            } else {
-                colH.style.display = 'block';
-                colQ.style.display = 'block';
-                quickSizes.style.display = 'grid';
-                multiZone.style.display = 'none';
-                
-                if(dir === 'H' && !force) {
-                    let prevTotalH = getPrevTotalH(block);
-                    if(prevTotalH > 0) {
-                        block.querySelector('.s-w').value = prevTotalH;
-                        block.querySelector('.s-h').value = prevTotalH;
-                        block.querySelector('.s-q').value = 1;
-                    }
-                }
+            let colH = block.querySelector('.dim-h-col'); let colQ = block.querySelector('.dim-q-col'); let multiZone = block.querySelector('.multi-dims-zone'); let quickSizes = block.querySelector('.classic-sizes');
+            if(dir === 'M') { colH.style.display = 'none'; colQ.style.display = 'none'; quickSizes.style.display = 'none'; multiZone.style.display = 'block'; } 
+            else {
+                colH.style.display = 'block'; colQ.style.display = 'block'; quickSizes.style.display = 'grid'; multiZone.style.display = 'none';
+                if(dir === 'H' && !force) { let prevTotalH = getPrevTotalH(block); if(prevTotalH > 0) { block.querySelector('.s-w').value = prevTotalH; block.querySelector('.s-h').value = prevTotalH; block.querySelector('.s-q').value = 1; } }
             }
-            updateSeqData(block);
-            if(runCascade) triggerCascade(block);
+            updateSeqData(block); if(runCascade) triggerCascade(block);
         }
 
         function chargerModeles(e) {
             if(!e.target.files.length) return;
             Array.from(e.target.files).forEach(f => {
-                let r = new FileReader();
-                r.onload = ev => {
-                    let i = new Image();
-                    i.onload = () => {
-                        let l = String.fromCharCode(letterIdx++);
-                        modeles[l] = { img: i, uri: ev.target.result };
-                        let d = document.createElement('div');
-                        d.style.cssText = "position:relative; background:#111; border:1px solid var(--magenta); padding:5px; text-align:center; height:60px;";
+                let r = new FileReader(); r.onload = ev => {
+                    let i = new Image(); i.onload = () => {
+                        let l = String.fromCharCode(letterIdx++); modeles[l] = { img: i, uri: ev.target.result };
+                        let d = document.createElement('div'); d.style.cssText = "position:relative; background:#111; border:1px solid var(--magenta); padding:5px; text-align:center; height:60px;";
                         d.innerHTML = `<div style="position:absolute; top:-5px; left:-5px; background:var(--magenta); border-radius:50%; width:16px; height:16px; font-size:10px; color:white;">${l}</div><img src="${ev.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
                         document.getElementById('model-list').appendChild(d);
-                        
-                        document.querySelectorAll('.block-item').forEach(b => {
-                            let type = parseInt(b.querySelector('.s-type').value);
-                            renderModelSelects(b, type === 5 ? b.querySelector('.manual-qty').value : type);
-                        });
-                        document.querySelectorAll('.cadre-item').forEach(c => {
-                            let type = parseInt(c.querySelector('.c-type').value);
-                            renderModelSelects(c, type === 5 ? c.querySelector('.manual-qty').value : type);
-                        });
-                    };
-                    i.src = ev.target.result;
-                };
-                r.readAsDataURL(f);
-            });
-            e.target.value = '';
+                        document.querySelectorAll('.block-item').forEach(b => { let type = parseInt(b.querySelector('.s-type').value); renderModelSelects(b, type === 5 ? b.querySelector('.manual-qty').value : type); });
+                        document.querySelectorAll('.cadre-item').forEach(c => { let type = parseInt(c.querySelector('.c-type').value); renderModelSelects(c, type === 5 ? c.querySelector('.manual-qty').value : type); });
+                    }; i.src = ev.target.result;
+                }; r.readAsDataURL(f);
+            }); e.target.value = '';
         }
 
-        function toggleLine(btn) {
-            let content = btn.closest('.ligne-item').querySelector('.line-content');
-            if (content.style.display === 'none') { content.style.display = 'block'; btn.innerText = '🔽'; } 
-            else { content.style.display = 'none'; btn.innerText = '▶️'; }
-        }
-
-        function toggleSeq(btn) {
-            let content = btn.closest('.block-item') || btn.closest('.cadre-item');
-            let realContent = content.querySelector('.seq-content');
-            if (realContent.style.display === 'none') { realContent.style.display = 'block'; btn.innerText = '🔽'; } 
-            else { realContent.style.display = 'none'; btn.innerText = '▶️'; }
-        }
+        function toggleLine(btn) { let content = btn.closest('.ligne-item').querySelector('.line-content'); if (content.style.display === 'none') { content.style.display = 'block'; btn.innerText = '🔽'; } else { content.style.display = 'none'; btn.innerText = '▶️'; } }
+        function toggleSeq(btn) { let content = btn.closest('.block-item') || btn.closest('.cadre-item'); let realContent = content.querySelector('.seq-content'); if (realContent.style.display === 'none') { realContent.style.display = 'block'; btn.innerText = '🔽'; } else { realContent.style.display = 'none'; btn.innerText = '▶️'; } }
 
         function ajouterLigne() {
-            ligneCounter++;
-            let d = document.createElement('div');
-            d.className = 'box ligne-item';
+            ligneCounter++; let d = document.createElement('div'); d.className = 'box ligne-item';
             d.innerHTML = `
-                <div class="row" style="background:#0a0a15; margin:-10px -10px 10px -10px; padding:10px; border-bottom:1px solid #333;">
-                    <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleLine(this)">🔽</button>
-                    <input type="text" class="editable-name" value="LIGNE ${ligneCounter}">
-                    <input type="hidden" class="j-color" value="#111111">
-                    <div style="display:flex; gap:4px;">
-                        <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.ligne-item'), 'up')">↑</button>
-                        <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.ligne-item'), 'down')">↓</button>
-                        <button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.ligne-item'))">👯</button>
-                        <button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.ligne-item').remove()">❌</button>
-                    </div>
-                </div>
-                <div class="line-content">
-                    <div class="blocs-container"></div>
-                    <button class="btn" style="background:var(--vert); color:#000; padding:8px; margin-top:8px;" onclick="ajouterSequence(this.previousElementSibling)">+ AJOUTER SÉQUENCE</button>
-                </div>
+                <div class="row" style="background:#0a0a15; margin:-10px -10px 10px -10px; padding:10px; border-bottom:1px solid #333;"><button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleLine(this)">🔽</button><input type="text" class="editable-name" value="LIGNE ${ligneCounter}"><input type="hidden" class="j-color" value="#111111"><div style="display:flex; gap:4px;"><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.ligne-item'), 'up')">↑</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.ligne-item'), 'down')">↓</button><button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.ligne-item'))">👯</button><button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.ligne-item').remove()">❌</button></div></div>
+                <div class="line-content"><div class="blocs-container"></div><button class="btn" style="background:var(--vert); color:#000; padding:8px; margin-top:8px;" onclick="ajouterSequence(this.previousElementSibling)">+ AJOUTER SÉQUENCE</button></div>
             `;
-            document.getElementById('lignes-container').appendChild(d);
-            ajouterSequence(d.querySelector('.blocs-container'), 1); 
+            document.getElementById('lignes-container').appendChild(d); ajouterSequence(d.querySelector('.blocs-container'), 1); 
         }
 
         function ajouterSequence(cont, type=1, insertAfter = null) {
-            let b = document.createElement('div');
-            b.className = 'block-item';
+            let b = document.createElement('div'); b.className = 'block-item';
             b.innerHTML = `
-                <div class="seq-header">
-                    <div class="seq-title"><span class="seq-label"></span></div>
-                    <div style="display:flex; gap:4px; flex-shrink: 0;">
-                        <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button>
-                        <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.block-item'), 'up')">↑</button>
-                        <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.block-item'), 'down')">↓</button>
-                        <button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterSequence(this.closest('.blocs-container'), 1, this.closest('.block-item'))">➕</button>
-                        <button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.block-item'))">👯</button>
-                        <button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.block-item').remove()">❌</button>
-                    </div>
-                </div>
-                <div class="seq-content">
-                    <div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;">
-                        <button class="btn-mini type-btn" onclick="setSeqMode(this, 1)">SIMPLE</button>
-                        <button class="btn-mini type-btn" onclick="setSeqMode(this, 2)">DOUBLE</button>
-                        <button class="btn-mini type-btn" onclick="setSeqMode(this, 3)">TRIPLE</button>
-                        <button class="btn-mini type-btn" onclick="setSeqMode(this, 4)">QUAD.</button>
-                        <button class="btn-mini type-btn" onclick="setSeqMode(this, 5)">MANUEL</button>
-                        <input type="hidden" class="s-type" value="${type}">
-                    </div>
-                    <div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;">
-                        <span class="label-sm" style="display:inline-block; margin-right:5px;">Nb:</span>
-                        <input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;">
-                    </div>
-                    <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div>
-                    <div class="row dir-row" style="margin-top:10px; justify-content:center;">
-                        <button class="btn-mini dir-btn active" onclick="setSeqDir(this, 'H')">➡️ HORIZ.</button>
-                        <button class="btn-mini dir-btn" onclick="setSeqDir(this, 'V')">⬇️ VERTI.</button>
-                        <button class="btn-mini dir-btn" style="background:#421; border-color:var(--magenta); max-width:60px;" onclick="setSeqDir(this, 'M')">MULTI</button>
-                        <input type="hidden" class="s-dir" value="H">
-                    </div>
-                    <div class="multi-dims-zone" style="display:none; background:#1a1a24; padding:10px; border-radius:4px; margin-top:5px; border:1px dashed var(--magenta);">
-                        <input type="text" class="s-h-multi" value="2.5x2 5x1 2.5x2" placeholder="Ex: 2.5x2 5x1" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center; margin-bottom:5px; color:var(--magenta); font-weight:bold;">
-                        <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta); font-size:11px; padding:8px 15px; width:100%;" onclick="setGraphikaMulti(this)">Rendu Graphika Auto</button>
-                    </div>
-                    <div class="quick-sizes classic-sizes" style="margin-top:15px; grid-template-columns: repeat(4, 1fr);">
-                        <button class="qs-btn" onclick="setDim(this, 2.5)">2.5</button>
-                        <button class="qs-btn" onclick="setDim(this, 5)">5</button>
-                        <button class="qs-btn" onclick="setDim(this, 7.5)">7.5</button>
-                        <button class="qs-btn" onclick="setDim(this, 10)">10</button>
-                    </div>
-                    <div class="row">
-                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
-                        <div style="flex:1" class="dim-h-col"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
-                        <div style="flex:1" class="dim-q-col"><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
-                        <input type="hidden" class="s-seq" value="">
-                    </div>
-                </div>
+                <div class="seq-header"><div class="seq-title"><span class="seq-label"></span></div><div style="display:flex; gap:4px; flex-shrink: 0;"><button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.block-item'), 'up')">↑</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.block-item'), 'down')">↓</button><button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterSequence(this.closest('.blocs-container'), 1, this.closest('.block-item'))">➕</button><button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.block-item'))">👯</button><button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.block-item').remove()">❌</button></div></div>
+                <div class="seq-content"><div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;"><button class="btn-mini type-btn" onclick="setSeqMode(this, 1)">SIMPLE</button><button class="btn-mini type-btn" onclick="setSeqMode(this, 2)">DOUBLE</button><button class="btn-mini type-btn" onclick="setSeqMode(this, 3)">TRIPLE</button><button class="btn-mini type-btn" onclick="setSeqMode(this, 4)">QUAD.</button><button class="btn-mini type-btn" onclick="setSeqMode(this, 5)">MANUEL</button><input type="hidden" class="s-type" value="${type}"></div><div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;"><span class="label-sm" style="display:inline-block; margin-right:5px;">Nb:</span><input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;"></div><div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div><div class="row dir-row" style="margin-top:10px; justify-content:center;"><button class="btn-mini dir-btn active" onclick="setSeqDir(this, 'H')">➡️ HORIZ.</button><button class="btn-mini dir-btn" onclick="setSeqDir(this, 'V')">⬇️ VERTI.</button><button class="btn-mini dir-btn" style="background:#421; border-color:var(--magenta); max-width:60px;" onclick="setSeqDir(this, 'M')">MULTI</button><input type="hidden" class="s-dir" value="H"></div><div class="multi-dims-zone" style="display:none; background:#1a1a24; padding:10px; border-radius:4px; margin-top:5px; border:1px dashed var(--magenta);"><input type="text" class="s-h-multi" value="2.5x2 5x1 2.5x2" placeholder="Ex: 2.5x2 5x1" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center; margin-bottom:5px; color:var(--magenta); font-weight:bold;"><button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta); font-size:11px; padding:8px 15px; width:100%;" onclick="setGraphikaMulti(this)">Rendu Graphika Auto</button></div><div class="quick-sizes classic-sizes" style="margin-top:15px; grid-template-columns: repeat(4, 1fr);"><button class="qs-btn" onclick="setDim(this, 2.5)">2.5</button><button class="qs-btn" onclick="setDim(this, 5)">5</button><button class="qs-btn" onclick="setDim(this, 7.5)">7.5</button><button class="qs-btn" onclick="setDim(this, 10)">10</button></div><div class="row"><div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div><div style="flex:1" class="dim-h-col"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div><div style="flex:1" class="dim-q-col"><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div><input type="hidden" class="s-seq" value=""></div></div>
             `;
-            if (insertAfter) cont.insertBefore(b, insertAfter.nextSibling);
-            else cont.appendChild(b);
-            let typeBtn = b.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1];
-            setSeqMode(typeBtn, type); 
-            triggerCascade(b); 
+            if (insertAfter) cont.insertBefore(b, insertAfter.nextSibling); else cont.appendChild(b);
+            let typeBtn = b.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1]; setSeqMode(typeBtn, type); triggerCascade(b); 
         }
 
         function ajouterCadre(insertAfter = null, type = 2, w = 10, h = 10) {
-            cadreCounter++;
-            let d = document.createElement('div');
-            d.className = 'cadre-item';
+            cadreCounter++; let d = document.createElement('div'); d.className = 'cadre-item';
             d.innerHTML = `
-                <div class="seq-header" style="border-bottom-color: var(--vert);">
-                    <div class="cadre-title"><span class="cadre-label"></span></div>
-                    <input type="hidden" class="j-color" value="#111111">
-                    <input type="hidden" class="j-size" value="0">
-                    <div style="display:flex; gap:4px; flex-shrink: 0;">
-                        <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button>
-                        <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button>
-                        <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'down')">↓</button>
-                        <button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button>
-                        <button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.cadre-item'))">👯</button>
-                        <button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.cadre-item').remove()">❌</button>
-                    </div>
-                </div>
-                <div class="seq-content">
-                    <div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;">
-                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 1)">SIMPLE</button>
-                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 2)">DOUBLE</button>
-                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 3)">TRIPLE</button>
-                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 4)">QUAD.</button>
-                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 5)">MANUEL</button>
-                        <input type="hidden" class="c-type" value="${type}">
-                    </div>
-                    <div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;">
-                        <span class="label-sm" style="display:inline-block; margin-right:5px;">Nb:</span>
-                        <input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;">
-                    </div>
-                    <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div>
-                    <div class="tile-counter">Périmètre: Calcul en cours...</div>
-                    <div class="quick-sizes" style="margin-top:15px; grid-template-columns: repeat(4, 1fr);">
-                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 2.5)">2.5</button>
-                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 5)">5</button>
-                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 7.5)">7.5</button>
-                        <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 10)">10</button>
-                    </div>
-                    <div class="row">
-                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
-                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
-                        <input type="hidden" class="c-seq" value="">
-                    </div>
-                </div>
+                <div class="seq-header" style="border-bottom-color: var(--vert);"><div class="cadre-title"><span class="cadre-label"></span></div><input type="hidden" class="j-color" value="#111111"><input type="hidden" class="j-size" value="0"><div style="display:flex; gap:4px; flex-shrink: 0;"><button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'down')">↓</button><button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button><button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.cadre-item'))">👯</button><button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.cadre-item').remove()">❌</button></div></div>
+                <div class="seq-content"><div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;"><button class="btn-mini type-btn" onclick="setCadreMode(this, 1)">SIMPLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 2)">DOUBLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 3)">TRIPLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 4)">QUAD.</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 5)">MANUEL</button><input type="hidden" class="c-type" value="${type}"></div><div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;"><span class="label-sm" style="display:inline-block; margin-right:5px;">Nb:</span><input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;"></div><div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div><div class="tile-counter">Périmètre: Calcul en cours...</div><div class="quick-sizes" style="margin-top:15px; grid-template-columns: repeat(4, 1fr);"><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 2.5)">2.5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 5)">5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 7.5)">7.5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 10)">10</button></div><div class="row"><div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div><div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div><input type="hidden" class="c-seq" value=""></div></div>
             `;
-            const cont = document.getElementById('cadres-container');
-            if (insertAfter) cont.insertBefore(d, insertAfter.nextSibling);
-            else cont.appendChild(d);
-            let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1];
-            setCadreMode(typeBtn, type);
+            if (insertAfter) cont.insertBefore(d, insertAfter.nextSibling); else cont.appendChild(d);
+            let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1]; setCadreMode(typeBtn, type);
         }
 
-        // 🥷 V47 FIX: Les fonctions vitales disparues ont été restaurées ici.
         function move(el, dir) {
             if(dir==='up' && el.previousElementSibling) el.parentNode.insertBefore(el, el.previousElementSibling);
             if(dir==='down' && el.nextElementSibling) el.parentNode.insertBefore(el.nextElementSibling, el);
@@ -1104,34 +670,24 @@
         }
         
         function duplicateBlock(el) { 
-            let clone = el.cloneNode(true); 
-            let origInputs = el.querySelectorAll('input, select');
-            let cloneInputs = clone.querySelectorAll('input, select');
+            let clone = el.cloneNode(true); let origInputs = el.querySelectorAll('input, select'); let cloneInputs = clone.querySelectorAll('input, select');
             for(let i=0; i<origInputs.length; i++) { cloneInputs[i].value = origInputs[i].value; }
             el.parentNode.insertBefore(clone, el.nextSibling); 
             if(clone.classList.contains('block-item')) { updateSeqData(clone); triggerCascade(clone); }
             if(clone.classList.contains('cadre-item')) { updateCadreData(clone); }
         }
 
-        const touchZone = document.getElementById('touch-zone');
-        const canvasWrap = document.getElementById('canvas-wrapper');
-        let t_scale = 1, t_posX = 0, t_posY = 0;
-        let t_startDist = 0, t_startScale = 1;
-        let t_dragStart = {x: 0, y: 0}, t_posStart = {x: 0, y: 0};
-        let isDragging = false;
-
+        // --- GESTION DU ZOOM TACTILE ---
+        const touchZone = document.getElementById('touch-zone'); const canvasWrap = document.getElementById('canvas-wrapper');
+        let t_scale = 1, t_posX = 0, t_posY = 0; let t_startDist = 0, t_startScale = 1; let t_dragStart = {x: 0, y: 0}, t_posStart = {x: 0, y: 0}; let isDragging = false;
         touchZone.addEventListener('touchstart', e => {
             if(e.touches.length === 1) { isDragging = true; t_dragStart.x = e.touches[0].clientX; t_dragStart.y = e.touches[0].clientY; t_posStart.x = t_posX; t_posStart.y = t_posY; }
             else if(e.touches.length === 2) { isDragging = false; t_startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); t_startScale = t_scale; }
         });
-
         touchZone.addEventListener('touchmove', e => {
             e.preventDefault(); 
             if(e.touches.length === 1 && isDragging) { t_posX = t_posStart.x + (e.touches[0].clientX - t_dragStart.x); t_posY = t_posStart.y + (e.touches[0].clientY - t_dragStart.y); updateTransform(); }
-            else if(e.touches.length === 2) {
-                let dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                t_scale = Math.max(0.05, Math.min(t_startScale * (dist / t_startDist), 5)); updateTransform();
-            }
+            else if(e.touches.length === 2) { let dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); t_scale = Math.max(0.05, Math.min(t_startScale * (dist / t_startDist), 5)); updateTransform(); }
         }, {passive: false});
         touchZone.addEventListener('touchend', e => { if(e.touches.length < 2) isDragging = false; });
         function updateTransform() { canvasWrap.style.transform = `translate(${t_posX}px, ${t_posY}px) scale(${t_scale})`; }
@@ -1143,38 +699,28 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING ---
+        // --- 🧠 LE COEUR DE PARSING V48 (JOINTS CREUX 100%) ---
         function parseWall() {
-            let totalW = 0, totalH = 0;
-            let tiles = [];
-            let backgrounds = [];
+            let totalW = 0, totalH = 0; let tiles = []; let backgrounds = [];
             let globalJointSize = parseFloat(document.getElementById('joint-size').value) || 0;
             
             if(mode === 'lineaire') {
                 let lines = [];
                 document.querySelectorAll('.ligne-item').forEach(li => {
-                    let lw = 0, lh = 0, blocks = [];
-                    let lColor = li.querySelector('.j-color').value || '#111111';
+                    let lw = 0, lh = 0, blocks = []; let lColor = li.querySelector('.j-color').value || '#111111';
                     li.querySelectorAll('.block-item').forEach(bl => {
-                        let selects = Array.from(bl.querySelectorAll('.m-sel'));
-                        let sequence = selects.map(s => s.value).filter(Boolean);
-                        let w = parseFloat(bl.querySelector('.s-w').value) || 10;
-                        let h = parseFloat(bl.querySelector('.s-h').value) || 10; 
-                        let q = parseInt(bl.querySelector('.s-q').value) || 1;
-                        let dir = bl.querySelector('.s-dir').value;
+                        let selects = Array.from(bl.querySelectorAll('.m-sel')); let sequence = selects.map(s => s.value).filter(Boolean);
+                        let w = parseFloat(bl.querySelector('.s-w').value) || 10; let h = parseFloat(bl.querySelector('.s-h').value) || 10; 
+                        let q = parseInt(bl.querySelector('.s-q').value) || 1; let dir = bl.querySelector('.s-dir').value;
                         if(sequence.length === 0) sequence = [''];
-                        
                         if(dir === 'M') {
                             let multiParts = bl.querySelector('.s-h-multi').value.trim().split(/\s+/);
                             let chirData = []; let totalHMulti = 0;
                             multiParts.forEach(part => {
-                                let dims = part.split('x');
-                                let h = parseFloat(dims[0]); let qH = parseInt(dims[1]) || 1; 
+                                let dims = part.split('x'); let h = parseFloat(dims[0]); let qH = parseInt(dims[1]) || 1; 
                                 if(h) { chirData.push({h, qH}); totalHMulti += h; }
                             });
-                            if(chirData.length > 0) {
-                                blocks.push({sequence, w, h: 0, q: 1, dir, bW: w, bH: totalHMulti, chirData}); lw += w; lh = Math.max(lh, totalHMulti);
-                            }
+                            if(chirData.length > 0) { blocks.push({sequence, w, h: 0, q: 1, dir, bW: w, bH: totalHMulti, chirData}); lw += w; lh = Math.max(lh, totalHMulti); }
                         } else {
                             if(q > 0) { let bW = (dir === 'H') ? w * q : w; let bH = (dir === 'V') ? h * q : h; blocks.push({sequence, w, h, q, dir, bW, bH}); lw += bW; lh = Math.max(lh, bH); }
                         }
@@ -1186,8 +732,10 @@
                 
                 let curY = 0;
                 lines.forEach((line, idx) => {
-                    let hBg = line.lh + (idx === lines.length - 1 ? 0 : globalJointSize);
-                    backgrounds.push({ x: 0, y: curY, w: totalW, h: hBg, color: line.color });
+                    if (idx > 0 && globalJointSize > 0) {
+                        backgrounds.push({ type: 'joint', x: 0, y: curY, w: totalW, h: globalJointSize, t: globalJointSize, color: line.color, linear: true });
+                        curY += globalJointSize;
+                    }
                     let curX = (totalW - line.lw) / 2;
                     line.blocks.forEach(b => {
                         let startX = curX, startY = curY;
@@ -1204,7 +752,7 @@
                         }
                         curX += b.bW;
                     });
-                    curY += line.lh + globalJointSize;
+                    curY += line.lh;
                 });
             } else {
                 let cw = parseFloat(document.getElementById('c-w').value) || 30; let ch = parseFloat(document.getElementById('c-h').value) || 30;
@@ -1219,12 +767,19 @@
                 cadres.forEach(c => { totalW += curJointSize * 2 + c.w * 2; totalH += curJointSize * 2 + c.h * 2; curJointSize = c.jSize; });
                 let extJoint = parseFloat(document.getElementById('ext-j-size').value) || 0; let extColor = document.getElementById('ext-j-color').value || '#111111';
                 totalW += extJoint * 2; totalH += extJoint * 2;
-                let curW = cw; let curH = ch; let bgJoint = cJoint; let bgColor = cColor;
-                if(bgJoint > 0 || cadres.length === 0) backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor });
-                cadres.forEach((c, idx) => { curW += 2*bgJoint + 2*c.w; curH += 2*bgJoint + 2*c.h; if(idx < cadres.length - 1) { bgJoint = c.jSize; bgColor = c.color; if(bgJoint > 0) backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor }); } });
-                if (cadres.length > 0 && extJoint > 0) backgrounds.push({ w: curW + 2*extJoint, h: curH + 2*extJoint, color: extColor });
-                else if (cadres.length === 0 && extJoint > 0) backgrounds.push({ w: curW + 2*bgJoint + 2*extJoint, h: curH + 2*bgJoint + 2*extJoint, color: extColor });
+                
+                let curW = cw; let curH = ch; let pJ = cJoint;
+                if (pJ > 0) { backgrounds.push({ type: 'joint', x: (totalW - curW)/2 - pJ, y: (totalH - curH)/2 - pJ, w: curW + 2*pJ, h: curH + 2*pJ, t: pJ, color: cColor }); }
+                cadres.forEach((c, idx) => {
+                    curW += 2*pJ + 2*c.w; curH += 2*pJ + 2*c.h; pJ = c.jSize;
+                    if (pJ > 0) backgrounds.push({ type: 'joint', x: (totalW - curW)/2 - pJ, y: (totalH - curH)/2 - pJ, w: curW + 2*pJ, h: curH + 2*pJ, t: pJ, color: c.color });
+                });
+                if (extJoint > 0) {
+                    curW += 2*pJ; curH += 2*pJ;
+                    backgrounds.push({ type: 'joint', x: (totalW - curW)/2 - extJoint, y: (totalH - curH)/2 - extJoint, w: curW + 2*extJoint, h: curH + 2*extJoint, t: extJoint, color: extColor });
+                }
                 backgrounds.sort((a,b) => b.w - a.w);
+
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
                 let currentTotalW = cw, currentTotalH = ch; let curP = cJoint;
                 cadres.forEach(c => {
@@ -1244,77 +799,87 @@
             } return { tiles, backgrounds, totalW, totalH };
         }
 
-        // --- 🖼️ GENERATEUR DE CADRES 3D (V47 : Ombres fines et biseau photoréaliste) ---
-        function generateWoodTexture(width, height, color1, color2, grainWidth) {
+        function drawBackgrounds(ctx, backgrounds, baseScale, dpr) {
+            backgrounds.forEach(bg => {
+                ctx.fillStyle = bg.color;
+                if(bg.linear) {
+                    ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale);
+                } else if(bg.type === 'joint') {
+                    // Dessin creux = 4 rectangles 
+                    let bx = bg.x * baseScale, by = bg.y * baseScale, bw = bg.w * baseScale, bh = bg.h * baseScale, bt = bg.t * baseScale;
+                    ctx.fillRect(bx, by, bw, bt); // Haut
+                    ctx.fillRect(bx, by + bh - bt, bw, bt); // Bas
+                    ctx.fillRect(bx, by + bt, bt, bh - 2*bt); // Gauche
+                    ctx.fillRect(bx + bw - bt, by + bt, bt, bh - 2*bt); // Droite
+                }
+            });
+        }
+
+        // --- 🖼️ GENERATEUR DE CADRES 3D (V48 : Photoréaliste avec profils complexes) ---
+        function generateMarbleTexture(width, height, baseColor, veinColor1, veinColor2) {
             let canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; let ctx = canvas.getContext('2d');
-            ctx.fillStyle = color1; ctx.fillRect(0, 0, width, height); ctx.strokeStyle = color2; ctx.lineWidth = grainWidth;
-            for (let i = 0; i < height; i += grainWidth * 2) {
+            ctx.fillStyle = baseColor; ctx.fillRect(0, 0, width, height); ctx.globalAlpha = 0.5;
+            for(let i=0; i<150; i++) {
+                ctx.beginPath(); let x = Math.random() * width; let y = Math.random() * height; ctx.moveTo(x, y);
+                for(let j=0; j<8; j++) { x += (Math.random() - 0.5) * 60; y += (Math.random() - 0.5) * 60; ctx.lineTo(x, y); }
+                ctx.strokeStyle = Math.random() > 0.5 ? veinColor1 : veinColor2; ctx.lineWidth = Math.random() * 4; ctx.stroke();
+            } ctx.globalAlpha = 1.0; return canvas;
+        }
+
+        function generateWoodTexture(width, height, color1, color2) {
+            let canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; let ctx = canvas.getContext('2d');
+            ctx.fillStyle = color1; ctx.fillRect(0, 0, width, height); ctx.strokeStyle = color2; ctx.lineWidth = 2;
+            for (let i = 0; i < height; i += 4) {
                 ctx.beginPath(); ctx.moveTo(0, i);
-                for (let j = 0; j < width; j += 10) ctx.lineTo(j, i + Math.sin(j * 0.05 + i * 0.1) * 2);
+                for (let j = 0; j < width; j += 15) ctx.lineTo(j, i + Math.sin(j * 0.05 + i * 0.1) * 3);
                 ctx.stroke();
             } return canvas;
         }
 
-        function generateStoneTexture(width, height, baseColor, noiseColor1, noiseColor2, noiseScale) {
-            let canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; let ctx = canvas.getContext('2d');
-            ctx.fillStyle = baseColor; ctx.fillRect(0, 0, width, height);
-            for (let i = 0; i < width; i += noiseScale) {
-                for (let j = 0; j < height; j += noiseScale) {
-                    let rand = Math.random(); if (rand > 0.6) ctx.fillStyle = noiseColor1; else if (rand > 0.3) ctx.fillStyle = noiseColor2; else ctx.fillStyle = baseColor;
-                    ctx.fillRect(i, j, noiseScale, noiseScale);
-                }
-            } return canvas;
-        }
-
         function draw3DFrame(ctx, width, height, thickness, material, title, usePlaque) {
-            let woodTextureCanvas, stoneTextureCanvas, pattern;
-            
-            if(material === 'noyer') woodTextureCanvas = generateWoodTexture(thickness, thickness, '#3E2723', '#261412', 2); 
-            else if(material === 'chene') woodTextureCanvas = generateWoodTexture(thickness, thickness, '#8B5A2B', '#a06f3d', 2); 
-            else if(material === 'serpentine') stoneTextureCanvas = generateStoneTexture(thickness, thickness, '#2E4A35', '#1f3323', '#3d6347', 2); 
-            else if(material === 'amethyste') stoneTextureCanvas = generateStoneTexture(thickness, thickness, '#5B3256', '#3d2139', '#7a4373', 2); 
-            else if(material === 'obsidienne') stoneTextureCanvas = generateStoneTexture(thickness, thickness, '#1a1a1a', '#0a0a0a', '#2a2a2a', 2); 
+            let patternCanvas, pattern;
+            if(material === 'noyer') patternCanvas = generateWoodTexture(thickness*2, thickness*2, '#3E2723', '#1a0d0b'); 
+            else if(material === 'chene') patternCanvas = generateWoodTexture(thickness*2, thickness*2, '#8B5A2B', '#5c3a1a'); 
+            else if(material === 'serpentine') patternCanvas = generateMarbleTexture(thickness*2, thickness*2, '#2E4A35', '#1f3323', '#4b7556'); 
+            else if(material === 'amethyste') patternCanvas = generateMarbleTexture(thickness*2, thickness*2, '#5B3256', '#3d2139', '#8a4c82'); 
+            else if(material === 'obsidienne') patternCanvas = generateMarbleTexture(thickness*2, thickness*2, '#1a1a1a', '#050505', '#333333'); 
 
-            if(woodTextureCanvas) pattern = ctx.createPattern(woodTextureCanvas, 'repeat');
-            if(stoneTextureCanvas) pattern = ctx.createPattern(stoneTextureCanvas, 'repeat');
+            if(patternCanvas) pattern = ctx.createPattern(patternCanvas, 'repeat');
             
-            // HAUT 
-            ctx.fillStyle = pattern;
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(width, 0); ctx.lineTo(width - thickness, thickness); ctx.lineTo(thickness, thickness); ctx.fill();
-            let gradientTop = ctx.createLinearGradient(0, 0, thickness, thickness); gradientTop.addColorStop(0, 'rgba(255,255,255,0.25)'); gradientTop.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = gradientTop; ctx.fill();
+            let outT = thickness * 0.15; // Biseau extérieur
+            let inT = thickness * 0.15; // Biseau intérieur
             
-            // BAS 
-            ctx.fillStyle = pattern; ctx.beginPath(); ctx.moveTo(width, height); ctx.lineTo(0, height); ctx.lineTo(thickness, height - thickness); ctx.lineTo(width - thickness, height - thickness); ctx.fill();
-            let gradientBottom = ctx.createLinearGradient(0, height, thickness, height - thickness); gradientBottom.addColorStop(0, 'rgba(0,0,0,0.6)'); gradientBottom.addColorStop(0.5, 'rgba(0,0,0,0.2)'); gradientBottom.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = gradientBottom; ctx.fill();
-            
-            // GAUCHE 
-            ctx.fillStyle = pattern; ctx.beginPath(); ctx.moveTo(0, height); ctx.lineTo(0, 0); ctx.lineTo(thickness, thickness); ctx.lineTo(thickness, height - thickness); ctx.fill();
-            let gradientLeft = ctx.createLinearGradient(0, 0, thickness, thickness); gradientLeft.addColorStop(0, 'rgba(255,255,255,0.1)'); gradientLeft.addColorStop(1, 'rgba(0,0,0,0.1)');
-            ctx.fillStyle = gradientLeft; ctx.fill();
-            
-            // DROITE 
-            ctx.fillStyle = pattern; ctx.beginPath(); ctx.moveTo(width, 0); ctx.lineTo(width, height); ctx.lineTo(width - thickness, height - thickness); ctx.lineTo(width - thickness, thickness); ctx.fill();
-            let gradientRight = ctx.createLinearGradient(width, 0, width - thickness, thickness); gradientRight.addColorStop(0, 'rgba(0,0,0,0.4)'); gradientRight.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = gradientRight; ctx.fill();
+            // Base pleine
+            ctx.fillStyle = pattern; ctx.fillRect(0, 0, width, height);
+            ctx.clearRect(thickness, thickness, width - 2*thickness, height - 2*thickness);
 
-            // Bordure intérieure (l'ombre du biseau vers la toile)
-            ctx.strokeStyle = '#000'; ctx.lineWidth = thickness * 0.05; ctx.strokeRect(thickness, thickness, width - thickness*2, height - thickness*2);
-            // Bordure extérieure
-            ctx.strokeStyle = '#222'; ctx.lineWidth = thickness * 0.02; ctx.strokeRect(0, 0, width, height);
+            // Biseaux Extérieurs
+            ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(width,0); ctx.lineTo(width-outT, outT); ctx.lineTo(outT, outT); ctx.fill();
+            ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.beginPath(); ctx.moveTo(0,height); ctx.lineTo(width,height); ctx.lineTo(width-outT, height-outT); ctx.lineTo(outT, height-outT); ctx.fill();
+            ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,height); ctx.lineTo(outT, height-outT); ctx.lineTo(outT, outT); ctx.fill();
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.moveTo(width,0); ctx.lineTo(width,height); ctx.lineTo(width-outT, height-outT); ctx.lineTo(width-outT, outT); ctx.fill();
+
+            // Biseaux Intérieurs (inversés)
+            ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.moveTo(thickness,thickness); ctx.lineTo(width-thickness,thickness); ctx.lineTo(width-thickness+inT, thickness-inT); ctx.lineTo(thickness-inT, thickness-inT); ctx.fill();
+            ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.beginPath(); ctx.moveTo(thickness,height-thickness); ctx.lineTo(width-thickness,height-thickness); ctx.lineTo(width-thickness+inT, height-thickness+inT); ctx.lineTo(thickness-inT, height-thickness+inT); ctx.fill();
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.moveTo(thickness,thickness); ctx.lineTo(thickness,height-thickness); ctx.lineTo(thickness-inT, height-thickness+inT); ctx.lineTo(thickness-inT, thickness-inT); ctx.fill();
+            ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.moveTo(width-thickness,thickness); ctx.lineTo(width-thickness,height-thickness); ctx.lineTo(width-thickness+inT, height-thickness+inT); ctx.lineTo(width-thickness+inT, thickness-inT); ctx.fill();
+
+            // Lignes de découpe (Mitres)
+            ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = thickness * 0.01;
+            ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(thickness, thickness); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(width,0); ctx.lineTo(width-thickness, thickness); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0,height); ctx.lineTo(thickness, height-thickness); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(width,height); ctx.lineTo(width-thickness, height-thickness); ctx.stroke();
 
             // Plaque en Or 
             if(usePlaque && title && title !== "") {
-                let plaqueW = width * 0.45; let plaqueH = thickness * 0.7; 
-                let plaqueX = (width - plaqueW) / 2; let plaqueY = height - thickness + (thickness * 0.15); // Centrage Y dans la bordure basse
+                let plaqueW = width * 0.45; let plaqueH = thickness * 0.5; 
+                let plaqueX = (width - plaqueW) / 2; let plaqueY = height - thickness + (thickness * 0.25);
 
-                // Or dégradé
                 let gradient = ctx.createLinearGradient(plaqueX, plaqueY, plaqueX, plaqueY + plaqueH); gradient.addColorStop(0, "#f1c40f"); gradient.addColorStop(0.5, "#d3b878"); gradient.addColorStop(1, "#b39858");
                 ctx.fillStyle = gradient; ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 5; ctx.fillRect(plaqueX, plaqueY, plaqueW, plaqueH);
-                
                 ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#5a4611'; ctx.lineWidth = 3; ctx.strokeRect(plaqueX, plaqueY, plaqueW, plaqueH);
-
                 ctx.fillStyle = "#332505"; ctx.font = `bold ${plaqueH * 0.4}px serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.4)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 0; ctx.fillText(title, width / 2, plaqueY + (plaqueH / 2)); ctx.restore();
             }
@@ -1326,13 +891,13 @@
             const baseScale = 40; const dpr = window.devicePixelRatio || 2; 
             let { tiles, backgrounds, totalW, totalH } = parseWall();
             prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
-            backgrounds.forEach(bg => { ctx.fillStyle = bg.color; if(mode === 'lineaire') ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); else { let x = (totalW - bg.w)/2; let y = (totalH - bg.h)/2; ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale); } });
+            drawBackgrounds(ctx, backgrounds, baseScale, dpr);
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
             document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm 💎 HD`; document.getElementById('render-modal').style.display = 'flex';
             setTimeout(() => { let cssW = (totalW || 10) * baseScale; let cssH = (totalH || 10) * baseScale; resetCamera(cssW, cssH); }, 50);
         }
 
-        // --- 🖼️ EXPORT ULTIME 8K ENCADRE V47 ---
+        // --- 🖼️ EXPORT ULTIME 8K ENCADRE V48 ---
         function exportFramedImage() {
             let { tiles, backgrounds, totalW, totalH } = parseWall();
             let baseScale = 40; 
@@ -1354,17 +919,14 @@
             let ctx = exportCanvas.getContext('2d');
             ctx.scale(scaleFactor, scaleFactor); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
 
-            // 1. Cadre 3D 
             draw3DFrame(ctx, totalPxW, totalPxH, pxFrame, material, title, usePlaque);
 
-            // 2. Ombre portée complexe intérieure (Drop Shadow du cadre sur l'oeuvre)
             ctx.save(); ctx.translate(pxFrame, pxFrame);
-            ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 60 * scaleFactor; ctx.shadowOffsetX = 10 * scaleFactor; ctx.shadowOffsetY = 15 * scaleFactor;
+            ctx.shadowColor = 'rgba(0,0,0,0.95)'; ctx.shadowBlur = 40 * scaleFactor; ctx.shadowOffsetX = 10 * scaleFactor; ctx.shadowOffsetY = 15 * scaleFactor;
             ctx.fillStyle = "#111"; ctx.fillRect(0, 0, pxWallW, pxWallH); ctx.restore();
 
-            // 3. Le mur texturé
             ctx.save(); ctx.translate(pxFrame, pxFrame);
-            backgrounds.forEach(bg => { ctx.fillStyle = bg.color; if(mode === 'lineaire') ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); else { let x = (totalW - bg.w)/2; let y = (totalH - bg.h)/2; ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale); } });
+            drawBackgrounds(ctx, backgrounds, baseScale, 1);
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
             ctx.restore();
             
@@ -1381,7 +943,7 @@
             let exportCanvas = document.createElement('canvas'); exportCanvas.width = pixelW * scaleFactor; exportCanvas.height = pixelH * scaleFactor;
             let ctx = exportCanvas.getContext('2d'); ctx.scale(scaleFactor, scaleFactor); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
             ctx.fillStyle = "#111"; ctx.fillRect(0, 0, pixelW, pixelH);
-            backgrounds.forEach(bg => { ctx.fillStyle = bg.color; if(mode === 'lineaire') ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); else { let x = (totalW - bg.w)/2; let y = (totalH - bg.h)/2; ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale); } });
+            drawBackgrounds(ctx, backgrounds, baseScale, 1);
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
             let nom = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
             let cleanedNom = nom.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '');
@@ -1404,4 +966,3 @@
     </script>
 </body>
 </html>
-
