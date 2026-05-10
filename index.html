@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V29.0</title>
+    <title>Daguerre OS V30.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V29.0</small>
+        <small>ÉDITION NUCLÉAIRE V30.0</small>
     </div>
 
     <div id="settings-area">
@@ -199,14 +199,20 @@
             updateAllCadresStats();
         }
 
-        // 🧠 L'ARCHITECTURE AUTONOME : LIGNES
+        // 🧠 L'ARCHITECTURE AUTONOME : LIGNES (Cascade)
         function getPrevTotalH(block) {
             let prev = block.previousElementSibling;
             if(prev && prev.classList.contains('block-item')) {
-                let pH = parseFloat(prev.querySelector('.s-h').value) || 10;
-                let pQ = parseInt(prev.querySelector('.s-q').value) || 1;
                 let pDir = prev.querySelector('.s-dir').value;
-                return (pDir === 'V') ? (pH * pQ) : pH;
+                if(pDir === 'M') {
+                    // Si le voisin du dessus est un V-MULTI, on additionne ses hauteurs
+                    let multiH = prev.querySelector('.s-h-multi').value.split(' ').map(parseFloat).filter(Boolean);
+                    return multiH.reduce((a, b) => a + b, 0);
+                } else {
+                    let pH = parseFloat(prev.querySelector('.s-h').value) || 10;
+                    let pQ = parseInt(prev.querySelector('.s-q').value) || 1;
+                    return (pDir === 'V') ? (pH * pQ) : pH;
+                }
             }
             return 0;
         }
@@ -215,14 +221,19 @@
             let current = startBlock.nextElementSibling;
             while(current && current.classList.contains('block-item')) {
                 let prevTotalH = getPrevTotalH(current);
-                let val = parseFloat(current.querySelector('.s-w').value) || 10;
-                if(prevTotalH > 0 && val > 0) {
-                    if(val <= prevTotalH) {
-                        current.querySelector('.s-q').value = Math.max(1, Math.round(prevTotalH / val));
-                        setSeqDir(current.querySelector('.dir-btn'), 'V', true, false); 
-                    } else {
-                        current.querySelector('.s-q').value = 1;
-                        setSeqDir(current.querySelector('.dir-btn'), 'H', true, false);
+                let cDir = current.querySelector('.s-dir').value;
+                
+                // On ne modifie pas les tailles d'un bloc V-MULTI, on laisse l'utilisateur gèrer sa frise.
+                if(cDir !== 'M') {
+                    let val = parseFloat(current.querySelector('.s-w').value) || 10;
+                    if(prevTotalH > 0 && val > 0) {
+                        if(val <= prevTotalH) {
+                            current.querySelector('.s-q').value = Math.max(1, Math.round(prevTotalH / val));
+                            setSeqDir(current.querySelector('.dir-btn'), 'V', true, false); 
+                        } else {
+                            current.querySelector('.s-q').value = 1;
+                            setSeqDir(current.querySelector('.dir-btn'), 'H', true, false);
+                        }
                     }
                 }
                 updateSeqData(current);
@@ -258,20 +269,37 @@
             }
         }
 
+        // 🔀 NOUVEAU: Set Multi-Dimensions
+        function setMulti(btn, str) {
+            let block = btn.closest('.block-item');
+            if(block) {
+                block.querySelector('.s-h-multi').value = str;
+                updateSeqData(block);
+                triggerCascade(block);
+            }
+        }
+
+        // 👁️ TITRES DYNAMIQUES
         function updateSeqData(block) {
             let selects = Array.from(block.querySelectorAll('.m-sel'));
             let seq = selects.map(s => s.value).join(' ');
             block.querySelector('.s-seq').value = seq;
             
+            let dir = block.querySelector('.s-dir').value;
             let w = block.querySelector('.s-w').value || '?';
-            let h = block.querySelector('.s-h').value || '?';
-            let q = block.querySelector('.s-q').value || '1';
-            let dir = block.querySelector('.s-dir').value === 'H' ? '➡️' : '⬇️';
             
-            block.querySelector('.seq-label').innerText = `${seq || '(Vide)'} [${w}x${h}] x${q} ${dir}`;
+            if(dir === 'M') {
+                let multiArr = block.querySelector('.s-h-multi').value.trim().split(/\s+/);
+                let displayH = multiArr.join('+');
+                block.querySelector('.seq-label').innerText = `${seq || '(Vide)'} [${w}x(${displayH})] ✂️`;
+            } else {
+                let h = block.querySelector('.s-h').value || '?';
+                let q = block.querySelector('.s-q').value || '1';
+                let dirIcon = dir === 'H' ? '➡️' : '⬇️';
+                block.querySelector('.seq-label').innerText = `${seq || '(Vide)'} [${w}x${h}] x${q} ${dirIcon}`;
+            }
         }
 
-        // 🧠 L'ARCHITECTURE AUTONOME : CADRES
         function updateCadreData(cadre) {
             let selects = Array.from(cadre.querySelectorAll('.m-sel'));
             let seq = selects.map(s => s.value).join(' ');
@@ -281,7 +309,7 @@
             let h = cadre.querySelector('.c-h').value || '?';
             cadre.querySelector('.cadre-label').innerText = `${seq || '(Vide)'} [${w}x${h}]`;
             
-            updateAllCadresStats(); // Recalcul du périmètre pour tous les cadres en cascade
+            updateAllCadresStats();
         }
 
         function updateAllCadresStats() {
@@ -319,7 +347,6 @@
             });
         }
 
-        // --- WIZARD GENERATOR ---
         function getModelsOptionsHTML(defaultChar) {
             let keys = Object.keys(modeles);
             if(keys.length === 0) keys = ['A', 'B', 'C', 'D'];
@@ -363,12 +390,7 @@
             }
 
             let dirRow = block.querySelector('.dir-row');
-            if(type === 1 && block.querySelector('.s-type').value != 5) {
-                dirRow.style.display = 'none';
-                setSeqDir(block.querySelector('.dir-btn'), 'H', true); // Force Horizontal pour Simple
-            } else {
-                dirRow.style.display = 'flex';
-            }
+            dirRow.style.display = 'flex'; // V28: Toujours visible !
             
             renderModelSelects(block, type);
         }
@@ -390,25 +412,47 @@
             renderModelSelects(cadre, type);
         }
 
+        // ✂️ V30: GESTION DE LA DIRECTION + MULTI
         function setSeqDir(btn, dir, force=false, runCascade=true) {
             let block = btn.closest('.block-item');
+            
             let dirRow = block.querySelector('.dir-row');
             if(dirRow) {
                 dirRow.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
-                let targetBtn = Array.from(dirRow.querySelectorAll('.dir-btn')).find(b => b.innerText.includes(dir === 'H' ? 'HORI' : 'VERTI'));
+                let targetBtn = Array.from(dirRow.querySelectorAll('.dir-btn')).find(b => {
+                    if(dir==='H' && b.innerText.includes('HORI')) return true;
+                    if(dir==='V' && b.innerText.includes('VERTI')) return true;
+                    if(dir==='M' && b.innerText.includes('MULTI')) return true;
+                    return false;
+                });
                 if(targetBtn) targetBtn.classList.add('active');
             }
             
             block.querySelector('.s-dir').value = dir;
             
-            if(dir === 'H' && !force) {
-                let prevTotalH = getPrevTotalH(block);
-                if(prevTotalH > 0) {
-                    block.querySelector('.s-w').value = prevTotalH;
-                    block.querySelector('.s-h').value = prevTotalH;
-                    block.querySelector('.s-q').value = 1;
+            let colH = block.querySelector('.dim-h-col');
+            let colQ = block.querySelector('.dim-q-col');
+            let multiZone = block.querySelector('.multi-dims-zone');
+            
+            if(dir === 'M') {
+                colH.style.display = 'none';
+                colQ.style.display = 'none';
+                multiZone.style.display = 'block';
+            } else {
+                colH.style.display = 'block';
+                colQ.style.display = 'block';
+                multiZone.style.display = 'none';
+                
+                if(dir === 'H' && !force) {
+                    let prevTotalH = getPrevTotalH(block);
+                    if(prevTotalH > 0) {
+                        block.querySelector('.s-w').value = prevTotalH;
+                        block.querySelector('.s-h').value = prevTotalH;
+                        block.querySelector('.s-q').value = 1;
+                    }
                 }
             }
+            
             updateSeqData(block);
             if(runCascade) triggerCascade(block);
         }
@@ -516,10 +560,21 @@
                     
                     <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div>
 
-                    <div class="row dir-row" style="display:none; margin-top:10px;">
-                        <button class="btn-mini dir-btn" onclick="setSeqDir(this, 'H')">➡️ HORIZ.</button>
+                    <div class="row dir-row" style="margin-top:10px;">
+                        <button class="btn-mini dir-btn active" onclick="setSeqDir(this, 'H')">➡️ HORIZ.</button>
                         <button class="btn-mini dir-btn" onclick="setSeqDir(this, 'V')">⬇️ VERTI.</button>
+                        <button class="btn-mini dir-btn" style="background:#421; border-color:var(--magenta);" onclick="setSeqDir(this, 'M')">✂️ V-MULTI</button>
                         <input type="hidden" class="s-dir" value="H">
+                    </div>
+
+                    <div class="multi-dims-zone" style="display:none; background:#1a1a24; padding:10px; border-radius:4px; margin-top:5px; border:1px dashed var(--magenta);">
+                        <span class="label-sm" style="color:var(--magenta); text-align:center;">Découpe Verticale (Hauteurs en cm espacées)</span>
+                        <input type="text" class="s-h-multi" value="2.5 5 2.5" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center; margin-bottom:5px; color:var(--magenta); font-weight:bold;">
+                        <div class="quick-sizes" style="grid-template-columns: repeat(3, 1fr); margin:0;">
+                            <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta);" onclick="setMulti(this, '2.5 5 2.5')">2.5-5-2.5</button>
+                            <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta);" onclick="setMulti(this, '1.25 2.5 1.25')">1.25-2.5-1.25</button>
+                            <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta);" onclick="setMulti(this, '5 10 5')">5-10-5</button>
+                        </div>
                     </div>
 
                     <div class="quick-sizes" style="margin-top:15px;">
@@ -535,8 +590,8 @@
 
                     <div class="row">
                         <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
-                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
-                        <div style="flex:1"><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1" class="dim-h-col"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1" class="dim-q-col"><span class="label-sm">Qté</span><input type="number" class="s-q" value="1" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
                         <input type="hidden" class="s-seq" value="">
                     </div>
                 </div>
@@ -692,7 +747,7 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING ---
+        // --- 🧠 LE COEUR DE PARSING UNIVERSEL (INCLUANT V-MULTI) ---
         function parseWall() {
             let totalW = 0, totalH = 0;
             let tiles = [];
@@ -702,31 +757,59 @@
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lw = 0, lh = 0, blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
-                        let selects = Array.from(bl.querySelectorAll('.m-sel'));
-                        let sequence = selects.map(s => s.value).filter(Boolean);
-                        let w = parseFloat(bl.querySelector('.s-w').value) || 10, h = parseFloat(bl.querySelector('.s-h').value) || 10, q = parseInt(bl.querySelector('.s-q').value) || 1;
+                        let sequence = bl.querySelector('.s-seq').value.toUpperCase().split(' ').filter(Boolean);
+                        let w = parseFloat(bl.querySelector('.s-w').value) || 10;
+                        let h = parseFloat(bl.querySelector('.s-h').value) || 10; 
+                        let q = parseInt(bl.querySelector('.s-q').value) || 1;
                         let dir = bl.querySelector('.s-dir').value;
+                        
                         if(sequence.length === 0) sequence = [''];
-                        if(q > 0) {
-                            let bW = (dir === 'H') ? w * q : w;
-                            let bH = (dir === 'V') ? h * q : h;
-                            blocks.push({sequence, w, h, q, dir, bW, bH});
-                            lw += bW; lh = Math.max(lh, bH);
+                        
+                        if(dir === 'M') {
+                            // MODE V-MULTI
+                            let hMulti = bl.querySelector('.s-h-multi').value.split(' ').map(parseFloat).filter(Boolean);
+                            if(hMulti.length > 0) {
+                                let totalHMulti = hMulti.reduce((a, b) => a + b, 0);
+                                blocks.push({sequence, w, h: 0, q: 1, dir, bW: w, bH: totalHMulti, hMulti});
+                                lw += w; lh = Math.max(lh, totalHMulti);
+                            }
+                        } else {
+                            // STANDARD H / V
+                            if(q > 0) {
+                                let bW = (dir === 'H') ? w * q : w;
+                                let bH = (dir === 'V') ? h * q : h;
+                                blocks.push({sequence, w, h, q, dir, bW, bH});
+                                lw += bW; lh = Math.max(lh, bH);
+                            }
                         }
                     });
                     lines.push({blocks, lw, lh});
                     totalW = Math.max(totalW, lw); totalH += lh;
                 });
+                
                 let curY = 0;
                 lines.forEach(line => {
                     let curX = (totalW - line.lw) / 2;
                     line.blocks.forEach(b => {
                         let startX = curX, startY = curY;
-                        for(let i=0; i<b.q; i++) {
-                            let char = b.sequence[i % b.sequence.length];
-                            let dx = startX + (b.dir==='H' ? i*b.w : 0);
-                            let dy = startY + (b.dir==='V' ? i*b.h : 0);
-                            tiles.push({l: char, x: dx, y: dy, w: b.w, h: b.h});
+                        
+                        if(b.dir === 'M') {
+                            // Rendu V-MULTI
+                            let currentY = startY;
+                            for(let i=0; i<b.hMulti.length; i++) {
+                                let char = b.sequence[i % b.sequence.length];
+                                let hTile = b.hMulti[i];
+                                tiles.push({l: char, x: startX, y: currentY, w: b.w, h: hTile});
+                                currentY += hTile;
+                            }
+                        } else {
+                            // Rendu STANDARD
+                            for(let i=0; i<b.q; i++) {
+                                let char = b.sequence[i % b.sequence.length];
+                                let dx = startX + (b.dir==='H' ? i*b.w : 0);
+                                let dy = startY + (b.dir==='V' ? i*b.h : 0);
+                                tiles.push({l: char, x: dx, y: dy, w: b.w, h: b.h});
+                            }
                         }
                         curX += b.bW;
                     });
@@ -777,7 +860,6 @@
             return { tiles, totalW, totalH };
         }
 
-        // --- RENDERER V29 (AFFICHAGE) ---
         function render() {
             const canvas = document.getElementById('c');
             const ctx = canvas.getContext('2d');
@@ -798,7 +880,6 @@
             }, 50);
         }
 
-        // 📸 L'IMPRIMERIE DAGUERRE : EXPORT 8K PUR
         function exporterImage() {
             let { tiles, totalW, totalH } = parseWall();
             let baseScale = 40; 
