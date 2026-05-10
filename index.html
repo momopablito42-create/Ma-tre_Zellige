@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V34.0</title>
+    <title>Daguerre OS V35.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V34.0</small>
+        <small>ÉDITION NUCLÉAIRE V35.0</small>
     </div>
 
     <div id="settings-area">
@@ -89,11 +89,31 @@
             <div class="section-title">⚔️ Arsenal des Sceaux</div>
             <button class="btn" style="background: var(--magenta); color: #fff;" onclick="document.getElementById('fileUploader').click()">+ INJECTER DES MODÈLES</button>
             <input type="file" id="fileUploader" accept="image/*" multiple style="display:none;" onchange="chargerModeles(event)">
-            <div id="model-list" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:15px;"></div>
+            <div id="model-list" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:15px; margin-bottom:30px;"></div>
+
+            <div class="section-title" style="color:var(--cyan); border-color:var(--cyan);">📜 Bibliothèque de Grimoires</div>
+            <div class="box" style="border-color:var(--cyan);">
+                <span class="label-sm" style="color:var(--cyan);">Sélectionner un Template Sauvegardé</span>
+                <select id="library-select" class="m-sel" style="width:100%; margin-bottom:10px; background:#000;"></select>
+                
+                <div class="row">
+                    <button class="btn" style="background:var(--cyan); color:#000; flex:1;" onclick="loadFromLibrary()">⬇️ CHARGER</button>
+                    <button class="btn-icon-sm btn-red" style="width:40px; height:40px; font-size:14px;" onclick="deleteFromLibrary()">❌</button>
+                </div>
+                <hr style="border-color:#333; margin:15px 0;">
+                <button class="btn" style="background:#333; color:#fff;" onclick="document.getElementById('templateUploader').click()">📂 IMPORTER UN JSON (Ancien)</button>
+                <input type="file" id="templateUploader" accept=".json" style="display:none;" onchange="importTemplate(event)">
+            </div>
         </div>
 
         <div id="tab-forge" class="tab-content">
             <div class="section-title">⛩️ Forge Zellige</div>
+            
+            <div class="row" style="margin-bottom: 20px; background:#111; padding:5px; border-radius:4px; border:1px dashed #444;">
+                <button class="btn-mini" style="background:#222; border-color:#555;" onclick="saveToLibrary()">💾 SAUVER (BIBLIO)</button>
+                <button class="btn-mini" style="background:#222; border-color:#555;" onclick="exportTemplate()">⬇️ EXPORT JSON</button>
+            </div>
+
             <div class="row" style="margin-bottom: 20px;">
                 <button id="m-lin" class="btn btn-mini active" onclick="setMode('lineaire')">LIGNES</button>
                 <button id="m-con" class="btn btn-mini" onclick="setMode('concentrique')">CADRES</button>
@@ -178,6 +198,13 @@
 
     <script>
         let modeles = {}, letterIdx = 65, mode = 'lineaire';
+        let library = JSON.parse(localStorage.getItem('daguerre_lib')) || {};
+
+        function init() {
+            updateLibraryUI();
+            ajouterLigne();
+            ajouterCadre();
+        }
 
         function switchTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
@@ -193,6 +220,181 @@
             ['lineaire','concentrique','fractale'].forEach(x => document.getElementById(`area-${x}`).style.display = (x===m)?'block':'none');
         }
 
+        // --- 💾 GESTION DE LA BIBLIOTHÈQUE ---
+        function updateLibraryUI() {
+            let sel = document.getElementById('library-select');
+            sel.innerHTML = '<option value="">-- Choisir un Grimoire --</option>';
+            for(let name in library) {
+                sel.innerHTML += `<option value="${name}">${name}</option>`;
+            }
+        }
+
+        function getForgeData() {
+            let data = { v: 35, mode: mode, lignes: [], coeur: {}, cadres: [] };
+            
+            document.querySelectorAll('.ligne-item').forEach(li => {
+                let lName = li.querySelector('.editable-name').value;
+                let blocks = [];
+                li.querySelectorAll('.block-item').forEach(bl => {
+                    blocks.push({
+                        type: parseInt(bl.querySelector('.s-type').value),
+                        mQty: parseInt(bl.querySelector('.manual-qty').value),
+                        selects: Array.from(bl.querySelectorAll('.m-sel')).map(s=>s.value),
+                        dir: bl.querySelector('.s-dir').value,
+                        multi: bl.querySelector('.s-h-multi').value,
+                        w: parseFloat(bl.querySelector('.s-w').value),
+                        h: parseFloat(bl.querySelector('.s-h').value),
+                        q: parseInt(bl.querySelector('.s-q').value)
+                    });
+                });
+                data.lignes.push({name: lName, blocks});
+            });
+            
+            data.coeur = {
+                mod: document.getElementById('c-mod').value,
+                w: parseFloat(document.getElementById('c-w').value),
+                h: parseFloat(document.getElementById('c-h').value)
+            };
+            
+            document.querySelectorAll('.cadre-item').forEach(ca => {
+                data.cadres.push({
+                    type: parseInt(ca.querySelector('.c-type').value),
+                    mQty: parseInt(ca.querySelector('.manual-qty').value),
+                    selects: Array.from(ca.querySelectorAll('.m-sel')).map(s=>s.value),
+                    w: parseFloat(ca.querySelector('.c-w').value),
+                    h: parseFloat(ca.querySelector('.c-h').value)
+                });
+            });
+            return data;
+        }
+
+        function saveToLibrary() {
+            let name = prompt("Nom de ce Grimoire :");
+            if(!name) return;
+            library[name] = getForgeData();
+            localStorage.setItem('daguerre_lib', JSON.stringify(library));
+            updateLibraryUI();
+            alert("✅ Grimoire sauvegardé dans l'Arsenal !");
+        }
+
+        function deleteFromLibrary() {
+            let name = document.getElementById('library-select').value;
+            if(!name) return;
+            if(confirm(`Supprimer le grimoire ${name} ?`)) {
+                delete library[name];
+                localStorage.setItem('daguerre_lib', JSON.stringify(library));
+                updateLibraryUI();
+            }
+        }
+
+        function exportTemplate() {
+            let data = getForgeData();
+            let nom = document.getElementById('nom-projet').value.trim() || 'Template';
+            let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob); 
+            link.download = nom + "_Template.json"; 
+            link.click();
+        }
+
+        function importTemplate(e) {
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    let data = JSON.parse(event.target.result);
+                    let name = file.name.replace('.json', '');
+                    library[name] = data;
+                    localStorage.setItem('daguerre_lib', JSON.stringify(library));
+                    updateLibraryUI();
+                    alert(`✅ Grimoire '${name}' ajouté à la Bibliothèque !`);
+                } catch(err) { alert("⚠️ Fichier invalide."); }
+            };
+            reader.readAsText(file); 
+            e.target.value = '';
+        }
+
+        function loadFromLibrary() {
+            let name = document.getElementById('library-select').value;
+            if(!name || !library[name]) return;
+            let data = library[name];
+            
+            if(data.v !== 35) {
+                alert("⚠️ Attention: Ce grimoire utilise une ancienne architecture. Le rendu pourrait être incomplet.");
+            }
+            
+            if(data.mode) setMode(data.mode);
+            
+            // Recharger Lignes
+            if(data.lignes && data.lignes.length > 0) {
+                document.getElementById('lignes-container').innerHTML = '';
+                ligneCounter = 0;
+                data.lignes.forEach(l => {
+                    ajouterLigne();
+                    let liNodes = document.querySelectorAll('.ligne-item');
+                    let currentLi = liNodes[liNodes.length - 1];
+                    currentLi.querySelector('.editable-name').value = l.name;
+                    
+                    let cont = currentLi.querySelector('.blocs-container');
+                    cont.innerHTML = ''; // Efface la sequence par defaut
+                    
+                    l.blocks.forEach(b => {
+                        ajouterSequence(cont, b.type);
+                        let blNodes = cont.querySelectorAll('.block-item');
+                        let currBl = blNodes[blNodes.length - 1];
+                        
+                        currBl.querySelector('.manual-qty').value = b.mQty || 5;
+                        let typeBtn = currBl.querySelectorAll('.type-btn')[b.type > 4 ? 4 : b.type - 1];
+                        if(typeBtn) setSeqMode(typeBtn, b.type);
+                        
+                        let selects = currBl.querySelectorAll('.m-sel');
+                        if(b.selects) b.selects.forEach((val, idx) => { if(selects[idx]) selects[idx].value = val; });
+                        
+                        currBl.querySelector('.s-h-multi').value = b.multi || '';
+                        currBl.querySelector('.s-w').value = b.w || 10;
+                        currBl.querySelector('.s-h').value = b.h || 10;
+                        currBl.querySelector('.s-q').value = b.q || 1;
+                        
+                        let dirBtn = Array.from(currBl.querySelectorAll('.dir-btn')).find(btn => {
+                            if(b.dir==='H' && btn.innerText.includes('HORIZ')) return true;
+                            if(b.dir==='V' && btn.innerText.includes('VERTI')) return true;
+                            if(b.dir==='M' && btn.innerText.includes('MULTI')) return true;
+                            return false;
+                        });
+                        if(dirBtn) setSeqDir(dirBtn, b.dir, true, false);
+                    });
+                });
+            }
+
+            // Recharger Cadres
+            if(data.coeur) {
+                document.getElementById('c-mod').value = data.coeur.mod || '';
+                document.getElementById('c-w').value = data.coeur.w || 20;
+                document.getElementById('c-h').value = data.coeur.h || 20;
+            }
+            if(data.cadres && data.cadres.length > 0) {
+                document.getElementById('cadres-container').innerHTML = '';
+                cadreCounter = 0;
+                data.cadres.forEach(c => {
+                    ajouterCadre(null, c.type, c.w, c.h);
+                    let caNodes = document.querySelectorAll('.cadre-item');
+                    let currCa = caNodes[caNodes.length - 1];
+                    
+                    currCa.querySelector('.manual-qty').value = c.mQty || 5;
+                    let typeBtn = currCa.querySelectorAll('.type-btn')[c.type > 4 ? 4 : c.type - 1];
+                    if(typeBtn) setCadreMode(typeBtn, c.type);
+                    
+                    let selects = currCa.querySelectorAll('.m-sel');
+                    if(c.selects) c.selects.forEach((val, idx) => { if(selects[idx]) selects[idx].value = val; });
+                    updateCadreData(currCa);
+                });
+            }
+            
+            switchTab('tab-forge', document.querySelectorAll('.tab-btn')[1]);
+        }
+
+        // --- OUTILS FORGE ---
         function setCoeurDim(v) { 
             document.getElementById('c-w').value = v; 
             document.getElementById('c-h').value = v; 
@@ -271,15 +473,13 @@
             }
         }
 
-        // 🧠 L'Auto-Calcul Graphika (V34)
         function setGraphikaMulti(btn) {
             let block = btn.closest('.block-item');
             if(!block) return;
             
             let prevTotalH = getPrevTotalH(block);
-            if(prevTotalH <= 5) prevTotalH = 10; // Sécurité si c'est la toute première ligne ou trop petit
+            if(prevTotalH <= 5) prevTotalH = 10;
 
-            // Calcul des dimensions de la fractale Graphika
             let hCenter = prevTotalH - 5; 
             let wCurrent = hCenter; 
             let qBorder = Math.max(1, Math.round(wCurrent / 2.5));
@@ -287,7 +487,7 @@
             let formule = `2.5x${qBorder} ${hCenter}x1 2.5x${qBorder}`;
             
             block.querySelector('.s-h-multi').value = formule;
-            block.querySelector('.s-w').value = wCurrent; // Force la largeur pour correspondre au carré central
+            block.querySelector('.s-w').value = wCurrent; 
             
             updateSeqData(block);
             triggerCascade(block);
@@ -512,8 +712,6 @@
             else { realContent.style.display = 'none'; btn.innerText = '▶️'; }
         }
 
-        // --- GESTION LIGNES & SEQUENCES ---
-        let ligneCounter = 0;
         function ajouterLigne() {
             ligneCounter++;
             let d = document.createElement('div');
@@ -544,10 +742,10 @@
             b.innerHTML = `
                 <div class="seq-header">
                     <div class="seq-title">
-                        <button class="btn-icon btn-icon-sm" style="margin-right:8px; background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <span class="seq-label"></span>
                     </div>
                     <div style="display:flex; gap:4px; flex-shrink: 0;">
+                        <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.block-item'), 'up')">↑</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.block-item'), 'down')">↓</button>
                         <button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterSequence(this.closest('.blocs-container'), 1, this.closest('.block-item'))">➕</button>
@@ -614,8 +812,6 @@
             triggerCascade(b); 
         }
 
-        // --- GESTION CADRES ---
-        let cadreCounter = 0;
         function ajouterCadre(insertAfter = null, type = 2, w = 10, h = 10) {
             cadreCounter++;
             let d = document.createElement('div');
@@ -623,10 +819,10 @@
             d.innerHTML = `
                 <div class="seq-header" style="border-bottom-color: var(--vert);">
                     <div class="cadre-title">
-                        <button class="btn-icon btn-icon-sm" style="margin-right:8px; background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <span class="cadre-label"></span>
                     </div>
                     <div style="display:flex; gap:4px; flex-shrink: 0;">
+                        <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'down')">↓</button>
                         <button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button>
@@ -672,22 +868,6 @@
             
             let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1];
             setCadreMode(typeBtn, type);
-        }
-
-        function genererFractale() {
-            setMode('concentrique');
-            document.getElementById('c-mod').value = document.getElementById('f-mod').value;
-            document.getElementById('c-w').value = document.getElementById('f-size').value;
-            document.getElementById('c-h').value = document.getElementById('f-size').value;
-            let seq = document.getElementById('f-seq').value.split(' ').filter(Boolean);
-            let n = parseInt(document.getElementById('f-iter').value);
-            document.getElementById('cadres-container').innerHTML = "";
-            let curSize = parseFloat(document.getElementById('f-size').value);
-            for(let i=0; i<n; i++) {
-                curSize = curSize / seq.length;
-                let d = ajouterCadre(null, seq.length, curSize, curSize);
-            }
-            render();
         }
 
         function move(el, dir) {
@@ -975,10 +1155,7 @@
             }
         }
 
-        // Init
-        ajouterLigne();
-        ajouterCadre();
-        updateAllCadresStats();
+        window.onload = init;
     </script>
 </body>
 </html>
