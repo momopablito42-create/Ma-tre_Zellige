@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V39.0</title>
+    <title>Daguerre OS V40.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V39.0</small>
+        <small>ÉDITION NUCLÉAIRE V40.0</small>
     </div>
 
     <div id="settings-area">
@@ -127,6 +127,7 @@
 
             <div id="area-concentrique" style="display:none;">
                 <div class="box" style="border-color: var(--vert);">
+                    <input type="hidden" id="c-j-color" class="j-color" value="#111111">
                     <span class="label-sm">Lettre(s) du Cœur</span>
                     <input type="text" id="c-mod" value="" placeholder="(Vide)" oninput="updateAllCadresStats()" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
                     <div class="quick-sizes" style="grid-template-columns: repeat(5, 1fr);">
@@ -162,20 +163,31 @@
         <div id="tab-finition" class="tab-content">
             <div class="section-title">💎 Sertissage & Joints</div>
             <div class="box" style="border-color: var(--cyan);">
-                <span class="label-sm" style="color:var(--cyan);">Épaisseur des Joints (cm) - ex: 0.1 pour 1mm</span>
+                <span class="label-sm" style="color:var(--cyan);">Épaisseur Globale des Joints (cm)</span>
                 <input type="number" id="joint-size" value="0" step="0.1" oninput="updateAllCadresStats()" style="width: 100%; text-align: center; color: var(--jaune); font-weight: bold; margin-bottom: 15px; font-size:16px;">
                 
-                <span class="label-sm" style="color:var(--cyan);">Couleur du Joint (Fond)</span>
-                <div class="row" style="margin-bottom: 0;">
-                    <button class="btn-mini active" style="background:#111; color:#fff;" onclick="setJointColor(this, '#111')">SOMBRE</button>
-                    <button class="btn-mini" style="background:#fff; color:#000;" onclick="setJointColor(this, '#fff')">CLAIR</button>
-                    <button class="btn-mini" style="background:#d3b878; color:#000;" onclick="setJointColor(this, '#d3b878')">OR</button>
-                    <input type="hidden" id="joint-color" value="#111">
+                <span class="label-sm" style="color:var(--cyan); display:block; margin-bottom:5px;">Couleur Globale (Appliquer à tout)</span>
+                <div class="row" style="margin-bottom: 5px;">
+                    <button class="btn-mini" style="background:#111111; color:#fff;" onclick="setGlobalColor('#111111')">SOMBRE</button>
+                    <button class="btn-mini" style="background:#ffffff; color:#000;" onclick="setGlobalColor('#ffffff')">CLAIR</button>
+                    <button class="btn-mini" style="background:#d3b878; color:#000;" onclick="setGlobalColor('#d3b878')">OR</button>
                 </div>
-                <div style="font-size:9px; color:#888; margin-top:10px; text-align:center;">Le joint s'applique entre chaque Cadre ou chaque Ligne.</div>
+                <div class="row" style="margin-bottom: 5px;">
+                    <button class="btn-mini" style="background:#e74c3c; color:#fff;" onclick="setGlobalColor('#e74c3c')">ROUGE</button>
+                    <button class="btn-mini" style="background:#3498db; color:#fff;" onclick="setGlobalColor('#3498db')">BLEU</button>
+                    <button class="btn-mini" style="background:#2ecc71; color:#000;" onclick="setGlobalColor('#2ecc71')">VERT</button>
+                </div>
+                <div class="row" style="margin-bottom: 0;">
+                    <input type="color" id="global-color-picker" onchange="setGlobalColor(this.value)" style="flex:1; height:35px; border-radius:4px; border:1px solid #555; background:#000; padding:0;">
+                    <input type="text" id="global-color-hex" placeholder="#HEX" oninput="setGlobalColor(this.value)" style="flex:2; text-align:center; height:35px; text-transform:uppercase;">
+                </div>
             </div>
             
-            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">💎 FORGER LE MUR (AVEC JOINTS)</button>
+            <div class="section-title">🎨 Couleurs Détaillées</div>
+            <div id="finition-dynamic-list">
+                </div>
+
+            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">💎 FORGER LE MUR (HD)</button>
         </div>
 
         <div id="tab-devis" class="tab-content">
@@ -225,6 +237,11 @@
             document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
+            
+            // 🎨 Générer la liste détaillée quand on ouvre Finition !
+            if(id === 'tab-finition') {
+                renderFinitionList();
+            }
         }
 
         function setMode(m) {
@@ -234,11 +251,77 @@
             ['lineaire','concentrique','fractale'].forEach(x => document.getElementById(`area-${x}`).style.display = (x===m)?'block':'none');
         }
 
-        // --- 💎 GESTION FINITION ---
-        function setJointColor(btn, color) {
-            document.getElementById('joint-color').value = color;
-            btn.closest('.row').querySelectorAll('.btn-mini').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+        // --- 🎨 GESTION FINITION MULTICOULEUR ---
+        function setGlobalColor(hex) {
+            document.getElementById('global-color-picker').value = hex;
+            document.getElementById('global-color-hex').value = hex.toUpperCase();
+            
+            // Applique à tous les éléments
+            document.querySelectorAll('.j-color').forEach(el => el.value = hex);
+            
+            // Rafraîchit la liste
+            renderFinitionList();
+        }
+
+        function setSpecificColor(targetId, hex) {
+            // Met à jour l'input caché dans la Forge
+            if(targetId.startsWith('ligne-')) {
+                let idx = parseInt(targetId.split('-')[1]);
+                document.querySelectorAll('.ligne-item')[idx].querySelector('.j-color').value = hex;
+            } else if(targetId === 'coeur') {
+                document.getElementById('c-j-color').value = hex;
+            } else if(targetId.startsWith('cadre-')) {
+                let idx = parseInt(targetId.split('-')[1]);
+                document.querySelectorAll('.cadre-item')[idx].querySelector('.j-color').value = hex;
+            }
+            // Rafraîchit l'affichage de la box modifiée
+            renderFinitionList();
+        }
+
+        function createColorPickerUI(title, defaultColor, targetId) {
+            let div = document.createElement('div');
+            div.className = 'box';
+            div.style.borderColor = 'var(--amethyst)';
+            div.innerHTML = `
+                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block; font-size:11px;">${title}</span>
+                <div class="row" style="margin-bottom:5px;">
+                    <button class="btn-mini" style="background:#111111; color:#fff;" onclick="setSpecificColor('${targetId}', '#111111')">SOMB.</button>
+                    <button class="btn-mini" style="background:#ffffff; color:#000;" onclick="setSpecificColor('${targetId}', '#ffffff')">CLAIR</button>
+                    <button class="btn-mini" style="background:#d3b878; color:#000;" onclick="setSpecificColor('${targetId}', '#d3b878')">OR</button>
+                </div>
+                <div class="row" style="margin-bottom:5px;">
+                    <button class="btn-mini" style="background:#e74c3c; color:#fff;" onclick="setSpecificColor('${targetId}', '#e74c3c')">ROUGE</button>
+                    <button class="btn-mini" style="background:#3498db; color:#fff;" onclick="setSpecificColor('${targetId}', '#3498db')">BLEU</button>
+                    <button class="btn-mini" style="background:#2ecc71; color:#000;" onclick="setSpecificColor('${targetId}', '#2ecc71')">VERT</button>
+                </div>
+                <div class="row" style="margin-bottom:0;">
+                    <input type="color" value="${defaultColor}" onchange="setSpecificColor('${targetId}', this.value)" style="flex:1; height:35px; border-radius:4px; border:1px solid #555; background:#000; padding:0;">
+                    <input type="text" value="${defaultColor.toUpperCase()}" oninput="setSpecificColor('${targetId}', this.value)" style="flex:2; text-align:center; height:35px; text-transform:uppercase;">
+                </div>
+            `;
+            return div;
+        }
+
+        function renderFinitionList() {
+            let container = document.getElementById('finition-dynamic-list');
+            container.innerHTML = '';
+            
+            if(mode === 'lineaire') {
+                document.querySelectorAll('.ligne-item').forEach((li, idx) => {
+                    let name = li.querySelector('.editable-name').value;
+                    let color = li.querySelector('.j-color').value || '#111111';
+                    container.appendChild(createColorPickerUI(`Ligne: ${name}`, color, `ligne-${idx}`));
+                });
+            } else {
+                let cColor = document.getElementById('c-j-color').value || '#111111';
+                container.appendChild(createColorPickerUI(`Cœur`, cColor, `coeur`));
+                
+                document.querySelectorAll('.cadre-item').forEach((ca, idx) => {
+                    let color = ca.querySelector('.j-color').value || '#111111';
+                    let name = ca.querySelector('.cadre-label').innerText || `Cadre ${idx+1}`;
+                    container.appendChild(createColorPickerUI(`Bordure: ${name}`, color, `cadre-${idx}`));
+                });
+            }
         }
 
         // --- 💾 GESTION DE LA BIBLIOTHÈQUE ---
@@ -252,10 +335,11 @@
 
         function getForgeData() {
             try {
-                let data = { v: 39, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 40, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value;
+                    let jColor = li.querySelector('.j-color').value;
                     let blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
                         blocks.push({
@@ -269,13 +353,14 @@
                             q: parseInt(bl.querySelector('.s-q')?.value || 1)
                         });
                     });
-                    data.lignes.push({name: lName, blocks});
+                    data.lignes.push({name: lName, color: jColor, blocks});
                 });
                 
                 data.coeur = {
                     mod: document.getElementById('c-mod').value,
                     w: parseFloat(document.getElementById('c-w').value),
-                    h: parseFloat(document.getElementById('c-h').value)
+                    h: parseFloat(document.getElementById('c-h').value),
+                    color: document.getElementById('c-j-color').value
                 };
                 
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(ca => {
@@ -284,15 +369,12 @@
                         mQty: parseInt(ca.querySelector('.manual-qty')?.value || 5),
                         selects: Array.from(ca.querySelectorAll('.m-sel')).map(s=>s.value),
                         w: parseFloat(ca.querySelector('.c-w')?.value || 10),
-                        h: parseFloat(ca.querySelector('.c-h')?.value || 10)
+                        h: parseFloat(ca.querySelector('.c-h')?.value || 10),
+                        color: ca.querySelector('.j-color').value
                     });
                 });
                 
-                data.finition = {
-                    jointSize: parseFloat(document.getElementById('joint-size').value) || 0,
-                    jointColor: document.getElementById('joint-color').value || '#111'
-                };
-                
+                data.finition = { jointSize: parseFloat(document.getElementById('joint-size').value) || 0 };
                 return data;
             } catch(e) {
                 console.error("Erreur de lecture:", e);
@@ -303,10 +385,8 @@
         function saveToLibrary() {
             let data = getForgeData();
             if(!data) return; 
-            
             let name = prompt("Nom de ce Grimoire :");
             if(!name) return;
-            
             library[name] = data;
             localStorage.setItem('daguerre_lib', JSON.stringify(library));
             updateLibraryUI();
@@ -326,7 +406,6 @@
         function exportTemplate() {
             let data = getForgeData();
             if(!data) return; 
-            
             let defaultName = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
             let nom = prompt("Nom du fichier JSON à sauvegarder :", defaultName);
             if(!nom) return; 
@@ -371,6 +450,7 @@
                     let liNodes = document.querySelectorAll('.ligne-item');
                     let currentLi = liNodes[liNodes.length - 1];
                     currentLi.querySelector('.editable-name').value = l.name;
+                    if(l.color) currentLi.querySelector('.j-color').value = l.color;
                     
                     let cont = currentLi.querySelector('.blocs-container');
                     cont.innerHTML = ''; 
@@ -407,6 +487,7 @@
                 document.getElementById('c-mod').value = data.coeur.mod || '';
                 document.getElementById('c-w').value = data.coeur.w || 20;
                 document.getElementById('c-h').value = data.coeur.h || 20;
+                if(data.coeur.color) document.getElementById('c-j-color').value = data.coeur.color;
             }
             if(data.cadres && data.cadres.length > 0) {
                 document.getElementById('cadres-container').innerHTML = '';
@@ -416,6 +497,7 @@
                     let caNodes = document.querySelectorAll('.cadre-item');
                     let currCa = caNodes[caNodes.length - 1];
                     
+                    if(c.color) currCa.querySelector('.j-color').value = c.color;
                     currCa.querySelector('.manual-qty').value = c.mQty || 5;
                     let typeBtn = currCa.querySelectorAll('.type-btn')[c.type > 4 ? 4 : c.type - 1];
                     if(typeBtn) setCadreMode(typeBtn, c.type);
@@ -428,12 +510,6 @@
             
             if(data.finition) {
                 document.getElementById('joint-size').value = data.finition.jointSize || 0;
-                let jc = data.finition.jointColor || '#111';
-                document.getElementById('joint-color').value = jc;
-                document.querySelectorAll('#tab-finition .btn-mini').forEach(b => {
-                    if(b.getAttribute('onclick').includes(jc)) b.classList.add('active');
-                    else b.classList.remove('active');
-                });
             }
             
             switchTab('tab-forge', document.querySelectorAll('.tab-btn')[1]);
@@ -579,7 +655,6 @@
             updateAllCadresStats();
         }
 
-        // 🧠 MISE A JOUR V39 : Le Compteur inclut les joints
         function updateAllCadresStats() {
             let jointSize = parseFloat(document.getElementById('joint-size').value) || 0;
             let cw = parseFloat(document.getElementById('c-w').value) || 20;
@@ -774,7 +849,6 @@
             else { realContent.style.display = 'none'; btn.innerText = '▶️'; }
         }
 
-        // --- GESTION LIGNES & SEQUENCES ---
         function ajouterLigne() {
             ligneCounter++;
             let d = document.createElement('div');
@@ -783,6 +857,7 @@
                 <div class="row" style="background:#0a0a15; margin:-10px -10px 10px -10px; padding:10px; border-bottom:1px solid #333;">
                     <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleLine(this)">🔽</button>
                     <input type="text" class="editable-name" value="LIGNE ${ligneCounter}">
+                    <input type="hidden" class="j-color" value="#111111">
                     <div style="display:flex; gap:4px;">
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.ligne-item'), 'up')">↑</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.ligne-item'), 'down')">↓</button>
@@ -884,6 +959,7 @@
                     <div class="cadre-title">
                         <span class="cadre-label"></span>
                     </div>
+                    <input type="hidden" class="j-color" value="#111111">
                     <div style="display:flex; gap:4px; flex-shrink: 0;">
                         <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button>
@@ -931,6 +1007,22 @@
             
             let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1];
             setCadreMode(typeBtn, type);
+        }
+
+        function genererFractale() {
+            setMode('concentrique');
+            document.getElementById('c-mod').value = document.getElementById('f-mod').value;
+            document.getElementById('c-w').value = document.getElementById('f-size').value;
+            document.getElementById('c-h').value = document.getElementById('f-size').value;
+            let seq = document.getElementById('f-seq').value.split(' ').filter(Boolean);
+            let n = parseInt(document.getElementById('f-iter').value);
+            document.getElementById('cadres-container').innerHTML = "";
+            let curSize = parseFloat(document.getElementById('f-size').value);
+            for(let i=0; i<n; i++) {
+                curSize = curSize / seq.length;
+                ajouterCadre(null, seq.length, curSize, curSize);
+            }
+            render();
         }
 
         function move(el, dir) {
@@ -1000,16 +1092,19 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING (V39 : AVEC JOINTS) ---
+        // --- 🧠 LE COEUR DE PARSING (V40 : COULEURS MULTIPLES) ---
         function parseWall() {
             let totalW = 0, totalH = 0;
             let tiles = [];
+            let backgrounds = [];
             let jointSize = parseFloat(document.getElementById('joint-size').value) || 0;
             
             if(mode === 'lineaire') {
                 let lines = [];
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lw = 0, lh = 0, blocks = [];
+                    let lColor = li.querySelector('.j-color').value || '#111111';
+                    
                     li.querySelectorAll('.block-item').forEach(bl => {
                         let selects = Array.from(bl.querySelectorAll('.m-sel'));
                         let sequence = selects.map(s => s.value).filter(Boolean);
@@ -1046,10 +1141,9 @@
                             }
                         }
                     });
-                    lines.push({blocks, lw, lh});
+                    lines.push({blocks, lw, lh, color: lColor});
                 });
                 
-                // Calcul totalH avec Joints
                 lines.forEach((line, idx) => {
                     totalW = Math.max(totalW, line.lw);
                     totalH += line.lh;
@@ -1058,7 +1152,9 @@
                 
                 let curY = 0;
                 lines.forEach((line, idx) => {
-                    if(idx > 0) curY += jointSize; // Ajout du joint !
+                    // Calcul du background pour cette ligne
+                    let hBg = line.lh + (idx === lines.length - 1 ? 0 : jointSize);
+                    backgrounds.push({ x: 0, y: curY, w: totalW, h: hBg, color: line.color });
                     
                     let curX = (totalW - line.lw) / 2;
                     line.blocks.forEach(b => {
@@ -1086,12 +1182,13 @@
                         }
                         curX += b.bW;
                     });
-                    curY += line.lh;
+                    curY += line.lh + jointSize;
                 });
             } else {
                 let cw = parseFloat(document.getElementById('c-w').value) || 30;
                 let ch = parseFloat(document.getElementById('c-h').value) || 30;
                 let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || '';
+                let cColor = document.getElementById('c-j-color').value || '#111111';
                 
                 let cadres = [];
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(cc => {
@@ -1099,7 +1196,8 @@
                     cadres.push({
                         seq: selects.map(s => s.value).filter(Boolean),
                         w: parseFloat(cc.querySelector('.c-w').value) || 10,
-                        h: parseFloat(cc.querySelector('.c-h').value) || 10
+                        h: parseFloat(cc.querySelector('.c-h').value) || 10,
+                        color: cc.querySelector('.j-color').value || '#111111'
                     });
                 });
 
@@ -1109,10 +1207,28 @@
                     totalH += c.h * 2 + jointSize * 2; 
                 });
                 
+                // --- GENERATION DES BACKGROUNDS (Multicouches) ---
+                let curW = cw; let curH = ch;
+                backgrounds.push({ w: curW + 2*jointSize, h: curH + 2*jointSize, color: cColor });
+                
+                for(let i=0; i<cadres.length; i++) {
+                    curW += 2*jointSize + 2*cadres[i].w;
+                    curH += 2*jointSize + 2*cadres[i].h;
+                    
+                    if(i === cadres.length - 1) {
+                        backgrounds.push({ w: curW, h: curH, color: cadres[i].color });
+                    } else {
+                        backgrounds.push({ w: curW + 2*jointSize, h: curH + 2*jointSize, color: cadres[i].color });
+                    }
+                }
+                
+                // On inverse pour dessiner du plus grand au plus petit
+                backgrounds.sort((a,b) => b.w - a.w);
+
+                // --- GENERATION DES TUILES ---
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
                 
                 let currentTotalW = cw, currentTotalH = ch;
-                
                 cadres.forEach(c => {
                     let bdW = c.w, bdH = c.h;
                     let seq = c.seq.length > 0 ? c.seq : [''];
@@ -1138,7 +1254,7 @@
                     currentTotalW = newTotalW; currentTotalH = newTotalH;
                 });
             }
-            return { tiles, totalW, totalH };
+            return { tiles, backgrounds, totalW, totalH };
         }
 
         function render() {
@@ -1147,9 +1263,23 @@
             const baseScale = 40; 
             const dpr = window.devicePixelRatio || 2; 
 
-            let { tiles, totalW, totalH } = parseWall();
+            let { tiles, backgrounds, totalW, totalH } = parseWall();
 
             prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
+            
+            // 🎨 DESSIN DES COUCHES DE JOINTS
+            backgrounds.forEach(bg => {
+                ctx.fillStyle = bg.color;
+                if(mode === 'lineaire') {
+                    ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale);
+                } else {
+                    let x = (totalW - bg.w)/2;
+                    let y = (totalH - bg.h)/2;
+                    ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale);
+                }
+            });
+
+            // 🧱 DESSIN DES TUILES
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
 
             document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm 💎 HD`;
@@ -1162,7 +1292,7 @@
         }
 
         function exporterImage() {
-            let { tiles, totalW, totalH } = parseWall();
+            let { tiles, backgrounds, totalW, totalH } = parseWall();
             let baseScale = 40; 
             let pixelW = (totalW || 10) * baseScale;
             let pixelH = (totalH || 10) * baseScale;
@@ -1182,11 +1312,23 @@
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
 
-            // Le fond sera de la couleur du joint !
-            let jColor = document.getElementById('joint-color').value || '#111';
-            ctx.fillStyle = jColor; 
+            // Base noire
+            ctx.fillStyle = "#111"; 
             ctx.fillRect(0, 0, pixelW, pixelH);
             
+            // 🎨 Backgrounds
+            backgrounds.forEach(bg => {
+                ctx.fillStyle = bg.color;
+                if(mode === 'lineaire') {
+                    ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale);
+                } else {
+                    let x = (totalW - bg.w)/2;
+                    let y = (totalH - bg.h)/2;
+                    ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale);
+                }
+            });
+            
+            // 🧱 Tuiles
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
             
             let nom = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
@@ -1220,9 +1362,7 @@
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
 
-            let jColor = document.getElementById('joint-color').value || '#111';
-            ctx.fillStyle = jColor; 
-            ctx.fillRect(0,0, cssW, cssH);
+            ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
         }
 
         function drawTile(ctx, char, x, y, w, h) {
