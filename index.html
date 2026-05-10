@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V30.0</title>
+    <title>Daguerre OS V31.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V30.0</small>
+        <small>ÉDITION NUCLÉAIRE V31.0</small>
     </div>
 
     <div id="settings-area">
@@ -199,13 +199,11 @@
             updateAllCadresStats();
         }
 
-        // 🧠 L'ARCHITECTURE AUTONOME : LIGNES (Cascade)
         function getPrevTotalH(block) {
             let prev = block.previousElementSibling;
             if(prev && prev.classList.contains('block-item')) {
                 let pDir = prev.querySelector('.s-dir').value;
                 if(pDir === 'M') {
-                    // Si le voisin du dessus est un V-MULTI, on additionne ses hauteurs
                     let multiH = prev.querySelector('.s-h-multi').value.split(' ').map(parseFloat).filter(Boolean);
                     return multiH.reduce((a, b) => a + b, 0);
                 } else {
@@ -223,7 +221,6 @@
                 let prevTotalH = getPrevTotalH(current);
                 let cDir = current.querySelector('.s-dir').value;
                 
-                // On ne modifie pas les tailles d'un bloc V-MULTI, on laisse l'utilisateur gèrer sa frise.
                 if(cDir !== 'M') {
                     let val = parseFloat(current.querySelector('.s-w').value) || 10;
                     if(prevTotalH > 0 && val > 0) {
@@ -269,7 +266,6 @@
             }
         }
 
-        // 🔀 NOUVEAU: Set Multi-Dimensions
         function setMulti(btn, str) {
             let block = btn.closest('.block-item');
             if(block) {
@@ -279,7 +275,6 @@
             }
         }
 
-        // 👁️ TITRES DYNAMIQUES
         function updateSeqData(block) {
             let selects = Array.from(block.querySelectorAll('.m-sel'));
             let seq = selects.map(s => s.value).join(' ');
@@ -390,7 +385,7 @@
             }
 
             let dirRow = block.querySelector('.dir-row');
-            dirRow.style.display = 'flex'; // V28: Toujours visible !
+            dirRow.style.display = 'flex'; 
             
             renderModelSelects(block, type);
         }
@@ -412,7 +407,6 @@
             renderModelSelects(cadre, type);
         }
 
-        // ✂️ V30: GESTION DE LA DIRECTION + MULTI
         function setSeqDir(btn, dir, force=false, runCascade=true) {
             let block = btn.closest('.block-item');
             
@@ -652,7 +646,6 @@
                     <div class="row">
                         <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
                         <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
-                        <input type="hidden" class="c-seq" value="">
                     </div>
                 </div>
             `;
@@ -747,7 +740,7 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING UNIVERSEL (INCLUANT V-MULTI) ---
+        // --- 🧠 LE COEUR DE PARSING UNIVERSEL ---
         function parseWall() {
             let totalW = 0, totalH = 0;
             let tiles = [];
@@ -766,7 +759,6 @@
                         if(sequence.length === 0) sequence = [''];
                         
                         if(dir === 'M') {
-                            // MODE V-MULTI
                             let hMulti = bl.querySelector('.s-h-multi').value.split(' ').map(parseFloat).filter(Boolean);
                             if(hMulti.length > 0) {
                                 let totalHMulti = hMulti.reduce((a, b) => a + b, 0);
@@ -774,7 +766,6 @@
                                 lw += w; lh = Math.max(lh, totalHMulti);
                             }
                         } else {
-                            // STANDARD H / V
                             if(q > 0) {
                                 let bW = (dir === 'H') ? w * q : w;
                                 let bH = (dir === 'V') ? h * q : h;
@@ -794,16 +785,21 @@
                         let startX = curX, startY = curY;
                         
                         if(b.dir === 'M') {
-                            // Rendu V-MULTI
                             let currentY = startY;
                             for(let i=0; i<b.hMulti.length; i++) {
                                 let char = b.sequence[i % b.sequence.length];
                                 let hTile = b.hMulti[i];
-                                tiles.push({l: char, x: startX, y: currentY, w: b.w, h: hTile});
+                                
+                                // 🥷 FIX V31 : Calcul auto de la quantité horizontale
+                                let numCols = Math.max(1, Math.round(b.w / hTile));
+                                let actualWTile = b.w / numCols;
+                                
+                                for(let c=0; c<numCols; c++) {
+                                    tiles.push({l: char, x: startX + c * actualWTile, y: currentY, w: actualWTile, h: hTile});
+                                }
                                 currentY += hTile;
                             }
                         } else {
-                            // Rendu STANDARD
                             for(let i=0; i<b.q; i++) {
                                 let char = b.sequence[i % b.sequence.length];
                                 let dx = startX + (b.dir==='H' ? i*b.w : 0);
