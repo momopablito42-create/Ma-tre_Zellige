@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V46.0</title>
+    <title>Daguerre OS V47.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V46.0</small>
+        <small>ÉDITION NUCLÉAIRE V47.0</small>
     </div>
 
     <div id="settings-area">
@@ -299,7 +299,7 @@
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 🎨 GESTION FINITION V46 ---
+        // --- 🎨 GESTION FINITION V47 ---
         
         function updateJointSizeUI(targetId, delta) {
             let dispInput = document.getElementById('disp-size-' + targetId);
@@ -445,7 +445,7 @@
             }
         }
 
-        // --- 💾 GESTION DE LA BIBLIOTHÈQUE V46 ---
+        // --- 💾 GESTION DE LA BIBLIOTHÈQUE ---
         function updateLibraryUI() {
             let sel = document.getElementById('library-select');
             sel.innerHTML = '<option value="">-- Choisir un Grimoire --</option>';
@@ -456,7 +456,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 46, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 47, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value;
@@ -647,7 +647,7 @@
             switchTab('tab-forge', document.querySelectorAll('.tab-btn')[1]);
         }
 
-        // --- OUTILS FORGE ---
+        // --- OUTILS FORGE V47 ---
         function getPrevTotalH(block) {
             let prev = block.previousElementSibling;
             if(prev && prev.classList.contains('block-item')) {
@@ -1095,7 +1095,15 @@
             setCadreMode(typeBtn, type);
         }
 
-        duplicateBlock(el) { 
+        // 🥷 V47 FIX: Les fonctions vitales disparues ont été restaurées ici.
+        function move(el, dir) {
+            if(dir==='up' && el.previousElementSibling) el.parentNode.insertBefore(el, el.previousElementSibling);
+            if(dir==='down' && el.nextElementSibling) el.parentNode.insertBefore(el.nextElementSibling, el);
+            if(el.classList.contains('block-item')) triggerCascade(el.previousElementSibling || el);
+            if(el.classList.contains('cadre-item')) updateAllCadresStats();
+        }
+        
+        function duplicateBlock(el) { 
             let clone = el.cloneNode(true); 
             let origInputs = el.querySelectorAll('input, select');
             let cloneInputs = clone.querySelectorAll('input, select');
@@ -1236,7 +1244,7 @@
             } return { tiles, backgrounds, totalW, totalH };
         }
 
-        // Générateur de texture bois procédurale
+        // --- 🖼️ GENERATEUR DE CADRES 3D (V47 : Ombres fines et biseau photoréaliste) ---
         function generateWoodTexture(width, height, color1, color2, grainWidth) {
             let canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; let ctx = canvas.getContext('2d');
             ctx.fillStyle = color1; ctx.fillRect(0, 0, width, height); ctx.strokeStyle = color2; ctx.lineWidth = grainWidth;
@@ -1247,7 +1255,6 @@
             } return canvas;
         }
 
-        // Générateur de texture pierre procédurale
         function generateStoneTexture(width, height, baseColor, noiseColor1, noiseColor2, noiseScale) {
             let canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; let ctx = canvas.getContext('2d');
             ctx.fillStyle = baseColor; ctx.fillRect(0, 0, width, height);
@@ -1259,11 +1266,9 @@
             } return canvas;
         }
 
-        // --- 🖼️ GENERATEUR DE CADRES 3D AFFINÉ (V46) ---
         function draw3DFrame(ctx, width, height, thickness, material, title, usePlaque) {
             let woodTextureCanvas, stoneTextureCanvas, pattern;
             
-            // Palette des matériaux
             if(material === 'noyer') woodTextureCanvas = generateWoodTexture(thickness, thickness, '#3E2723', '#261412', 2); 
             else if(material === 'chene') woodTextureCanvas = generateWoodTexture(thickness, thickness, '#8B5A2B', '#a06f3d', 2); 
             else if(material === 'serpentine') stoneTextureCanvas = generateStoneTexture(thickness, thickness, '#2E4A35', '#1f3323', '#3d6347', 2); 
@@ -1272,46 +1277,46 @@
 
             if(woodTextureCanvas) pattern = ctx.createPattern(woodTextureCanvas, 'repeat');
             if(stoneTextureCanvas) pattern = ctx.createPattern(stoneTextureCanvas, 'repeat');
-            ctx.fillStyle = pattern;
-
-            // Dessin des 4 trapèzes texturés
             
-            // HAUT (Lumière douce)
+            // HAUT 
+            ctx.fillStyle = pattern;
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(width, 0); ctx.lineTo(width - thickness, thickness); ctx.lineTo(thickness, thickness); ctx.fill();
-            let gradientTop = ctx.createLinearGradient(0, 0, thickness, thickness); gradientTop.addColorStop(0, 'rgba(255,255,255,0.15)'); gradientTop.addColorStop(1, 'rgba(255,255,255,0)');
+            let gradientTop = ctx.createLinearGradient(0, 0, thickness, thickness); gradientTop.addColorStop(0, 'rgba(255,255,255,0.25)'); gradientTop.addColorStop(1, 'rgba(255,255,255,0)');
             ctx.fillStyle = gradientTop; ctx.fill();
             
-            // BAS (Ombre profonde progressive)
+            // BAS 
             ctx.fillStyle = pattern; ctx.beginPath(); ctx.moveTo(width, height); ctx.lineTo(0, height); ctx.lineTo(thickness, height - thickness); ctx.lineTo(width - thickness, height - thickness); ctx.fill();
-            let gradientBottom = ctx.createLinearGradient(0, height, thickness, height - thickness); gradientBottom.addColorStop(0, 'rgba(0,0,0,0.4)'); gradientBottom.addColorStop(0.5, 'rgba(0,0,0,0.1)'); gradientBottom.addColorStop(1, 'rgba(0,0,0,0)');
+            let gradientBottom = ctx.createLinearGradient(0, height, thickness, height - thickness); gradientBottom.addColorStop(0, 'rgba(0,0,0,0.6)'); gradientBottom.addColorStop(0.5, 'rgba(0,0,0,0.2)'); gradientBottom.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = gradientBottom; ctx.fill();
             
-            // GAUCHE (Base douce)
+            // GAUCHE 
             ctx.fillStyle = pattern; ctx.beginPath(); ctx.moveTo(0, height); ctx.lineTo(0, 0); ctx.lineTo(thickness, thickness); ctx.lineTo(thickness, height - thickness); ctx.fill();
+            let gradientLeft = ctx.createLinearGradient(0, 0, thickness, thickness); gradientLeft.addColorStop(0, 'rgba(255,255,255,0.1)'); gradientLeft.addColorStop(1, 'rgba(0,0,0,0.1)');
+            ctx.fillStyle = gradientLeft; ctx.fill();
             
-            // DROITE (Ombre latérale progressive)
+            // DROITE 
             ctx.fillStyle = pattern; ctx.beginPath(); ctx.moveTo(width, 0); ctx.lineTo(width, height); ctx.lineTo(width - thickness, height - thickness); ctx.lineTo(width - thickness, thickness); ctx.fill();
-            let gradientRight = ctx.createLinearGradient(width, 0, width - thickness, thickness); gradientRight.addColorStop(0, 'rgba(0,0,0,0.2)'); gradientRight.addColorStop(1, 'rgba(0,0,0,0)');
+            let gradientRight = ctx.createLinearGradient(width, 0, width - thickness, thickness); gradientRight.addColorStop(0, 'rgba(0,0,0,0.4)'); gradientRight.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = gradientRight; ctx.fill();
 
-            // Bordure intérieure relief
-            ctx.strokeStyle = '#000'; ctx.lineWidth = thickness * 0.04; ctx.strokeRect(thickness, thickness, width - thickness*2, height - thickness*2);
+            // Bordure intérieure (l'ombre du biseau vers la toile)
+            ctx.strokeStyle = '#000'; ctx.lineWidth = thickness * 0.05; ctx.strokeRect(thickness, thickness, width - thickness*2, height - thickness*2);
+            // Bordure extérieure
+            ctx.strokeStyle = '#222'; ctx.lineWidth = thickness * 0.02; ctx.strokeRect(0, 0, width, height);
 
-            // Plaque en Or (Bonus V46 : Parfaitement Centrée Horizontally)
+            // Plaque en Or 
             if(usePlaque && title && title !== "") {
                 let plaqueW = width * 0.45; let plaqueH = thickness * 0.7; 
-                let plaqueX = (width - plaqueW) / 2; let plaqueY = height - thickness;
+                let plaqueX = (width - plaqueW) / 2; let plaqueY = height - thickness + (thickness * 0.15); // Centrage Y dans la bordure basse
 
-                // Or dégradé complexe
+                // Or dégradé
                 let gradient = ctx.createLinearGradient(plaqueX, plaqueY, plaqueX, plaqueY + plaqueH); gradient.addColorStop(0, "#f1c40f"); gradient.addColorStop(0.5, "#d3b878"); gradient.addColorStop(1, "#b39858");
-                ctx.fillStyle = gradient; ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 15; ctx.shadowOffsetY = 8; ctx.fillRect(plaqueX, plaqueY, plaqueW, plaqueH);
+                ctx.fillStyle = gradient; ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 5; ctx.fillRect(plaqueX, plaqueY, plaqueW, plaqueH);
                 
-                // Bordure plaque
                 ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#5a4611'; ctx.lineWidth = 3; ctx.strokeRect(plaqueX, plaqueY, plaqueW, plaqueH);
 
-                // Texte gravé 3D
                 ctx.fillStyle = "#332505"; ctx.font = `bold ${plaqueH * 0.4}px serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.3)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 0; ctx.fillText(title, width / 2, plaqueY + (plaqueH / 2)); ctx.restore();
+                ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.4)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 0; ctx.fillText(title, width / 2, plaqueY + (plaqueH / 2)); ctx.restore();
             }
         }
 
@@ -1327,7 +1332,7 @@
             setTimeout(() => { let cssW = (totalW || 10) * baseScale; let cssH = (totalH || 10) * baseScale; resetCamera(cssW, cssH); }, 50);
         }
 
-        // --- 🖼️ EXPORT ULTIME 8K ENCADRE V46 ---
+        // --- 🖼️ EXPORT ULTIME 8K ENCADRE V47 ---
         function exportFramedImage() {
             let { tiles, backgrounds, totalW, totalH } = parseWall();
             let baseScale = 40; 
@@ -1335,7 +1340,6 @@
             let material = document.getElementById('frame-material').value;
             let title = document.getElementById('artwork-title').value.trim();
             let usePlaque = document.getElementById('artwork-plaque-toggle').checked;
-            // 🥷 V46 : Récupération du nom du fichier choisi par l'utilisateur
             let exportFileName = document.getElementById('export-filename').value.trim() || 'Chef_d_oeuvre_Daguerre';
 
             let pxWallW = (totalW || 10) * baseScale; let pxWallH = (totalH || 10) * baseScale;
@@ -1350,12 +1354,12 @@
             let ctx = exportCanvas.getContext('2d');
             ctx.scale(scaleFactor, scaleFactor); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
 
-            // 1. Cadre 3D Texturé Affiné
+            // 1. Cadre 3D 
             draw3DFrame(ctx, totalPxW, totalPxH, pxFrame, material, title, usePlaque);
 
-            // 2. Ombre portée complexe intérieure
+            // 2. Ombre portée complexe intérieure (Drop Shadow du cadre sur l'oeuvre)
             ctx.save(); ctx.translate(pxFrame, pxFrame);
-            ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 50 * scaleFactor; ctx.shadowOffsetX = 15 * scaleFactor; ctx.shadowOffsetY = 20 * scaleFactor;
+            ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 60 * scaleFactor; ctx.shadowOffsetX = 10 * scaleFactor; ctx.shadowOffsetY = 15 * scaleFactor;
             ctx.fillStyle = "#111"; ctx.fillRect(0, 0, pxWallW, pxWallH); ctx.restore();
 
             // 3. Le mur texturé
@@ -1364,7 +1368,6 @@
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
             ctx.restore();
             
-            // 🥷 V46 : Nettoyage du nom de fichier pour l'export
             let cleanedFileName = exportFileName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '');
             let link = document.createElement('a'); link.download = cleanedFileName + '_Cadre_3D_8K.jpg'; link.href = exportCanvas.toDataURL('image/jpeg', 0.95); link.click();
         }
