@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V41.0</title>
+    <title>Daguerre OS V42.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V41.0</small>
+        <small>ÉDITION NUCLÉAIRE V42.0</small>
     </div>
 
     <div id="settings-area">
@@ -127,7 +127,11 @@
 
             <div id="area-concentrique" style="display:none;">
                 <div class="box" style="border-color: var(--vert);">
-                    <input type="hidden" id="c-j-color" class="j-color" value="#111111">
+                    <input type="hidden" id="c-j-color" value="#111111">
+                    <input type="hidden" id="c-j-size" value="0">
+                    <input type="hidden" id="ext-j-color" value="#111111">
+                    <input type="hidden" id="ext-j-size" value="0">
+
                     <span class="label-sm">Lettre(s) du Cœur</span>
                     <input type="text" id="c-mod" value="" placeholder="(Vide)" oninput="updateAllCadresStats()" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
                     <div class="quick-sizes" style="grid-template-columns: repeat(5, 1fr);">
@@ -162,13 +166,15 @@
 
         <div id="tab-finition" class="tab-content">
             <div class="section-title">💎 Sertissage & Joints</div>
-            <div class="box" style="border-color: var(--cyan);">
-                <span class="label-sm" id="global-joint-label" style="color:var(--cyan); margin-bottom:5px; display:block;">Épaisseur Globale des Joints (cm)</span>
+            
+            <div class="box" id="finition-global-box" style="border-color: var(--cyan);">
+                <span class="label-sm" style="color:var(--cyan); margin-bottom:5px; display:block;">Épaisseur Globale des Joints (cm)</span>
                 
                 <div class="row" style="margin-bottom: 15px;">
-                    <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="changeJointSize('global', -0.1)">-</button>
-                    <input type="number" id="joint-size" value="0" step="0.1" onchange="setSpecificJointSize('global', this.value); renderFinitionList();" style="flex:1; text-align: center; color: var(--jaune); font-weight: bold; font-size:16px; height:40px; margin:0;">
-                    <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="changeJointSize('global', 0.1)">+</button>
+                    <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="updateJointSizeUI('global', -0.1)">-</button>
+                    <input type="number" id="disp-size-global" value="0" step="0.1" onchange="handleDirectSizeInput('global', this.value)" style="flex:1; text-align: center; color: var(--jaune); font-weight: bold; font-size:16px; height:40px; margin:0;">
+                    <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="updateJointSizeUI('global', 0.1)">+</button>
+                    <input type="hidden" id="joint-size" value="0">
                 </div>
                 
                 <span class="label-sm" style="color:var(--cyan); display:block; margin-bottom:5px;">Couleur Globale (Appliquer à tout)</span>
@@ -252,36 +258,42 @@
             document.getElementById('m-'+m.substring(0,3)).classList.add('active');
             ['lineaire','concentrique','fractale'].forEach(x => document.getElementById(`area-${x}`).style.display = (x===m)?'block':'none');
             
-            let globalLabel = document.getElementById('global-joint-label');
-            if(globalLabel) {
-                globalLabel.innerText = m === 'lineaire' ? "Épaisseur Globale des Joints (cm)" : "Épaisseur du Joint du Cœur (cm)";
-            }
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 🎨 GESTION FINITION MULTICOULEUR & EPAISSEUR MULTIPLE ---
-        function changeJointSize(targetId, delta) {
-            if(targetId === 'global') {
-                let input = document.getElementById('joint-size');
-                let val = Math.max(0, (parseFloat(input.value) || 0) + delta);
-                input.value = val.toFixed(1);
-            } else {
+        // --- 🎨 GESTION FINITION V42 (SANS SCROLL JUMP) ---
+        
+        // Fonction pour les boutons + et -
+        function updateJointSizeUI(targetId, delta) {
+            let dispInput = document.getElementById('disp-size-' + targetId);
+            if(!dispInput) return;
+            
+            let val = Math.max(0, parseFloat(dispInput.value) + delta);
+            dispInput.value = val.toFixed(1);
+            
+            // Mise à jour de la vraie valeur cachée
+            if(targetId === 'global') document.getElementById('joint-size').value = val.toFixed(1);
+            else if(targetId === 'coeur') document.getElementById('c-j-size').value = val.toFixed(1);
+            else if(targetId === 'exterior') document.getElementById('ext-j-size').value = val.toFixed(1);
+            else if(targetId.startsWith('cadre-')) {
                 let idx = parseInt(targetId.split('-')[1]);
-                let input = document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size');
-                let val = Math.max(0, (parseFloat(input.value) || 0) + delta);
-                input.value = val.toFixed(1);
+                document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size').value = val.toFixed(1);
             }
             updateAllCadresStats();
-            renderFinitionList();
         }
 
-        function setSpecificJointSize(targetId, val) {
-            let v = Math.max(0, parseFloat(val) || 0);
-            if(targetId === 'global') {
-                document.getElementById('joint-size').value = v;
-            } else {
+        // Fonction pour l'input direct au clavier
+        function handleDirectSizeInput(targetId, val) {
+            let num = Math.max(0, parseFloat(val) || 0);
+            let dispInput = document.getElementById('disp-size-' + targetId);
+            if(dispInput) dispInput.value = num.toFixed(1);
+            
+            if(targetId === 'global') document.getElementById('joint-size').value = num.toFixed(1);
+            else if(targetId === 'coeur') document.getElementById('c-j-size').value = num.toFixed(1);
+            else if(targetId === 'exterior') document.getElementById('ext-j-size').value = num.toFixed(1);
+            else if(targetId.startsWith('cadre-')) {
                 let idx = parseInt(targetId.split('-')[1]);
-                document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size').value = v;
+                document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size').value = num.toFixed(1);
             }
             updateAllCadresStats();
         }
@@ -289,8 +301,13 @@
         function setGlobalColor(hex) {
             document.getElementById('global-color-picker').value = hex;
             document.getElementById('global-color-hex').value = hex.toUpperCase();
-            document.querySelectorAll('.j-color').forEach(el => el.value = hex);
-            renderFinitionList();
+            
+            // Applique à tous les éléments sans recharger la liste
+            document.querySelectorAll('.j-color, #c-j-color, #ext-j-color').forEach(el => el.value = hex);
+            
+            // Mise à jour visuelle forcée des champs dans la liste détaillée
+            document.querySelectorAll('#finition-dynamic-list input[type="color"]').forEach(el => el.value = hex);
+            document.querySelectorAll('#finition-dynamic-list input[type="text"]').forEach(el => el.value = hex.toUpperCase());
         }
 
         function setSpecificColor(targetId, hex) {
@@ -299,11 +316,19 @@
                 document.querySelectorAll('.ligne-item')[idx].querySelector('.j-color').value = hex;
             } else if(targetId === 'coeur') {
                 document.getElementById('c-j-color').value = hex;
+            } else if(targetId === 'exterior') {
+                document.getElementById('ext-j-color').value = hex;
             } else if(targetId.startsWith('cadre-')) {
                 let idx = parseInt(targetId.split('-')[1]);
                 document.querySelectorAll('.cadre-item')[idx].querySelector('.j-color').value = hex;
             }
-            renderFinitionList();
+            
+            // Met à jour visuellement seulement la case concernée pour ne pas faire sauter le scroll
+            let container = document.getElementById('finition-item-' + targetId);
+            if(container) {
+                container.querySelector('input[type="color"]').value = hex;
+                container.querySelector('input[type="text"]').value = hex.toUpperCase();
+            }
         }
 
         function createFinitionItemUI(title, defaultColor, targetId, defaultSize = null) {
@@ -313,15 +338,16 @@
                 <div class="row" style="margin-bottom:10px; background:#1a1a24; padding:5px; border-radius:4px;">
                     <span class="label-sm" style="color:#888; flex:1; margin:0;">Épaisseur (cm)</span>
                     <div style="display:flex; gap:4px; align-items:center;">
-                        <button class="btn-icon-sm" style="width:28px; height:28px; font-size:16px;" onclick="changeJointSize('${targetId}', -0.1)">-</button>
-                        <input type="number" value="${defaultSize}" step="0.1" onchange="setSpecificJointSize('${targetId}', this.value); renderFinitionList();" style="width:50px; text-align:center; height:28px; padding:2px; font-weight:bold; color:var(--jaune); background:#000;">
-                        <button class="btn-icon-sm" style="width:28px; height:28px; font-size:16px;" onclick="changeJointSize('${targetId}', 0.1)">+</button>
+                        <button class="btn-icon-sm" style="width:28px; height:28px; font-size:16px;" onclick="updateJointSizeUI('${targetId}', -0.1)">-</button>
+                        <input type="number" id="disp-size-${targetId}" value="${defaultSize}" step="0.1" onchange="handleDirectSizeInput('${targetId}', this.value)" style="width:50px; text-align:center; height:28px; padding:2px; font-weight:bold; color:var(--jaune); background:#000;">
+                        <button class="btn-icon-sm" style="width:28px; height:28px; font-size:16px;" onclick="updateJointSizeUI('${targetId}', 0.1)">+</button>
                     </div>
                 </div>`;
             }
             
             let div = document.createElement('div');
             div.className = 'box';
+            div.id = 'finition-item-' + targetId;
             div.style.borderColor = 'var(--amethyst)';
             div.innerHTML = `
                 <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block; font-size:11px;">${title}</span>
@@ -347,16 +373,21 @@
         function renderFinitionList() {
             let container = document.getElementById('finition-dynamic-list');
             container.innerHTML = '';
+            let globalBox = document.getElementById('finition-global-box');
             
             if(mode === 'lineaire') {
+                globalBox.style.display = 'block';
                 document.querySelectorAll('.ligne-item').forEach((li, idx) => {
                     let name = li.querySelector('.editable-name').value;
                     let color = li.querySelector('.j-color').value || '#111111';
                     container.appendChild(createFinitionItemUI(`Ligne: ${name}`, color, `ligne-${idx}`, null));
                 });
             } else {
+                globalBox.style.display = 'none'; // Disparition du global !
+                
                 let cColor = document.getElementById('c-j-color').value || '#111111';
-                container.appendChild(createFinitionItemUI(`Cœur (Épaisseur Globale)`, cColor, `coeur`, null));
+                let cSize = document.getElementById('c-j-size').value || 0;
+                container.appendChild(createFinitionItemUI(`1ère Bordure (Autour du Cœur)`, cColor, `coeur`, cSize));
                 
                 document.querySelectorAll('.cadre-item').forEach((ca, idx) => {
                     let color = ca.querySelector('.j-color').value || '#111111';
@@ -364,6 +395,11 @@
                     let name = ca.querySelector('.cadre-label').innerText || `Cadre ${idx+1}`;
                     container.appendChild(createFinitionItemUI(`Bordure: ${name}`, color, `cadre-${idx}`, size));
                 });
+                
+                // La fameuse Extérieure
+                let extColor = document.getElementById('ext-j-color').value || '#111111';
+                let extSize = document.getElementById('ext-j-size').value || 0;
+                container.appendChild(createFinitionItemUI(`Bordure Extérieure (Finition Finale)`, extColor, `exterior`, extSize));
             }
         }
 
@@ -378,7 +414,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 41, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 42, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value;
@@ -403,7 +439,8 @@
                     mod: document.getElementById('c-mod').value,
                     w: parseFloat(document.getElementById('c-w').value),
                     h: parseFloat(document.getElementById('c-h').value),
-                    color: document.getElementById('c-j-color').value
+                    color: document.getElementById('c-j-color').value,
+                    jSize: parseFloat(document.getElementById('c-j-size').value) || 0
                 };
                 
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(ca => {
@@ -418,7 +455,11 @@
                     });
                 });
                 
-                data.finition = { jointSize: parseFloat(document.getElementById('joint-size').value) || 0 };
+                data.finition = { 
+                    jointSize: parseFloat(document.getElementById('joint-size').value) || 0,
+                    extSize: parseFloat(document.getElementById('ext-j-size').value) || 0,
+                    extColor: document.getElementById('ext-j-color').value || '#111111'
+                };
                 return data;
             } catch(e) {
                 console.error("Erreur de lecture:", e);
@@ -532,6 +573,7 @@
                 document.getElementById('c-w').value = data.coeur.w || 20;
                 document.getElementById('c-h').value = data.coeur.h || 20;
                 if(data.coeur.color) document.getElementById('c-j-color').value = data.coeur.color;
+                if(data.coeur.jSize !== undefined) document.getElementById('c-j-size').value = data.coeur.jSize;
             }
             if(data.cadres && data.cadres.length > 0) {
                 document.getElementById('cadres-container').innerHTML = '';
@@ -556,6 +598,11 @@
             
             if(data.finition) {
                 document.getElementById('joint-size').value = data.finition.jointSize || 0;
+                let dispG = document.getElementById('disp-size-global');
+                if(dispG) dispG.value = data.finition.jointSize || 0;
+                
+                document.getElementById('ext-j-size').value = data.finition.extSize || 0;
+                if(data.finition.extColor) document.getElementById('ext-j-color').value = data.finition.extColor;
             }
             
             switchTab('tab-forge', document.querySelectorAll('.tab-btn')[1]);
@@ -702,7 +749,7 @@
         }
 
         function updateAllCadresStats() {
-            let cJoint = parseFloat(document.getElementById('joint-size').value) || 0;
+            let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
             let cw = parseFloat(document.getElementById('c-w').value) || 20;
             let ch = parseFloat(document.getElementById('c-h').value) || 20;
             
@@ -1142,7 +1189,7 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING (V41 : Épaisseurs par Cadre) ---
+        // --- 🧠 LE COEUR DE PARSING (V42: GESTION DE L'EXTÉRIEUR) ---
         function parseWall() {
             let totalW = 0, totalH = 0;
             let tiles = [];
@@ -1237,8 +1284,9 @@
                 let cw = parseFloat(document.getElementById('c-w').value) || 30;
                 let ch = parseFloat(document.getElementById('c-h').value) || 30;
                 let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || '';
+                
                 let cColor = document.getElementById('c-j-color').value || '#111111';
-                let cJoint = globalJointSize; // Le global sert de joint pour le Coeur
+                let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
                 
                 let cadres = [];
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(cc => {
@@ -1253,33 +1301,48 @@
                 });
 
                 totalW = cw; totalH = ch;
-                let pJ = cJoint;
-                cadres.forEach(c => { 
-                    totalW += pJ * 2 + c.w * 2; 
-                    totalH += pJ * 2 + c.h * 2; 
-                    pJ = c.jSize;
-                });
-                if(pJ > 0) {
-                    totalW += pJ * 2;
-                    totalH += pJ * 2;
-                }
+                let curJointSize = cJoint;
                 
+                cadres.forEach(c => { 
+                    totalW += curJointSize * 2 + c.w * 2; 
+                    totalH += curJointSize * 2 + c.h * 2; 
+                    curJointSize = c.jSize; 
+                });
+                
+                // Ajout de l'EXTERIEUR
+                let extJoint = parseFloat(document.getElementById('ext-j-size').value) || 0;
+                let extColor = document.getElementById('ext-j-color').value || '#111111';
+                
+                totalW += extJoint * 2;
+                totalH += extJoint * 2;
+
                 // --- GENERATION DES BACKGROUNDS ---
                 let curW = cw; let curH = ch;
-                let drawJ = cJoint;
+                let bgJoint = cJoint;
+                let bgColor = cColor;
                 
-                if (drawJ > 0 || cadres.length === 0) {
-                    backgrounds.push({ w: curW + 2*drawJ, h: curH + 2*drawJ, color: cColor });
+                if(bgJoint > 0 || cadres.length === 0) {
+                    backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor });
                 }
                 
-                for(let i=0; i<cadres.length; i++) {
-                    curW += 2*drawJ + 2*cadres[i].w;
-                    curH += 2*drawJ + 2*cadres[i].h;
-                    drawJ = cadres[i].jSize;
+                cadres.forEach((c, idx) => {
+                    curW += 2*bgJoint + 2*c.w;
+                    curH += 2*bgJoint + 2*c.h;
                     
-                    if(drawJ > 0 || i === cadres.length - 1) {
-                        backgrounds.push({ w: curW + 2*drawJ, h: curH + 2*drawJ, color: cadres[i].color });
+                    if(idx < cadres.length - 1) {
+                        bgJoint = c.jSize;
+                        bgColor = c.color;
+                        if(bgJoint > 0) {
+                            backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor });
+                        }
                     }
+                });
+                
+                // Dessin du fond extérieur final
+                if (cadres.length > 0 && extJoint > 0) {
+                    backgrounds.push({ w: curW + 2*extJoint, h: curH + 2*extJoint, color: extColor });
+                } else if (cadres.length === 0 && extJoint > 0) {
+                    backgrounds.push({ w: curW + 2*bgJoint + 2*extJoint, h: curH + 2*bgJoint + 2*extJoint, color: extColor });
                 }
                 
                 backgrounds.sort((a,b) => b.w - a.w);
@@ -1289,6 +1352,7 @@
                 
                 let currentTotalW = cw, currentTotalH = ch;
                 let curP = cJoint;
+                
                 cadres.forEach(c => {
                     let bdW = c.w, bdH = c.h;
                     let seq = c.seq.length > 0 ? c.seq : [''];
@@ -1439,3 +1503,4 @@
     </script>
 </body>
 </html>
+
