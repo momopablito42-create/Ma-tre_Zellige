@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V31.0</title>
+    <title>Daguerre OS V32.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V31.0</small>
+        <small>ÉDITION NUCLÉAIRE V32.0</small>
     </div>
 
     <div id="settings-area">
@@ -199,13 +199,20 @@
             updateAllCadresStats();
         }
 
+        // 🧠 L'ARCHITECTURE AUTONOME : LIGNES (Cascade)
         function getPrevTotalH(block) {
             let prev = block.previousElementSibling;
             if(prev && prev.classList.contains('block-item')) {
                 let pDir = prev.querySelector('.s-dir').value;
                 if(pDir === 'M') {
-                    let multiH = prev.querySelector('.s-h-multi').value.split(' ').map(parseFloat).filter(Boolean);
-                    return multiH.reduce((a, b) => a + b, 0);
+                    // Si le voisin du dessus est un V-MULTI, on additionne ses hauteurs
+                    let multiArr = prev.querySelector('.s-h-multi').value.split(' ').filter(Boolean);
+                    let multiTotalH = 0;
+                    multiArr.forEach(part => {
+                        let h = parseFloat(part.split('x')[0]); // On prend juste la hauteur
+                        if(h) multiTotalH += h;
+                    });
+                    return multiTotalH;
                 } else {
                     let pH = parseFloat(prev.querySelector('.s-h').value) || 10;
                     let pQ = parseInt(prev.querySelector('.s-q').value) || 1;
@@ -221,6 +228,7 @@
                 let prevTotalH = getPrevTotalH(current);
                 let cDir = current.querySelector('.s-dir').value;
                 
+                // On ne modifie pas les tailles d'un bloc V-MULTI, on laisse l'utilisateur gèrer sa frise.
                 if(cDir !== 'M') {
                     let val = parseFloat(current.querySelector('.s-w').value) || 10;
                     if(prevTotalH > 0 && val > 0) {
@@ -266,6 +274,7 @@
             }
         }
 
+        // 🔀 NOUVEAU V32: Set Chirurgical (Hauteur x QtéH)
         function setMulti(btn, str) {
             let block = btn.closest('.block-item');
             if(block) {
@@ -275,6 +284,7 @@
             }
         }
 
+        // 👁️ TITRES DYNAMIQUES
         function updateSeqData(block) {
             let selects = Array.from(block.querySelectorAll('.m-sel'));
             let seq = selects.map(s => s.value).join(' ');
@@ -385,7 +395,7 @@
             }
 
             let dirRow = block.querySelector('.dir-row');
-            dirRow.style.display = 'flex'; 
+            dirRow.style.display = 'flex'; // V28: Toujours visible !
             
             renderModelSelects(block, type);
         }
@@ -407,6 +417,7 @@
             renderModelSelects(cadre, type);
         }
 
+        // ✂️ V30: GESTION DE LA DIRECTION + MULTI
         function setSeqDir(btn, dir, force=false, runCascade=true) {
             let block = btn.closest('.block-item');
             
@@ -562,12 +573,11 @@
                     </div>
 
                     <div class="multi-dims-zone" style="display:none; background:#1a1a24; padding:10px; border-radius:4px; margin-top:5px; border:1px dashed var(--magenta);">
-                        <span class="label-sm" style="color:var(--magenta); text-align:center;">Découpe Verticale (Hauteurs en cm espacées)</span>
-                        <input type="text" class="s-h-multi" value="2.5 5 2.5" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center; margin-bottom:5px; color:var(--magenta); font-weight:bold;">
-                        <div class="quick-sizes" style="grid-template-columns: repeat(3, 1fr); margin:0;">
-                            <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta);" onclick="setMulti(this, '2.5 5 2.5')">2.5-5-2.5</button>
-                            <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta);" onclick="setMulti(this, '1.25 2.5 1.25')">1.25-2.5-1.25</button>
-                            <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta);" onclick="setMulti(this, '5 10 5')">5-10-5</button>
+                        <span class="label-sm" style="color:var(--magenta); text-align:center;">Découpe Chirurgicale (Formule: Hauteur x QtéH)</span>
+                        <input type="text" class="s-h-multi" value="2.5x2 5x1 2.5x2" placeholder="Ex: 2.5x2 5x1" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center; margin-bottom:5px; color:var(--magenta); font-weight:bold;">
+                        <div class="quick-sizes" style="grid-template-columns: repeat(2, 1fr); margin:0;">
+                            <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta); font-size:11px;" onclick="setMulti(this, '2.5x2 5x1 2.5x2')">Rendu Graphika (2.5x2 / 5x1 / 2.5x2)</button>
+                            <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta); font-size:11px;" onclick="setMulti(this, '1.25x2 2.5x1 1.25x2')">Moitié (1.25x2 / 2.5x1 / 1.25x2)</button>
                         </div>
                     </div>
 
@@ -646,6 +656,7 @@
                     <div class="row">
                         <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
                         <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
+                        <input type="hidden" class="c-seq" value="">
                     </div>
                 </div>
             `;
@@ -750,7 +761,8 @@
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lw = 0, lh = 0, blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
-                        let sequence = bl.querySelector('.s-seq').value.toUpperCase().split(' ').filter(Boolean);
+                        let selects = Array.from(bl.querySelectorAll('.m-sel'));
+                        let sequence = selects.map(s => s.value).filter(Boolean);
                         let w = parseFloat(bl.querySelector('.s-w').value) || 10;
                         let h = parseFloat(bl.querySelector('.s-h').value) || 10; 
                         let q = parseInt(bl.querySelector('.s-q').value) || 1;
@@ -759,10 +771,21 @@
                         if(sequence.length === 0) sequence = [''];
                         
                         if(dir === 'M') {
-                            let hMulti = bl.querySelector('.s-h-multi').value.split(' ').map(parseFloat).filter(Boolean);
-                            if(hMulti.length > 0) {
-                                let totalHMulti = hMulti.reduce((a, b) => a + b, 0);
-                                blocks.push({sequence, w, h: 0, q: 1, dir, bW: w, bH: totalHMulti, hMulti});
+                            // M-MULTI Chirurgical (V32)
+                            let multiParts = bl.querySelector('.s-h-multi').value.trim().split(/\s+/);
+                            let chirData = [];
+                            let totalHMulti = 0;
+                            multiParts.forEach(part => {
+                                let dims = part.split('x');
+                                let h = parseFloat(dims[0]);
+                                let qH = parseInt(dims[1]) || 1; // Quantité Horizontale manuelle
+                                if(h) {
+                                    chirData.push({h, qH});
+                                    totalHMulti += h;
+                                }
+                            });
+                            if(chirData.length > 0) {
+                                blocks.push({sequence, w, h: 0, q: 1, dir, bW: w, bH: totalHMulti, chirData});
                                 lw += w; lh = Math.max(lh, totalHMulti);
                             }
                         } else {
@@ -785,19 +808,19 @@
                         let startX = curX, startY = curY;
                         
                         if(b.dir === 'M') {
+                            // Rendu MULTI Chirurgical
                             let currentY = startY;
-                            for(let i=0; i<b.hMulti.length; i++) {
+                            for(let i=0; i<b.chirData.length; i++) {
                                 let char = b.sequence[i % b.sequence.length];
-                                let hTile = b.hMulti[i];
+                                let segment = b.chirData[i];
                                 
-                                // 🥷 FIX V31 : Calcul auto de la quantité horizontale
-                                let numCols = Math.max(1, Math.round(b.w / hTile));
-                                let actualWTile = b.w / numCols;
+                                // Calcul de la largeur de chaque carreau chirurgical
+                                let actualWTile = b.w / segment.qH;
                                 
-                                for(let c=0; c<numCols; c++) {
-                                    tiles.push({l: char, x: startX + c * actualWTile, y: currentY, w: actualWTile, h: hTile});
+                                for(let c=0; c<segment.qH; c++) {
+                                    tiles.push({l: char, x: startX + c * actualWTile, y: currentY, w: actualWTile, h: segment.h});
                                 }
-                                currentY += hTile;
+                                currentY += segment.h;
                             }
                         } else {
                             for(let i=0; i<b.q; i++) {
@@ -846,7 +869,7 @@
                     let sIdx = 0; const getL = () => seq[sIdx++ % seq.length];
 
                     for(let i=0; i<Nx; i++) tiles.push({ x: shiftX + i*adjW, y: shiftY, w: adjW, h: bdH, l: getL() });
-                    for(let i=0; i<Ny; i++) tiles.push({ x: shiftX + newTotalW - bdW, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL() });
+                    for(let i=Ny; i<Ny; i++) tiles.push({ x: shiftX + newTotalW - bdW, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL() });
                     for(let i=Nx-1; i>=0; i--) tiles.push({ x: shiftX + i*adjW, y: shiftY + newTotalH - bdH, w: adjW, h: bdH, l: getL() });
                     for(let i=Ny-1; i>=0; i--) tiles.push({ x: shiftX, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL() });
                     
