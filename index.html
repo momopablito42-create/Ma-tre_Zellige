@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V44.0</title>
+    <title>Daguerre OS V45.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,7 +25,7 @@
         .box { background: rgba(0, 255, 255, 0.05); border-left: 2px solid var(--cyan); padding: 10px; border-radius: 4px; margin-bottom: 15px; position: relative; }
         .row { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
         
-        input, select { background: #000; color: var(--cyan); border: 1px solid #444; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; }
+        input, select, textarea { background: #000; color: var(--cyan); border: 1px solid #444; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; }
         .editable-name { background: transparent; border: none; border-bottom: 1px solid var(--cyan); color: var(--cyan); font-weight: bold; width: 60%; }
 
         .btn { border: none; border-radius: 4px; padding: 12px; font-weight: bold; font-family: monospace; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 12px; }
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V44.0</small>
+        <small>ÉDITION NUCLÉAIRE V45.0</small>
     </div>
 
     <div id="settings-area">
@@ -201,31 +201,36 @@
         </div>
 
         <div id="tab-encadrement" class="tab-content">
-            <div class="section-title">🖼️ Atelier d'Encadrement 3D</div>
+            <div class="section-title">🖼️ Atelier d'Encadrement 3D Pro</div>
             
             <div class="box" style="border-color: var(--amethyst);">
-                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Matériau du Cadre</span>
+                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Matériau Noble (textures HD)</span>
                 <select id="frame-material" class="m-sel" style="width:100%; margin-bottom:15px; font-size:14px; background:#000;">
-                    <option value="noyer">🪵 Bois de Noyer (Sombre)</option>
-                    <option value="chene">🪵 Bois de Chêne (Clair)</option>
-                    <option value="serpentine">💎 Serpentine (Pierre Verte)</option>
-                    <option value="amethyste">💎 Améthyste (Pierre Violette)</option>
-                    <option value="obsidienne">🌑 Obsidienne (Pierre Noire)</option>
+                    <option value="noyer">🪵 Bois de Noyer (Sombre Vénéré)</option>
+                    <option value="chene">🪵 Bois de Chêne (Clair Royal)</option>
+                    <option value="serpentine">💎 Serpentine (Pierre Verte Marbrée)</option>
+                    <option value="amethyste">💎 Améthyste (Pierre Violette Cristalline)</option>
+                    <option value="obsidienne">🌑 Obsidienne (Pierre Noire Volcanique)</option>
                 </select>
 
-                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Épaisseur du Cadre Extérieur (cm)</span>
+                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Épaisseur du Cadre (cm)</span>
                 <div class="row" style="margin-bottom: 20px;">
                     <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="updateFrameSize(-1)">-</button>
                     <input type="number" id="frame-size" value="10" step="1" style="flex:1; text-align: center; color: var(--jaune); font-weight: bold; font-size:16px; height:40px; margin:0;">
                     <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="updateFrameSize(1)">+</button>
                 </div>
                 
-                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Titre de l'Œuvre (Plaque en Or)</span>
-                <input type="text" id="artwork-title" value="Symphonie Daguerre" style="width:100%; text-align:center; font-size:14px; margin-bottom:10px;">
-                <p style="font-size:9px; color:#888; text-align:center; margin-top:0;">Une plaque en or sera gravée et posée sur le cadre.</p>
+                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Option de la Plaque de l'Artiste</span>
+                <div class="row" style="background:#000; padding:10px; border-radius:4px; border:1px solid #444; margin-bottom:10px;">
+                    <span style="font-size:12px; color:var(--cyan);">Activer la Plaque en Or ?</span>
+                    <input type="checkbox" id="artwork-plaque-toggle" checked style="width:25px; height:25px; cursor:pointer;">
+                </div>
+                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Texte à graver sur la Plaque</span>
+                <textarea id="artwork-title" value="Symphonie Daguerre" style="width:100%; height:50px; text-align:center; font-size:12px; margin-bottom:10px; font-weight:bold;"></textarea>
+                <p style="font-size:9px; color:#888; text-align:center; margin-top:0;">La plaque est gravée et vissée au centre bas du cadre.</p>
             </div>
 
-            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 20px; font-size: 16px; padding:20px;" onclick="exportFramedImage()">🖼️ FORGER & TÉLÉCHARGER (8K)</button>
+            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 20px; font-size: 16px; padding:20px;" onclick="exportFramedImage()">🖼️ FORGER & TÉLÉCHARGER LE CHEF-D'ŒUVRE (8K)</button>
             <p style="font-size:10px; color:#555; text-align:center;">Génération 3D en arrière-plan pour préserver le processeur.</p>
         </div>
 
@@ -290,7 +295,7 @@
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 🎨 GESTION FINITION ---
+        // --- 🎨 GESTION FINITION V45 ---
         
         function updateJointSizeUI(targetId, delta) {
             let dispInput = document.getElementById('disp-size-' + targetId);
@@ -436,7 +441,7 @@
             }
         }
 
-        // --- 💾 GESTION DE LA BIBLIOTHÈQUE ---
+        // --- 💾 GESTION DE LA BIBLIOTHÈQUE V45 ---
         function updateLibraryUI() {
             let sel = document.getElementById('library-select');
             sel.innerHTML = '<option value="">-- Choisir un Grimoire --</option>';
@@ -447,7 +452,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 44, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 45, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value;
@@ -758,6 +763,48 @@
             updateAllCadresStats();
         }
 
+        function updateAllCadresStats() {
+            let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
+            let cw = parseFloat(document.getElementById('c-w').value) || 20;
+            let ch = parseFloat(document.getElementById('c-h').value) || 20;
+            
+            let currentW = cw;
+            let currentH = ch;
+            let prevJoint = cJoint;
+
+            document.querySelectorAll('#cadres-container .cadre-item').forEach(cadre => {
+                let bdW = parseFloat(cadre.querySelector('.c-w').value) || 10;
+                let bdH = parseFloat(cadre.querySelector('.c-h').value) || 10;
+                
+                let innerW = currentW + prevJoint * 2;
+                let innerH = currentH + prevJoint * 2;
+                
+                let newW = innerW + bdW * 2;
+                let newH = innerH + bdH * 2;
+
+                let Nx = Math.max(1, Math.round(newW / bdW));
+                let Ny = Math.max(1, Math.round(innerH / bdH));
+                let totalTiles = (Nx * 2) + (Ny * 2);
+
+                let counterEl = cadre.querySelector('.tile-counter');
+                if(counterEl) {
+                    let selects = Array.from(cadre.querySelectorAll('.m-sel'));
+                    let seqLen = selects.length;
+                    
+                    if(seqLen > 0 && totalTiles % seqLen !== 0) {
+                         counterEl.style.color = 'var(--magenta)';
+                         counterEl.innerText = `Périmètre : ${totalTiles} carreaux (⚠️ Reste ${totalTiles % seqLen} !)`;
+                    } else {
+                         counterEl.style.color = 'var(--vert)';
+                         counterEl.innerText = `Périmètre : ${totalTiles} carreaux (✅ Parfait pour ${seqLen})`;
+                    }
+                }
+                currentW = newW;
+                currentH = newH;
+                prevJoint = parseFloat(cadre.querySelector('.j-size').value) || 0;
+            });
+        }
+
         function getModelsOptionsHTML(defaultChar) {
             let keys = Object.keys(modeles);
             if(keys.length === 0) keys = ['A', 'B', 'C', 'D'];
@@ -1044,13 +1091,6 @@
             setCadreMode(typeBtn, type);
         }
 
-        function move(el, dir) {
-            if(dir==='up' && el.previousElementSibling) el.parentNode.insertBefore(el, el.previousElementSibling);
-            if(dir==='down' && el.nextElementSibling) el.parentNode.insertBefore(el.nextElementSibling, el);
-            if(el.classList.contains('block-item')) triggerCascade(el.previousElementSibling || el);
-            if(el.classList.contains('cadre-item')) updateAllCadresStats();
-        }
-        
         function duplicateBlock(el) { 
             let clone = el.cloneNode(true); 
             let origInputs = el.querySelectorAll('input, select');
@@ -1061,7 +1101,6 @@
             if(clone.classList.contains('cadre-item')) { updateCadreData(clone); }
         }
 
-        // --- GESTION DU ZOOM TACTILE ---
         const touchZone = document.getElementById('touch-zone');
         const canvasWrap = document.getElementById('canvas-wrapper');
         let t_scale = 1, t_posX = 0, t_posY = 0;
@@ -1070,43 +1109,25 @@
         let isDragging = false;
 
         touchZone.addEventListener('touchstart', e => {
-            if(e.touches.length === 1) {
-                isDragging = true;
-                t_dragStart.x = e.touches[0].clientX;
-                t_dragStart.y = e.touches[0].clientY;
-                t_posStart.x = t_posX;
-                t_posStart.y = t_posY;
-            } else if(e.touches.length === 2) {
-                isDragging = false;
-                t_startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                t_startScale = t_scale;
-            }
+            if(e.touches.length === 1) { isDragging = true; t_dragStart.x = e.touches[0].clientX; t_dragStart.y = e.touches[0].clientY; t_posStart.x = t_posX; t_posStart.y = t_posY; }
+            else if(e.touches.length === 2) { isDragging = false; t_startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); t_startScale = t_scale; }
         });
 
         touchZone.addEventListener('touchmove', e => {
             e.preventDefault(); 
-            if(e.touches.length === 1 && isDragging) {
-                t_posX = t_posStart.x + (e.touches[0].clientX - t_dragStart.x);
-                t_posY = t_posStart.y + (e.touches[0].clientY - t_dragStart.y);
-                updateTransform();
-            } else if(e.touches.length === 2) {
+            if(e.touches.length === 1 && isDragging) { t_posX = t_posStart.x + (e.touches[0].clientX - t_dragStart.x); t_posY = t_posStart.y + (e.touches[0].clientY - t_dragStart.y); updateTransform(); }
+            else if(e.touches.length === 2) {
                 let dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                t_scale = Math.max(0.05, Math.min(t_startScale * (dist / t_startDist), 5));
-                updateTransform();
+                t_scale = Math.max(0.05, Math.min(t_startScale * (dist / t_startDist), 5)); updateTransform();
             }
         }, {passive: false});
-
         touchZone.addEventListener('touchend', e => { if(e.touches.length < 2) isDragging = false; });
-
         function updateTransform() { canvasWrap.style.transform = `translate(${t_posX}px, ${t_posY}px) scale(${t_scale})`; }
         function closeRender() { document.getElementById('render-modal').style.display = 'none'; }
         function resetCamera(cssWidth, cssHeight) {
-            let zoneW = touchZone.clientWidth;
-            let zoneH = touchZone.clientHeight;
+            let zoneW = touchZone.clientWidth; let zoneH = touchZone.clientHeight;
             let fitScale = Math.min((zoneW - 40) / cssWidth, (zoneH - 40) / cssHeight);
-            t_scale = Math.max(0.1, fitScale);
-            t_posX = (zoneW - cssWidth * t_scale) / 2;
-            t_posY = (zoneH - cssHeight * t_scale) / 2;
+            t_scale = Math.max(0.1, fitScale); t_posX = (zoneW - cssWidth * t_scale) / 2; t_posY = (zoneH - cssHeight * t_scale) / 2;
             updateTransform();
         }
 
@@ -1122,7 +1143,6 @@
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lw = 0, lh = 0, blocks = [];
                     let lColor = li.querySelector('.j-color').value || '#111111';
-                    
                     li.querySelectorAll('.block-item').forEach(bl => {
                         let selects = Array.from(bl.querySelectorAll('.m-sel'));
                         let sequence = selects.map(s => s.value).filter(Boolean);
@@ -1134,408 +1154,277 @@
                         
                         if(dir === 'M') {
                             let multiParts = bl.querySelector('.s-h-multi').value.trim().split(/\s+/);
-                            let chirData = [];
-                            let totalHMulti = 0;
+                            let chirData = []; let totalHMulti = 0;
                             multiParts.forEach(part => {
                                 let dims = part.split('x');
-                                let h = parseFloat(dims[0]);
-                                let qH = parseInt(dims[1]) || 1; 
+                                let h = parseFloat(dims[0]); let qH = parseInt(dims[1]) || 1; 
                                 if(h) { chirData.push({h, qH}); totalHMulti += h; }
                             });
                             if(chirData.length > 0) {
-                                blocks.push({sequence, w, h: 0, q: 1, dir, bW: w, bH: totalHMulti, chirData});
-                                lw += w; lh = Math.max(lh, totalHMulti);
+                                blocks.push({sequence, w, h: 0, q: 1, dir, bW: w, bH: totalHMulti, chirData}); lw += w; lh = Math.max(lh, totalHMulti);
                             }
                         } else {
-                            if(q > 0) {
-                                let bW = (dir === 'H') ? w * q : w;
-                                let bH = (dir === 'V') ? h * q : h;
-                                blocks.push({sequence, w, h, q, dir, bW, bH});
-                                lw += bW; lh = Math.max(lh, bH);
-                            }
+                            if(q > 0) { let bW = (dir === 'H') ? w * q : w; let bH = (dir === 'V') ? h * q : h; blocks.push({sequence, w, h, q, dir, bW, bH}); lw += bW; lh = Math.max(lh, bH); }
                         }
                     });
                     lines.push({blocks, lw, lh, color: lColor});
                 });
                 
-                lines.forEach((line, idx) => {
-                    totalW = Math.max(totalW, line.lw);
-                    totalH += line.lh;
-                    if(idx > 0) totalH += globalJointSize;
-                });
+                lines.forEach((line, idx) => { totalW = Math.max(totalW, line.lw); totalH += line.lh; if(idx > 0) totalH += globalJointSize; });
                 
                 let curY = 0;
                 lines.forEach((line, idx) => {
                     let hBg = line.lh + (idx === lines.length - 1 ? 0 : globalJointSize);
                     backgrounds.push({ x: 0, y: curY, w: totalW, h: hBg, color: line.color });
-                    
                     let curX = (totalW - line.lw) / 2;
                     line.blocks.forEach(b => {
                         let startX = curX, startY = curY;
                         if(b.dir === 'M') {
                             let currentY = startY;
                             for(let i=0; i<b.chirData.length; i++) {
-                                let char = b.sequence[i % b.sequence.length];
-                                let segment = b.chirData[i];
+                                let char = b.sequence[i % b.sequence.length]; let segment = b.chirData[i];
                                 let actualWTile = b.w / segment.qH;
-                                for(let c=0; c<segment.qH; c++) {
-                                    tiles.push({l: char, x: startX + c * actualWTile, y: currentY, w: actualWTile, h: segment.h});
-                                }
+                                for(let c=0; c<segment.qH; c++) { tiles.push({l: char, x: startX + c * actualWTile, y: currentY, w: actualWTile, h: segment.h}); }
                                 currentY += segment.h;
                             }
                         } else {
-                            for(let i=0; i<b.q; i++) {
-                                let char = b.sequence[i % b.sequence.length];
-                                let dx = startX + (b.dir==='H' ? i*b.w : 0);
-                                let dy = startY + (b.dir==='V' ? i*b.h : 0);
-                                tiles.push({l: char, x: dx, y: dy, w: b.w, h: b.h});
-                            }
+                            for(let i=0; i<b.q; i++) { let char = b.sequence[i % b.sequence.length]; let dx = startX + (b.dir==='H' ? i*b.w : 0); let dy = startY + (b.dir==='V' ? i*b.h : 0); tiles.push({l: char, x: dx, y: dy, w: b.w, h: b.h}); }
                         }
                         curX += b.bW;
                     });
                     curY += line.lh + globalJointSize;
                 });
             } else {
-                let cw = parseFloat(document.getElementById('c-w').value) || 30;
-                let ch = parseFloat(document.getElementById('c-h').value) || 30;
+                let cw = parseFloat(document.getElementById('c-w').value) || 30; let ch = parseFloat(document.getElementById('c-h').value) || 30;
                 let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || '';
-                let cColor = document.getElementById('c-j-color').value || '#111111';
-                let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
-                
+                let cColor = document.getElementById('c-j-color').value || '#111111'; let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
                 let cadres = [];
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(cc => {
                     let selects = Array.from(cc.querySelectorAll('.m-sel'));
-                    cadres.push({
-                        seq: selects.map(s => s.value).filter(Boolean),
-                        w: parseFloat(cc.querySelector('.c-w').value) || 10,
-                        h: parseFloat(cc.querySelector('.c-h').value) || 10,
-                        color: cc.querySelector('.j-color').value || '#111111',
-                        jSize: parseFloat(cc.querySelector('.j-size').value) || 0
-                    });
+                    cadres.push({ seq: selects.map(s => s.value).filter(Boolean), w: parseFloat(cc.querySelector('.c-w').value) || 10, h: parseFloat(cc.querySelector('.c-h').value) || 10, color: cc.querySelector('.j-color').value || '#111111', jSize: parseFloat(cc.querySelector('.j-size').value) || 0 });
                 });
-
-                totalW = cw; totalH = ch;
-                let curJointSize = cJoint;
-                
-                cadres.forEach(c => { 
-                    totalW += curJointSize * 2 + c.w * 2; 
-                    totalH += curJointSize * 2 + c.h * 2; 
-                    curJointSize = c.jSize; 
-                });
-                
-                let extJoint = parseFloat(document.getElementById('ext-j-size').value) || 0;
-                let extColor = document.getElementById('ext-j-color').value || '#111111';
+                totalW = cw; totalH = ch; let curJointSize = cJoint;
+                cadres.forEach(c => { totalW += curJointSize * 2 + c.w * 2; totalH += curJointSize * 2 + c.h * 2; curJointSize = c.jSize; });
+                let extJoint = parseFloat(document.getElementById('ext-j-size').value) || 0; let extColor = document.getElementById('ext-j-color').value || '#111111';
                 totalW += extJoint * 2; totalH += extJoint * 2;
-
-                let curW = cw; let curH = ch;
-                let bgJoint = cJoint; let bgColor = cColor;
-                
+                let curW = cw; let curH = ch; let bgJoint = cJoint; let bgColor = cColor;
                 if(bgJoint > 0 || cadres.length === 0) backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor });
-                
-                cadres.forEach((c, idx) => {
-                    curW += 2*bgJoint + 2*c.w; curH += 2*bgJoint + 2*c.h;
-                    if(idx < cadres.length - 1) {
-                        bgJoint = c.jSize; bgColor = c.color;
-                        if(bgJoint > 0) backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor });
-                    }
-                });
-                
+                cadres.forEach((c, idx) => { curW += 2*bgJoint + 2*c.w; curH += 2*bgJoint + 2*c.h; if(idx < cadres.length - 1) { bgJoint = c.jSize; bgColor = c.color; if(bgJoint > 0) backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor }); } });
                 if (cadres.length > 0 && extJoint > 0) backgrounds.push({ w: curW + 2*extJoint, h: curH + 2*extJoint, color: extColor });
                 else if (cadres.length === 0 && extJoint > 0) backgrounds.push({ w: curW + 2*bgJoint + 2*extJoint, h: curH + 2*bgJoint + 2*extJoint, color: extColor });
-                
                 backgrounds.sort((a,b) => b.w - a.w);
-
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
-                
-                let currentTotalW = cw, currentTotalH = ch;
-                let curP = cJoint;
-                
+                let currentTotalW = cw, currentTotalH = ch; let curP = cJoint;
                 cadres.forEach(c => {
-                    let bdW = c.w, bdH = c.h;
-                    let seq = c.seq.length > 0 ? c.seq : [''];
+                    let bdW = c.w, bdH = c.h; let seq = c.seq.length > 0 ? c.seq : [''];
                     let innerW = currentTotalW + curP * 2; let innerH = currentTotalH + curP * 2;
                     let newTotalW = innerW + bdW * 2; let newTotalH = innerH + bdH * 2;
                     let shiftX = (totalW - newTotalW)/2; let shiftY = (totalH - newTotalH)/2;
-                    
                     let Nx = Math.max(1, Math.round(newTotalW / bdW)); let adjW = newTotalW / Nx; 
                     let Ny = Math.max(1, Math.round(innerH / bdH)); let adjH = innerH / Ny;
-                    
                     let sIdx = 0; const getL = () => seq[sIdx++ % seq.length];
-
                     for(let i=0; i<Nx; i++) tiles.push({ x: shiftX + i*adjW, y: shiftY, w: adjW, h: bdH, l: getL() });
                     for(let i=0; i<Ny; i++) tiles.push({ x: shiftX + newTotalW - bdW, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL() });
                     for(let i=Nx-1; i>=0; i--) tiles.push({ x: shiftX + i*adjW, y: shiftY + newTotalH - bdH, w: adjW, h: bdH, l: getL() });
                     for(let i=Ny-1; i>=0; i--) tiles.push({ x: shiftX, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL() });
-                    
-                    currentTotalW = newTotalW; currentTotalH = newTotalH;
-                    curP = c.jSize;
+                    currentTotalW = newTotalW; currentTotalH = newTotalH; curP = c.jSize;
                 });
-            }
-            return { tiles, backgrounds, totalW, totalH };
+            } return { tiles, backgrounds, totalW, totalH };
         }
 
-        // --- 🖼️ GENERATEUR DE CADRES 3D (V44) ---
-        function draw3DFrame(ctx, width, height, thickness, material, title) {
-            let baseColor, lightColor, darkColor;
+        // --- 🖼️ GENERATEUR DE CADRES 3D ULTRA-REALISTE V45 ---
+
+        // Générateur de texture bois procédurale
+        function generateWoodTexture(width, height, color1, color2, grainWidth) {
+            let canvas = document.createElement('canvas');
+            canvas.width = width; canvas.height = height;
+            let ctx = canvas.getContext('2d');
+            ctx.fillStyle = color1; ctx.fillRect(0, 0, width, height);
+            ctx.strokeStyle = color2; ctx.lineWidth = grainWidth;
+            for (let i = 0; i < height; i += grainWidth * 2) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                for (let j = 0; j < width; j += 10) {
+                    ctx.lineTo(j, i + Math.sin(j * 0.05 + i * 0.1) * 2);
+                }
+                ctx.stroke();
+            }
+            return canvas;
+        }
+
+        // Générateur de texture pierre procédurale
+        function generateStoneTexture(width, height, baseColor, noiseColor1, noiseColor2, noiseScale) {
+            let canvas = document.createElement('canvas');
+            canvas.width = width; canvas.height = height;
+            let ctx = canvas.getContext('2d');
+            ctx.fillStyle = baseColor; ctx.fillRect(0, 0, width, height);
+            for (let i = 0; i < width; i += noiseScale) {
+                for (let j = 0; j < height; j += noiseScale) {
+                    let rand = Math.random();
+                    if (rand > 0.6) ctx.fillStyle = noiseColor1;
+                    else if (rand > 0.3) ctx.fillStyle = noiseColor2;
+                    else ctx.fillStyle = baseColor;
+                    ctx.fillRect(i, j, noiseScale, noiseScale);
+                }
+            }
+            return canvas;
+        }
+
+        function draw3DFrame(ctx, width, height, thickness, material, title, usePlaque) {
+            let woodTextureCanvas, stoneTextureCanvas, pattern;
             
             // Palette des matériaux
-            if(material === 'noyer') { baseColor = '#3E2723'; lightColor = '#5c4033'; darkColor = '#261412'; }
-            else if(material === 'chene') { baseColor = '#8B5A2B'; lightColor = '#a06f3d'; darkColor = '#6b421a'; }
-            else if(material === 'serpentine') { baseColor = '#2E4A35'; lightColor = '#3d6347'; darkColor = '#1f3323'; }
-            else if(material === 'amethyste') { baseColor = '#5B3256'; lightColor = '#7a4373'; darkColor = '#3d2139'; }
-            else if(material === 'obsidienne') { baseColor = '#1a1a1a'; lightColor = '#2a2a2a'; darkColor = '#0a0a0a'; }
+            if(material === 'noyer') { 
+                woodTextureCanvas = generateWoodTexture(thickness, thickness, '#3E2723', '#261412', 2); 
+            } else if(material === 'chene') { 
+                woodTextureCanvas = generateWoodTexture(thickness, thickness, '#8B5A2B', '#a06f3d', 2); 
+            } else if(material === 'serpentine') { 
+                stoneTextureCanvas = generateStoneTexture(thickness, thickness, '#2E4A35', '#1f3323', '#3d6347', 2); 
+            } else if(material === 'amethyste') { 
+                stoneTextureCanvas = generateStoneTexture(thickness, thickness, '#5B3256', '#3d2139', '#7a4373', 2); 
+            } else if(material === 'obsidienne') { 
+                stoneTextureCanvas = generateStoneTexture(thickness, thickness, '#1a1a1a', '#0a0a0a', '#2a2a2a', 2); 
+            }
 
-            // Dessin des 4 trapèzes pour le biseau 45°
+            // Création du motif (pattern)
+            if(woodTextureCanvas) pattern = ctx.createPattern(woodTextureCanvas, 'repeat');
+            if(stoneTextureCanvas) pattern = ctx.createPattern(stoneTextureCanvas, 'repeat');
+            ctx.fillStyle = pattern;
+
+            // Dessin des 4 trapèzes texturés
             
-            // HAUT (Éclairé)
-            ctx.fillStyle = lightColor;
+            // HAUT 
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(width, 0); ctx.lineTo(width - thickness, thickness); ctx.lineTo(thickness, thickness); ctx.fill();
+            // Appliquer un gradient de lumière sur le trapèze haut
+            let gradientTop = ctx.createLinearGradient(0, 0, thickness, thickness);
+            gradientTop.addColorStop(0, 'rgba(255,255,255,0.2)'); gradientTop.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = gradientTop; ctx.fill();
             
-            // BAS (Ombré)
-            ctx.fillStyle = darkColor;
+            // BAS 
+            ctx.fillStyle = pattern;
             ctx.beginPath(); ctx.moveTo(width, height); ctx.lineTo(0, height); ctx.lineTo(thickness, height - thickness); ctx.lineTo(width - thickness, height - thickness); ctx.fill();
+            // Appliquer un gradient d'ombre sur le trapèze bas
+            let gradientBottom = ctx.createLinearGradient(0, height, thickness, height - thickness);
+            gradientBottom.addColorStop(0, 'rgba(0,0,0,0.5)'); gradientBottom.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gradientBottom; ctx.fill();
             
-            // GAUCHE (Base)
-            ctx.fillStyle = baseColor;
+            // GAUCHE 
+            ctx.fillStyle = pattern;
             ctx.beginPath(); ctx.moveTo(0, height); ctx.lineTo(0, 0); ctx.lineTo(thickness, thickness); ctx.lineTo(thickness, height - thickness); ctx.fill();
             
-            // DROITE (Base)
-            ctx.fillStyle = baseColor;
+            // DROITE 
+            ctx.fillStyle = pattern;
             ctx.beginPath(); ctx.moveTo(width, 0); ctx.lineTo(width, height); ctx.lineTo(width - thickness, height - thickness); ctx.lineTo(width - thickness, thickness); ctx.fill();
 
-            // Bordure intérieure sombre pour le relief
+            // Bordure intérieure ombre
             ctx.strokeStyle = '#000'; ctx.lineWidth = thickness * 0.05;
             ctx.strokeRect(thickness, thickness, width - thickness*2, height - thickness*2);
 
-            // Plaque en Or pour le Titre
-            if(title && title !== "") {
-                let plaqueW = width * 0.3; // La plaque fait 30% de la largeur totale
-                let plaqueH = thickness * 0.6; // 60% de l'épaisseur du cadre
+            // Plaque en Or (Bonus V45)
+            if(usePlaque && title && title !== "") {
+                let plaqueW = width * 0.4; // 40% largeur
+                let plaqueH = thickness * 0.7; // 70% épaisseur
                 let plaqueX = (width - plaqueW) / 2;
-                let plaqueY = height - (thickness * 0.8);
+                let plaqueY = height - thickness;
 
-                // Or dégradé
+                // Or dégradé complexes
                 let gradient = ctx.createLinearGradient(plaqueX, plaqueY, plaqueX, plaqueY + plaqueH);
-                gradient.addColorStop(0, "#f1c40f");
-                gradient.addColorStop(0.5, "#d3b878");
-                gradient.addColorStop(1, "#b39858");
+                gradient.addColorStop(0, "#f1c40f"); gradient.addColorStop(0.5, "#d3b878"); gradient.addColorStop(1, "#b39858");
                 
-                ctx.fillStyle = gradient;
-                ctx.shadowColor = 'rgba(0,0,0,0.5)';
-                ctx.shadowBlur = 10;
-                ctx.shadowOffsetY = 5;
+                ctx.fillStyle = gradient; ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 15; ctx.shadowOffsetY = 8;
                 ctx.fillRect(plaqueX, plaqueY, plaqueW, plaqueH);
                 
-                // Bordure de la plaque
-                ctx.shadowColor = 'transparent';
-                ctx.strokeStyle = '#5a4611';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(plaqueX, plaqueY, plaqueW, plaqueH);
+                // Bordure plaque
+                ctx.shadowColor = 'transparent'; ctx.strokeStyle = '#5a4611'; ctx.lineWidth = 3; ctx.strokeRect(plaqueX, plaqueY, plaqueW, plaqueH);
 
-                // Texte gravé
-                ctx.fillStyle = "#332505";
-                ctx.font = `bold ${plaqueH * 0.4}px serif`;
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
+                // Texte gravé 3D complexe
+                ctx.fillStyle = "#332505"; ctx.font = `bold ${plaqueH * 0.45}px serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                
+                ctx.save();
+                ctx.shadowColor = 'rgba(255,255,255,0.3)'; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 0;
                 ctx.fillText(title, width / 2, plaqueY + (plaqueH / 2));
+                ctx.restore();
             }
         }
 
-        // RENDER PREVISUALISATION (Ancien bouton)
+        // --- 👁️ RENDER PREVISUALISATION ---
         function render() {
-            const canvas = document.getElementById('c');
-            const ctx = canvas.getContext('2d');
-            const baseScale = 40; 
-            const dpr = window.devicePixelRatio || 2; 
-
+            const canvas = document.getElementById('c'); const ctx = canvas.getContext('2d');
+            const baseScale = 40; const dpr = window.devicePixelRatio || 2; 
             let { tiles, backgrounds, totalW, totalH } = parseWall();
-
             prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
-            
-            backgrounds.forEach(bg => {
-                ctx.fillStyle = bg.color;
-                if(mode === 'lineaire') {
-                    ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale);
-                } else {
-                    let x = (totalW - bg.w)/2;
-                    let y = (totalH - bg.h)/2;
-                    ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale);
-                }
-            });
-
+            backgrounds.forEach(bg => { ctx.fillStyle = bg.color; if(mode === 'lineaire') ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); else { let x = (totalW - bg.w)/2; let y = (totalH - bg.h)/2; ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale); } });
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
-
-            document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm 💎 HD`;
-            document.getElementById('render-modal').style.display = 'flex';
-            setTimeout(() => {
-                let cssW = (totalW || 10) * baseScale;
-                let cssH = (totalH || 10) * baseScale;
-                resetCamera(cssW, cssH);
-            }, 50);
+            document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm 💎 HD`; document.getElementById('render-modal').style.display = 'flex';
+            setTimeout(() => { let cssW = (totalW || 10) * baseScale; let cssH = (totalH || 10) * baseScale; resetCamera(cssW, cssH); }, 50);
         }
 
-        function updateFrameSize(delta) {
-            let input = document.getElementById('frame-size');
-            let val = Math.max(1, parseFloat(input.value) + delta);
-            input.value = val;
-        }
-
-        // 🖼️ EXPORT 8K AVEC ENCADREMENT 3D
+        // --- 🖼️ EXPORT ULTIME 8K ENCADRE V45 ---
         function exportFramedImage() {
             let { tiles, backgrounds, totalW, totalH } = parseWall();
             let baseScale = 40; 
-            
             let frameSizeCm = parseFloat(document.getElementById('frame-size').value) || 10;
             let material = document.getElementById('frame-material').value;
             let title = document.getElementById('artwork-title').value.trim();
+            let usePlaque = document.getElementById('artwork-plaque-toggle').checked; // 🥷 V45
 
-            let pxWallW = (totalW || 10) * baseScale;
-            let pxWallH = (totalH || 10) * baseScale;
+            let pxWallW = (totalW || 10) * baseScale; let pxWallH = (totalH || 10) * baseScale;
             let pxFrame = frameSizeCm * baseScale;
-
-            let totalPxW = pxWallW + (pxFrame * 2);
-            let totalPxH = pxWallH + (pxFrame * 2);
+            let totalPxW = pxWallW + (pxFrame * 2); let totalPxH = pxWallH + (pxFrame * 2);
             
-            const MAX_EXPORT = 8192; 
-            let scaleFactor = 1;
-            if(totalPxW > MAX_EXPORT || totalPxH > MAX_EXPORT) {
-                scaleFactor = MAX_EXPORT / Math.max(totalPxW, totalPxH);
-            }
+            const MAX_EXPORT = 8192; // 8K
+            let scaleFactor = 1; if(totalPxW > MAX_EXPORT || totalPxH > MAX_EXPORT) scaleFactor = MAX_EXPORT / Math.max(totalPxW, totalPxH);
 
             let exportCanvas = document.createElement('canvas');
-            exportCanvas.width = totalPxW * scaleFactor;
-            exportCanvas.height = totalPxH * scaleFactor;
+            exportCanvas.width = totalPxW * scaleFactor; exportCanvas.height = totalPxH * scaleFactor;
             let ctx = exportCanvas.getContext('2d');
-            
-            ctx.scale(scaleFactor, scaleFactor);
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
+            ctx.scale(scaleFactor, scaleFactor); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
 
-            // 1. Dessiner le Cadre 3D sur toute la surface
-            draw3DFrame(ctx, totalPxW, totalPxH, pxFrame, material, title);
+            // 1. Cadre 3D Texturé
+            draw3DFrame(ctx, totalPxW, totalPxH, pxFrame, material, title, usePlaque);
 
-            // 2. Ombre portée intérieure du cadre sur le mur
-            ctx.save();
-            ctx.translate(pxFrame, pxFrame);
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            ctx.shadowBlur = 40 * scaleFactor;
-            ctx.shadowOffsetX = 10 * scaleFactor;
-            ctx.shadowOffsetY = 15 * scaleFactor;
-            ctx.fillStyle = "#111"; 
-            ctx.fillRect(0, 0, pxWallW, pxWallH);
-            ctx.restore();
+            // 2. Ombre portée complexe intérieure
+            ctx.save(); ctx.translate(pxFrame, pxFrame);
+            ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 50 * scaleFactor; ctx.shadowOffsetX = 15 * scaleFactor; ctx.shadowOffsetY = 20 * scaleFactor;
+            ctx.fillStyle = "#111"; ctx.fillRect(0, 0, pxWallW, pxWallH); ctx.restore();
 
-            // 3. Dessiner le mur (on se décale de l'épaisseur du cadre)
-            ctx.save();
-            ctx.translate(pxFrame, pxFrame);
-            
-            backgrounds.forEach(bg => {
-                ctx.fillStyle = bg.color;
-                if(mode === 'lineaire') {
-                    ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale);
-                } else {
-                    let x = (totalW - bg.w)/2;
-                    let y = (totalH - bg.h)/2;
-                    ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale);
-                }
-            });
-            
+            // 3. Le mur texturé
+            ctx.save(); ctx.translate(pxFrame, pxFrame);
+            backgrounds.forEach(bg => { ctx.fillStyle = bg.color; if(mode === 'lineaire') ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); else { let x = (totalW - bg.w)/2; let y = (totalH - bg.h)/2; ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale); } });
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
             ctx.restore();
             
             let fileName = (title || 'Oeuvre_Daguerre').replace(/\s+/g, '_');
-            let link = document.createElement('a');
-            link.download = fileName + '_8K.jpg';
-            link.href = exportCanvas.toDataURL('image/jpeg', 0.95);
-            link.click();
+            let link = document.createElement('a'); link.download = fileName + '_Cadre_3D_8K.jpg'; link.href = exportCanvas.toDataURL('image/jpeg', 0.95); link.click();
         }
 
-        // Export Classique (Sans Cadre)
         function exporterImage() {
             let { tiles, backgrounds, totalW, totalH } = parseWall();
             let baseScale = 40; 
-            let pixelW = (totalW || 10) * baseScale;
-            let pixelH = (totalH || 10) * baseScale;
-            
+            let pixelW = (totalW || 10) * baseScale; let pixelH = (totalH || 10) * baseScale;
             const MAX_EXPORT = 8192; 
-            let scaleFactor = 1;
-            if(pixelW > MAX_EXPORT || pixelH > MAX_EXPORT) {
-                scaleFactor = MAX_EXPORT / Math.max(pixelW, pixelH);
-            }
-
-            let exportCanvas = document.createElement('canvas');
-            exportCanvas.width = pixelW * scaleFactor;
-            exportCanvas.height = pixelH * scaleFactor;
-            let ctx = exportCanvas.getContext('2d');
-            
-            ctx.scale(scaleFactor, scaleFactor);
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-
-            ctx.fillStyle = "#111"; 
-            ctx.fillRect(0, 0, pixelW, pixelH);
-            
-            backgrounds.forEach(bg => {
-                ctx.fillStyle = bg.color;
-                if(mode === 'lineaire') {
-                    ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale);
-                } else {
-                    let x = (totalW - bg.w)/2;
-                    let y = (totalH - bg.h)/2;
-                    ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale);
-                }
-            });
-            
+            let scaleFactor = 1; if(pixelW > MAX_EXPORT || pixelH > MAX_EXPORT) scaleFactor = MAX_EXPORT / Math.max(pixelW, pixelH);
+            let exportCanvas = document.createElement('canvas'); exportCanvas.width = pixelW * scaleFactor; exportCanvas.height = pixelH * scaleFactor;
+            let ctx = exportCanvas.getContext('2d'); ctx.scale(scaleFactor, scaleFactor); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+            ctx.fillStyle = "#111"; ctx.fillRect(0, 0, pixelW, pixelH);
+            backgrounds.forEach(bg => { ctx.fillStyle = bg.color; if(mode === 'lineaire') ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); else { let x = (totalW - bg.w)/2; let y = (totalH - bg.h)/2; ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale); } });
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
-            
             let nom = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
-            let link = document.createElement('a');
-            link.download = nom + '_Plan_Sans_Cadre_8K.jpg';
-            link.href = exportCanvas.toDataURL('image/jpeg', 0.95);
-            link.click();
+            let link = document.createElement('a'); link.download = nom + '_Plan_Sans_Cadre_8K.jpg'; link.href = exportCanvas.toDataURL('image/jpeg', 0.95); link.click();
         }
 
         function prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr) {
-            let cssW = (totalW || 10) * baseScale;
-            let cssH = (totalH || 10) * baseScale;
-            let pixelW = cssW * dpr;
-            let pixelH = cssH * dpr;
-
+            let cssW = (totalW || 10) * baseScale; let cssH = (totalH || 10) * baseScale;
+            let pixelW = cssW * dpr; let pixelH = cssH * dpr;
             const MAX_DIM = 3500; 
-            let scaleFactor = 1;
-            if(pixelW > MAX_DIM || pixelH > MAX_DIM) {
-                let maxCurrent = Math.max(pixelW, pixelH);
-                scaleFactor = MAX_DIM / maxCurrent;
-                pixelW = pixelW * scaleFactor;
-                pixelH = pixelH * scaleFactor;
-            }
-
-            canvas.style.width = cssW + 'px';
-            canvas.style.height = cssH + 'px';
-            canvas.width = pixelW;
-            canvas.height = pixelH;
-            
-            ctx.scale(dpr * scaleFactor, dpr * scaleFactor);
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-
+            let scaleFactor = 1; if(pixelW > MAX_DIM || pixelH > MAX_DIM) { scaleFactor = MAX_DIM / Math.max(pixelW, pixelH); pixelW = pixelW * scaleFactor; pixelH = pixelH * scaleFactor; }
+            canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px'; canvas.width = pixelW; canvas.height = pixelH;
+            ctx.scale(dpr * scaleFactor, dpr * scaleFactor); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
             ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
         }
 
-        function drawTile(ctx, char, x, y, w, h) {
-            if(char && modeles[char]) {
-                ctx.drawImage(modeles[char].img, x, y, w, h);
-            } else {
-                ctx.strokeStyle = 'cyan'; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
-                ctx.fillStyle = "rgba(241, 196, 15, 0.15)"; ctx.fillRect(x, y, w, h);
-                if(char) {
-                    ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(12, h/3)}px monospace`;
-                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                    ctx.fillText(char, x + w/2, y + h/2);
-                }
-            }
-        }
-
+        function drawTile(ctx, char, x, y, w, h) { if(char && modeles[char]) ctx.drawImage(modeles[char].img, x, y, w, h); else { ctx.strokeStyle = 'cyan'; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h); ctx.fillStyle = "rgba(241, 196, 15, 0.15)"; ctx.fillRect(x, y, w, h); if(char) { ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(12, h/3)}px monospace`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(char, x + w/2, y + h/2); } } }
+        function updateFrameSize(delta) { let input = document.getElementById('frame-size'); input.value = Math.max(1, parseFloat(input.value) + delta); }
         window.onload = init;
     </script>
 </body>
