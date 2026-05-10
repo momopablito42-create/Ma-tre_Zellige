@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V33.0</title>
+    <title>Daguerre OS V34.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V33.0</small>
+        <small>ÉDITION NUCLÉAIRE V34.0</small>
     </div>
 
     <div id="settings-area">
@@ -271,19 +271,24 @@
             }
         }
 
-        // 🧠 V33: Auto-Calcul Graphika
+        // 🧠 L'Auto-Calcul Graphika (V34)
         function setGraphikaMulti(btn) {
             let block = btn.closest('.block-item');
             if(!block) return;
             
-            let w = parseFloat(block.querySelector('.s-w').value) || 10;
-            // On calcule les quantités par rapport à la largeur actuelle !
-            let qPetit = Math.max(1, Math.round(w / 5));   // ex: pour 10cm, il faut 2 carreaux de 5cm
-            let qGrand = Math.max(1, Math.round(w / 10));  // ex: pour 10cm, il faut 1 carreau de 10cm
-            
-            let formule = `2.5x${qPetit} 5x${qGrand} 2.5x${qPetit}`;
+            let prevTotalH = getPrevTotalH(block);
+            if(prevTotalH <= 5) prevTotalH = 10; // Sécurité si c'est la toute première ligne ou trop petit
+
+            // Calcul des dimensions de la fractale Graphika
+            let hCenter = prevTotalH - 5; 
+            let wCurrent = hCenter; 
+            let qBorder = Math.max(1, Math.round(wCurrent / 2.5));
+
+            let formule = `2.5x${qBorder} ${hCenter}x1 2.5x${qBorder}`;
             
             block.querySelector('.s-h-multi').value = formule;
+            block.querySelector('.s-w').value = wCurrent; // Force la largeur pour correspondre au carré central
+            
             updateSeqData(block);
             triggerCascade(block);
         }
@@ -437,17 +442,17 @@
             let colH = block.querySelector('.dim-h-col');
             let colQ = block.querySelector('.dim-q-col');
             let multiZone = block.querySelector('.multi-dims-zone');
-            let quickSizes = block.querySelector('.classic-sizes'); // La zone des 8 boutons
+            let quickSizes = block.querySelector('.classic-sizes');
             
             if(dir === 'M') {
                 colH.style.display = 'none';
                 colQ.style.display = 'none';
-                quickSizes.style.display = 'none'; // V33: On cache les boutons
+                quickSizes.style.display = 'none';
                 multiZone.style.display = 'block';
             } else {
                 colH.style.display = 'block';
                 colQ.style.display = 'block';
-                quickSizes.style.display = 'grid'; // V33: On remontre les boutons
+                quickSizes.style.display = 'grid';
                 multiZone.style.display = 'none';
                 
                 if(dir === 'H' && !force) {
@@ -539,10 +544,10 @@
             b.innerHTML = `
                 <div class="seq-header">
                     <div class="seq-title">
+                        <button class="btn-icon btn-icon-sm" style="margin-right:8px; background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <span class="seq-label"></span>
                     </div>
                     <div style="display:flex; gap:4px; flex-shrink: 0;">
-                        <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.block-item'), 'up')">↑</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.block-item'), 'down')">↓</button>
                         <button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterSequence(this.closest('.blocs-container'), 1, this.closest('.block-item'))">➕</button>
@@ -570,7 +575,7 @@
                     <div class="row dir-row" style="margin-top:10px; justify-content:center;">
                         <button class="btn-mini dir-btn active" onclick="setSeqDir(this, 'H')">➡️ HORIZ.</button>
                         <button class="btn-mini dir-btn" onclick="setSeqDir(this, 'V')">⬇️ VERTI.</button>
-                        <button class="btn-mini dir-btn" style="background:#421; border-color:var(--magenta); max-width:60px;" onclick="setSeqDir(this, 'M')">✂️ V-MULTI</button>
+                        <button class="btn-mini dir-btn" style="background:#421; border-color:var(--magenta); max-width:60px;" onclick="setSeqDir(this, 'M')">MULTI</button>
                         <input type="hidden" class="s-dir" value="H">
                     </div>
 
@@ -618,10 +623,10 @@
             d.innerHTML = `
                 <div class="seq-header" style="border-bottom-color: var(--vert);">
                     <div class="cadre-title">
+                        <button class="btn-icon btn-icon-sm" style="margin-right:8px; background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <span class="cadre-label"></span>
                     </div>
                     <div style="display:flex; gap:4px; flex-shrink: 0;">
-                        <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'down')">↓</button>
                         <button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button>
@@ -680,7 +685,7 @@
             let curSize = parseFloat(document.getElementById('f-size').value);
             for(let i=0; i<n; i++) {
                 curSize = curSize / seq.length;
-                ajouterCadre(null, seq.length, curSize, curSize);
+                let d = ajouterCadre(null, seq.length, curSize, curSize);
             }
             render();
         }
@@ -762,7 +767,8 @@
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lw = 0, lh = 0, blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
-                        let sequence = bl.querySelector('.s-seq').value.toUpperCase().split(' ').filter(Boolean);
+                        let selects = Array.from(bl.querySelectorAll('.m-sel'));
+                        let sequence = selects.map(s => s.value).filter(Boolean);
                         let w = parseFloat(bl.querySelector('.s-w').value) || 10;
                         let h = parseFloat(bl.querySelector('.s-h').value) || 10; 
                         let q = parseInt(bl.querySelector('.s-q').value) || 1;
