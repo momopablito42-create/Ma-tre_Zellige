@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V40.0</title>
+    <title>Daguerre OS V41.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V40.0</small>
+        <small>ÉDITION NUCLÉAIRE V41.0</small>
     </div>
 
     <div id="settings-area">
@@ -163,12 +163,17 @@
         <div id="tab-finition" class="tab-content">
             <div class="section-title">💎 Sertissage & Joints</div>
             <div class="box" style="border-color: var(--cyan);">
-                <span class="label-sm" style="color:var(--cyan);">Épaisseur Globale des Joints (cm)</span>
-                <input type="number" id="joint-size" value="0" step="0.1" oninput="updateAllCadresStats()" style="width: 100%; text-align: center; color: var(--jaune); font-weight: bold; margin-bottom: 15px; font-size:16px;">
+                <span class="label-sm" id="global-joint-label" style="color:var(--cyan); margin-bottom:5px; display:block;">Épaisseur Globale des Joints (cm)</span>
+                
+                <div class="row" style="margin-bottom: 15px;">
+                    <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="changeJointSize('global', -0.1)">-</button>
+                    <input type="number" id="joint-size" value="0" step="0.1" onchange="setSpecificJointSize('global', this.value); renderFinitionList();" style="flex:1; text-align: center; color: var(--jaune); font-weight: bold; font-size:16px; height:40px; margin:0;">
+                    <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="changeJointSize('global', 0.1)">+</button>
+                </div>
                 
                 <span class="label-sm" style="color:var(--cyan); display:block; margin-bottom:5px;">Couleur Globale (Appliquer à tout)</span>
                 <div class="row" style="margin-bottom: 5px;">
-                    <button class="btn-mini" style="background:#111111; color:#fff;" onclick="setGlobalColor('#111111')">SOMBRE</button>
+                    <button class="btn-mini" style="background:#111111; color:#fff;" onclick="setGlobalColor('#111111')">SOMB.</button>
                     <button class="btn-mini" style="background:#ffffff; color:#000;" onclick="setGlobalColor('#ffffff')">CLAIR</button>
                     <button class="btn-mini" style="background:#d3b878; color:#000;" onclick="setGlobalColor('#d3b878')">OR</button>
                 </div>
@@ -178,12 +183,12 @@
                     <button class="btn-mini" style="background:#2ecc71; color:#000;" onclick="setGlobalColor('#2ecc71')">VERT</button>
                 </div>
                 <div class="row" style="margin-bottom: 0;">
-                    <input type="color" id="global-color-picker" onchange="setGlobalColor(this.value)" style="flex:1; height:35px; border-radius:4px; border:1px solid #555; background:#000; padding:0;">
-                    <input type="text" id="global-color-hex" placeholder="#HEX" oninput="setGlobalColor(this.value)" style="flex:2; text-align:center; height:35px; text-transform:uppercase;">
+                    <input type="color" id="global-color-picker" value="#111111" onchange="setGlobalColor(this.value)" style="flex:1; height:35px; border-radius:4px; border:1px solid #555; background:#000; padding:0;">
+                    <input type="text" id="global-color-hex" value="#111111" placeholder="#HEX" oninput="setGlobalColor(this.value)" style="flex:2; text-align:center; height:35px; text-transform:uppercase;">
                 </div>
             </div>
             
-            <div class="section-title">🎨 Couleurs Détaillées</div>
+            <div class="section-title">🎨 Réglages Détaillés</div>
             <div id="finition-dynamic-list">
                 </div>
 
@@ -238,10 +243,7 @@
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
             
-            // 🎨 Générer la liste détaillée quand on ouvre Finition !
-            if(id === 'tab-finition') {
-                renderFinitionList();
-            }
+            if(id === 'tab-finition') renderFinitionList();
         }
 
         function setMode(m) {
@@ -249,22 +251,49 @@
             document.querySelectorAll('#m-lin, #m-con, #m-fra').forEach(b=>b.classList.remove('active'));
             document.getElementById('m-'+m.substring(0,3)).classList.add('active');
             ['lineaire','concentrique','fractale'].forEach(x => document.getElementById(`area-${x}`).style.display = (x===m)?'block':'none');
+            
+            let globalLabel = document.getElementById('global-joint-label');
+            if(globalLabel) {
+                globalLabel.innerText = m === 'lineaire' ? "Épaisseur Globale des Joints (cm)" : "Épaisseur du Joint du Cœur (cm)";
+            }
+            if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 🎨 GESTION FINITION MULTICOULEUR ---
+        // --- 🎨 GESTION FINITION MULTICOULEUR & EPAISSEUR MULTIPLE ---
+        function changeJointSize(targetId, delta) {
+            if(targetId === 'global') {
+                let input = document.getElementById('joint-size');
+                let val = Math.max(0, (parseFloat(input.value) || 0) + delta);
+                input.value = val.toFixed(1);
+            } else {
+                let idx = parseInt(targetId.split('-')[1]);
+                let input = document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size');
+                let val = Math.max(0, (parseFloat(input.value) || 0) + delta);
+                input.value = val.toFixed(1);
+            }
+            updateAllCadresStats();
+            renderFinitionList();
+        }
+
+        function setSpecificJointSize(targetId, val) {
+            let v = Math.max(0, parseFloat(val) || 0);
+            if(targetId === 'global') {
+                document.getElementById('joint-size').value = v;
+            } else {
+                let idx = parseInt(targetId.split('-')[1]);
+                document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size').value = v;
+            }
+            updateAllCadresStats();
+        }
+
         function setGlobalColor(hex) {
             document.getElementById('global-color-picker').value = hex;
             document.getElementById('global-color-hex').value = hex.toUpperCase();
-            
-            // Applique à tous les éléments
             document.querySelectorAll('.j-color').forEach(el => el.value = hex);
-            
-            // Rafraîchit la liste
             renderFinitionList();
         }
 
         function setSpecificColor(targetId, hex) {
-            // Met à jour l'input caché dans la Forge
             if(targetId.startsWith('ligne-')) {
                 let idx = parseInt(targetId.split('-')[1]);
                 document.querySelectorAll('.ligne-item')[idx].querySelector('.j-color').value = hex;
@@ -274,16 +303,29 @@
                 let idx = parseInt(targetId.split('-')[1]);
                 document.querySelectorAll('.cadre-item')[idx].querySelector('.j-color').value = hex;
             }
-            // Rafraîchit l'affichage de la box modifiée
             renderFinitionList();
         }
 
-        function createColorPickerUI(title, defaultColor, targetId) {
+        function createFinitionItemUI(title, defaultColor, targetId, defaultSize = null) {
+            let sizeUI = '';
+            if(defaultSize !== null) {
+                sizeUI = `
+                <div class="row" style="margin-bottom:10px; background:#1a1a24; padding:5px; border-radius:4px;">
+                    <span class="label-sm" style="color:#888; flex:1; margin:0;">Épaisseur (cm)</span>
+                    <div style="display:flex; gap:4px; align-items:center;">
+                        <button class="btn-icon-sm" style="width:28px; height:28px; font-size:16px;" onclick="changeJointSize('${targetId}', -0.1)">-</button>
+                        <input type="number" value="${defaultSize}" step="0.1" onchange="setSpecificJointSize('${targetId}', this.value); renderFinitionList();" style="width:50px; text-align:center; height:28px; padding:2px; font-weight:bold; color:var(--jaune); background:#000;">
+                        <button class="btn-icon-sm" style="width:28px; height:28px; font-size:16px;" onclick="changeJointSize('${targetId}', 0.1)">+</button>
+                    </div>
+                </div>`;
+            }
+            
             let div = document.createElement('div');
             div.className = 'box';
             div.style.borderColor = 'var(--amethyst)';
             div.innerHTML = `
                 <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block; font-size:11px;">${title}</span>
+                ${sizeUI}
                 <div class="row" style="margin-bottom:5px;">
                     <button class="btn-mini" style="background:#111111; color:#fff;" onclick="setSpecificColor('${targetId}', '#111111')">SOMB.</button>
                     <button class="btn-mini" style="background:#ffffff; color:#000;" onclick="setSpecificColor('${targetId}', '#ffffff')">CLAIR</button>
@@ -310,16 +352,17 @@
                 document.querySelectorAll('.ligne-item').forEach((li, idx) => {
                     let name = li.querySelector('.editable-name').value;
                     let color = li.querySelector('.j-color').value || '#111111';
-                    container.appendChild(createColorPickerUI(`Ligne: ${name}`, color, `ligne-${idx}`));
+                    container.appendChild(createFinitionItemUI(`Ligne: ${name}`, color, `ligne-${idx}`, null));
                 });
             } else {
                 let cColor = document.getElementById('c-j-color').value || '#111111';
-                container.appendChild(createColorPickerUI(`Cœur`, cColor, `coeur`));
+                container.appendChild(createFinitionItemUI(`Cœur (Épaisseur Globale)`, cColor, `coeur`, null));
                 
                 document.querySelectorAll('.cadre-item').forEach((ca, idx) => {
                     let color = ca.querySelector('.j-color').value || '#111111';
+                    let size = ca.querySelector('.j-size').value || 0;
                     let name = ca.querySelector('.cadre-label').innerText || `Cadre ${idx+1}`;
-                    container.appendChild(createColorPickerUI(`Bordure: ${name}`, color, `cadre-${idx}`));
+                    container.appendChild(createFinitionItemUI(`Bordure: ${name}`, color, `cadre-${idx}`, size));
                 });
             }
         }
@@ -335,7 +378,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 40, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 41, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value;
@@ -370,7 +413,8 @@
                         selects: Array.from(ca.querySelectorAll('.m-sel')).map(s=>s.value),
                         w: parseFloat(ca.querySelector('.c-w')?.value || 10),
                         h: parseFloat(ca.querySelector('.c-h')?.value || 10),
-                        color: ca.querySelector('.j-color').value
+                        color: ca.querySelector('.j-color').value,
+                        jSize: parseFloat(ca.querySelector('.j-size').value) || 0
                     });
                 });
                 
@@ -498,6 +542,8 @@
                     let currCa = caNodes[caNodes.length - 1];
                     
                     if(c.color) currCa.querySelector('.j-color').value = c.color;
+                    if(c.jSize !== undefined) currCa.querySelector('.j-size').value = c.jSize;
+                    
                     currCa.querySelector('.manual-qty').value = c.mQty || 5;
                     let typeBtn = currCa.querySelectorAll('.type-btn')[c.type > 4 ? 4 : c.type - 1];
                     if(typeBtn) setCadreMode(typeBtn, c.type);
@@ -656,18 +702,20 @@
         }
 
         function updateAllCadresStats() {
-            let jointSize = parseFloat(document.getElementById('joint-size').value) || 0;
+            let cJoint = parseFloat(document.getElementById('joint-size').value) || 0;
             let cw = parseFloat(document.getElementById('c-w').value) || 20;
             let ch = parseFloat(document.getElementById('c-h').value) || 20;
+            
             let currentW = cw;
             let currentH = ch;
+            let prevJoint = cJoint;
 
             document.querySelectorAll('#cadres-container .cadre-item').forEach(cadre => {
                 let bdW = parseFloat(cadre.querySelector('.c-w').value) || 10;
                 let bdH = parseFloat(cadre.querySelector('.c-h').value) || 10;
                 
-                let innerW = currentW + jointSize * 2;
-                let innerH = currentH + jointSize * 2;
+                let innerW = currentW + prevJoint * 2;
+                let innerH = currentH + prevJoint * 2;
                 
                 let newW = innerW + bdW * 2;
                 let newH = innerH + bdH * 2;
@@ -691,6 +739,7 @@
                 }
                 currentW = newW;
                 currentH = newH;
+                prevJoint = parseFloat(cadre.querySelector('.j-size').value) || 0;
             });
         }
 
@@ -960,6 +1009,7 @@
                         <span class="cadre-label"></span>
                     </div>
                     <input type="hidden" class="j-color" value="#111111">
+                    <input type="hidden" class="j-size" value="0">
                     <div style="display:flex; gap:4px; flex-shrink: 0;">
                         <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button>
@@ -1092,12 +1142,12 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING (V40 : COULEURS MULTIPLES) ---
+        // --- 🧠 LE COEUR DE PARSING (V41 : Épaisseurs par Cadre) ---
         function parseWall() {
             let totalW = 0, totalH = 0;
             let tiles = [];
             let backgrounds = [];
-            let jointSize = parseFloat(document.getElementById('joint-size').value) || 0;
+            let globalJointSize = parseFloat(document.getElementById('joint-size').value) || 0;
             
             if(mode === 'lineaire') {
                 let lines = [];
@@ -1147,13 +1197,12 @@
                 lines.forEach((line, idx) => {
                     totalW = Math.max(totalW, line.lw);
                     totalH += line.lh;
-                    if(idx > 0) totalH += jointSize;
+                    if(idx > 0) totalH += globalJointSize;
                 });
                 
                 let curY = 0;
                 lines.forEach((line, idx) => {
-                    // Calcul du background pour cette ligne
-                    let hBg = line.lh + (idx === lines.length - 1 ? 0 : jointSize);
+                    let hBg = line.lh + (idx === lines.length - 1 ? 0 : globalJointSize);
                     backgrounds.push({ x: 0, y: curY, w: totalW, h: hBg, color: line.color });
                     
                     let curX = (totalW - line.lw) / 2;
@@ -1182,13 +1231,14 @@
                         }
                         curX += b.bW;
                     });
-                    curY += line.lh + jointSize;
+                    curY += line.lh + globalJointSize;
                 });
             } else {
                 let cw = parseFloat(document.getElementById('c-w').value) || 30;
                 let ch = parseFloat(document.getElementById('c-h').value) || 30;
                 let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || '';
                 let cColor = document.getElementById('c-j-color').value || '#111111';
+                let cJoint = globalJointSize; // Le global sert de joint pour le Coeur
                 
                 let cadres = [];
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(cc => {
@@ -1197,44 +1247,54 @@
                         seq: selects.map(s => s.value).filter(Boolean),
                         w: parseFloat(cc.querySelector('.c-w').value) || 10,
                         h: parseFloat(cc.querySelector('.c-h').value) || 10,
-                        color: cc.querySelector('.j-color').value || '#111111'
+                        color: cc.querySelector('.j-color').value || '#111111',
+                        jSize: parseFloat(cc.querySelector('.j-size').value) || 0
                     });
                 });
 
                 totalW = cw; totalH = ch;
+                let pJ = cJoint;
                 cadres.forEach(c => { 
-                    totalW += c.w * 2 + jointSize * 2; 
-                    totalH += c.h * 2 + jointSize * 2; 
+                    totalW += pJ * 2 + c.w * 2; 
+                    totalH += pJ * 2 + c.h * 2; 
+                    pJ = c.jSize;
                 });
+                if(pJ > 0) {
+                    totalW += pJ * 2;
+                    totalH += pJ * 2;
+                }
                 
-                // --- GENERATION DES BACKGROUNDS (Multicouches) ---
+                // --- GENERATION DES BACKGROUNDS ---
                 let curW = cw; let curH = ch;
-                backgrounds.push({ w: curW + 2*jointSize, h: curH + 2*jointSize, color: cColor });
+                let drawJ = cJoint;
+                
+                if (drawJ > 0 || cadres.length === 0) {
+                    backgrounds.push({ w: curW + 2*drawJ, h: curH + 2*drawJ, color: cColor });
+                }
                 
                 for(let i=0; i<cadres.length; i++) {
-                    curW += 2*jointSize + 2*cadres[i].w;
-                    curH += 2*jointSize + 2*cadres[i].h;
+                    curW += 2*drawJ + 2*cadres[i].w;
+                    curH += 2*drawJ + 2*cadres[i].h;
+                    drawJ = cadres[i].jSize;
                     
-                    if(i === cadres.length - 1) {
-                        backgrounds.push({ w: curW, h: curH, color: cadres[i].color });
-                    } else {
-                        backgrounds.push({ w: curW + 2*jointSize, h: curH + 2*jointSize, color: cadres[i].color });
+                    if(drawJ > 0 || i === cadres.length - 1) {
+                        backgrounds.push({ w: curW + 2*drawJ, h: curH + 2*drawJ, color: cadres[i].color });
                     }
                 }
                 
-                // On inverse pour dessiner du plus grand au plus petit
                 backgrounds.sort((a,b) => b.w - a.w);
 
                 // --- GENERATION DES TUILES ---
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
                 
                 let currentTotalW = cw, currentTotalH = ch;
+                let curP = cJoint;
                 cadres.forEach(c => {
                     let bdW = c.w, bdH = c.h;
                     let seq = c.seq.length > 0 ? c.seq : [''];
                     
-                    let innerW = currentTotalW + jointSize * 2;
-                    let innerH = currentTotalH + jointSize * 2;
+                    let innerW = currentTotalW + curP * 2;
+                    let innerH = currentTotalH + curP * 2;
                     let newTotalW = innerW + bdW * 2;
                     let newTotalH = innerH + bdH * 2;
                     
@@ -1252,6 +1312,7 @@
                     for(let i=Ny-1; i>=0; i--) tiles.push({ x: shiftX, y: shiftY + bdH + i*adjH, w: bdW, h: adjH, l: getL() });
                     
                     currentTotalW = newTotalW; currentTotalH = newTotalH;
+                    curP = c.jSize;
                 });
             }
             return { tiles, backgrounds, totalW, totalH };
@@ -1267,7 +1328,6 @@
 
             prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
             
-            // 🎨 DESSIN DES COUCHES DE JOINTS
             backgrounds.forEach(bg => {
                 ctx.fillStyle = bg.color;
                 if(mode === 'lineaire') {
@@ -1279,7 +1339,6 @@
                 }
             });
 
-            // 🧱 DESSIN DES TUILES
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
 
             document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm 💎 HD`;
@@ -1312,11 +1371,9 @@
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
 
-            // Base noire
             ctx.fillStyle = "#111"; 
             ctx.fillRect(0, 0, pixelW, pixelH);
             
-            // 🎨 Backgrounds
             backgrounds.forEach(bg => {
                 ctx.fillStyle = bg.color;
                 if(mode === 'lineaire') {
@@ -1328,7 +1385,6 @@
                 }
             });
             
-            // 🧱 Tuiles
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
             
             let nom = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
@@ -1383,4 +1439,3 @@
     </script>
 </body>
 </html>
-
