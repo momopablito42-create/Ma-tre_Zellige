@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V43.0</title>
+    <title>Daguerre OS V44.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -36,7 +36,7 @@
         .btn-red { background: #421; color: var(--magenta); border-color: var(--magenta); }
 
         #tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #000; display: flex; border-top: 1px solid #333; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
-        .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: #555; font-size: 9px; font-weight: bold; cursor: pointer;}
+        .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: #555; font-size: 8px; font-weight: bold; cursor: pointer; padding: 2px;}
         .tab-btn.active { color: var(--cyan); border-top: 3px solid var(--cyan); background: rgba(0,255,255,0.05); }
 
         /* --- FORGE SPECIFIC --- */
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V43.0</small>
+        <small>ÉDITION NUCLÉAIRE V44.0</small>
     </div>
 
     <div id="settings-area">
@@ -161,7 +161,7 @@
                 </div>
             </div>
 
-            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">💎 FORGER LE MUR (HD)</button>
+            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">👁️ PRÉVISUALISER LE MUR (HD)</button>
         </div>
 
         <div id="tab-finition" class="tab-content">
@@ -195,20 +195,48 @@
             </div>
             
             <div class="section-title">🎨 Réglages Détaillés</div>
-            <div id="finition-dynamic-list">
-                </div>
+            <div id="finition-dynamic-list"></div>
 
-            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">💎 FORGER LE MUR (HD)</button>
+            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">👁️ PRÉVISUALISER LE MUR (HD)</button>
+        </div>
+
+        <div id="tab-encadrement" class="tab-content">
+            <div class="section-title">🖼️ Atelier d'Encadrement 3D</div>
+            
+            <div class="box" style="border-color: var(--amethyst);">
+                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Matériau du Cadre</span>
+                <select id="frame-material" class="m-sel" style="width:100%; margin-bottom:15px; font-size:14px; background:#000;">
+                    <option value="noyer">🪵 Bois de Noyer (Sombre)</option>
+                    <option value="chene">🪵 Bois de Chêne (Clair)</option>
+                    <option value="serpentine">💎 Serpentine (Pierre Verte)</option>
+                    <option value="amethyste">💎 Améthyste (Pierre Violette)</option>
+                    <option value="obsidienne">🌑 Obsidienne (Pierre Noire)</option>
+                </select>
+
+                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Épaisseur du Cadre Extérieur (cm)</span>
+                <div class="row" style="margin-bottom: 20px;">
+                    <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="updateFrameSize(-1)">-</button>
+                    <input type="number" id="frame-size" value="10" step="1" style="flex:1; text-align: center; color: var(--jaune); font-weight: bold; font-size:16px; height:40px; margin:0;">
+                    <button class="btn-icon" style="background:#222; border:1px solid #555; width:40px; height:40px; font-size:20px;" onclick="updateFrameSize(1)">+</button>
+                </div>
+                
+                <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Titre de l'Œuvre (Plaque en Or)</span>
+                <input type="text" id="artwork-title" value="Symphonie Daguerre" style="width:100%; text-align:center; font-size:14px; margin-bottom:10px;">
+                <p style="font-size:9px; color:#888; text-align:center; margin-top:0;">Une plaque en or sera gravée et posée sur le cadre.</p>
+            </div>
+
+            <button class="btn" style="background: var(--jaune); color: #000; margin-top: 20px; font-size: 16px; padding:20px;" onclick="exportFramedImage()">🖼️ FORGER & TÉLÉCHARGER (8K)</button>
+            <p style="font-size:10px; color:#555; text-align:center;">Génération 3D en arrière-plan pour préserver le processeur.</p>
         </div>
 
         <div id="tab-devis" class="tab-content">
             <div class="section-title">📊 Rapport & Devis</div>
             <div class="box">
-                <span class="label-sm">Nom du Projet</span>
+                <span class="label-sm">Nom du Projet (Base)</span>
                 <input type="text" id="nom-projet" value="Empire_Daguerre" style="width: 100%; text-align: center;">
             </div>
             <div id="rapport-data" class="box" style="background: #000;">Forgez un mur d'abord.</div>
-            <button class="btn" style="background: var(--jaune); color: #000; margin-bottom: 10px; font-size:14px;" onclick="exporterImage()">📸 TÉLÉCHARGER PLAN 8K</button>
+            <button class="btn" style="background: #444; color: #fff; margin-bottom: 10px; font-size:12px;" onclick="exporterImage()">📸 TÉLÉCHARGER SANS CADRE</button>
         </div>
     </div>
 
@@ -225,10 +253,11 @@
     </div>
 
     <div id="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('tab-armurerie', this)"><span style="font-size:16px;">⚔️</span>ARSENAL</button>
-        <button class="tab-btn" onclick="switchTab('tab-forge', this)"><span style="font-size:16px;">⛩️</span>FORGE</button>
-        <button class="tab-btn" onclick="switchTab('tab-finition', this)"><span style="font-size:16px;">💎</span>FINITION</button>
-        <button class="tab-btn" onclick="switchTab('tab-devis', this)"><span style="font-size:16px;">📊</span>RAPPORT</button>
+        <button class="tab-btn active" onclick="switchTab('tab-armurerie', this)"><span style="font-size:18px; margin-bottom:2px;">⚔️</span>ARSENAL</button>
+        <button class="tab-btn" onclick="switchTab('tab-forge', this)"><span style="font-size:18px; margin-bottom:2px;">⛩️</span>FORGE</button>
+        <button class="tab-btn" onclick="switchTab('tab-finition', this)"><span style="font-size:18px; margin-bottom:2px;">💎</span>FINITION</button>
+        <button class="tab-btn" onclick="switchTab('tab-encadrement', this)"><span style="font-size:18px; margin-bottom:2px;">🖼️</span>CADRE</button>
+        <button class="tab-btn" onclick="switchTab('tab-devis', this)"><span style="font-size:18px; margin-bottom:2px;">📊</span>RAPPORT</button>
     </div>
 
     <script>
@@ -261,7 +290,7 @@
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 🎨 GESTION FINITION V43 (Règle Juste) ---
+        // --- 🎨 GESTION FINITION ---
         
         function updateJointSizeUI(targetId, delta) {
             let dispInput = document.getElementById('disp-size-' + targetId);
@@ -298,11 +327,7 @@
         function setGlobalColor(hex) {
             document.getElementById('global-color-picker').value = hex;
             document.getElementById('global-color-hex').value = hex.toUpperCase();
-            
-            // Applique à tous les éléments sans recharger la liste
             document.querySelectorAll('.j-color, #c-j-color, #ext-j-color').forEach(el => el.value = hex);
-            
-            // Mise à jour visuelle forcée des champs dans la liste détaillée
             document.querySelectorAll('#finition-dynamic-list input[type="color"]').forEach(el => el.value = hex);
             document.querySelectorAll('#finition-dynamic-list input[type="text"]').forEach(el => el.value = hex.toUpperCase());
         }
@@ -370,13 +395,12 @@
             let container = document.getElementById('finition-dynamic-list');
             container.innerHTML = '';
             let globalBox = document.getElementById('finition-global-box');
-            let mainTitle = document.getElementById('finition-main-title'); // 🥷 V43
+            let mainTitle = document.getElementById('finition-main-title'); 
             
             if(mode === 'lineaire') {
                 globalBox.style.display = 'block';
-                mainTitle.style.display = 'block'; // 🥷 V43 : Affiche le titre
+                mainTitle.style.display = 'block'; 
 
-                // 🥷 V43 : La Règle Juste -> N Lignes = N-1 Joints
                 let ligns = document.querySelectorAll('.ligne-item');
                 let nbLignes = ligns.length;
                 let nbJoints = Math.max(0, nbLignes - 1);
@@ -387,15 +411,13 @@
                     let name1 = li.querySelector('.editable-name').value;
                     let name2 = liNext.querySelector('.editable-name').value;
                     
-                    // La couleur du joint est stockée dans la ligne 'avant'
                     let color = li.querySelector('.j-color').value || '#111111';
-                    
                     let title = `Joint entre ${name1} et ${name2}`;
                     container.appendChild(createFinitionItemUI(title, color, `ligne-${i}`, null));
                 }
             } else {
                 globalBox.style.display = 'none'; 
-                mainTitle.style.display = 'none'; // 🥷 V43 : Masque le titre fantôme
+                mainTitle.style.display = 'none'; 
 
                 let cColor = document.getElementById('c-j-color').value || '#111111';
                 let cSize = document.getElementById('c-j-size').value || 0;
@@ -408,7 +430,6 @@
                     container.appendChild(createFinitionItemUI(`Bordure: ${name}`, color, `cadre-${idx}`, size));
                 });
                 
-                // La fameuse Extérieure
                 let extColor = document.getElementById('ext-j-color').value || '#111111';
                 let extSize = document.getElementById('ext-j-size').value || 0;
                 container.appendChild(createFinitionItemUI(`Bordure Extérieure (Finition Finale)`, extColor, `exterior`, extSize));
@@ -426,7 +447,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 43, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 44, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value;
@@ -473,10 +494,7 @@
                     extColor: document.getElementById('ext-j-color').value || '#111111'
                 };
                 return data;
-            } catch(e) {
-                console.error("Erreur de lecture:", e);
-                return null;
-            }
+            } catch(e) { return null; }
         }
 
         function saveToLibrary() {
@@ -487,7 +505,7 @@
             library[name] = data;
             localStorage.setItem('daguerre_lib', JSON.stringify(library));
             updateLibraryUI();
-            alert("✅ Grimoire sauvegardé dans l'Arsenal !");
+            alert("✅ Grimoire sauvegardé !");
         }
 
         function deleteFromLibrary() {
@@ -525,7 +543,7 @@
                     library[name] = data;
                     localStorage.setItem('daguerre_lib', JSON.stringify(library));
                     updateLibraryUI();
-                    alert(`✅ Grimoire '${name}' ajouté à la Bibliothèque !`);
+                    alert(`✅ Grimoire '${name}' importé !`);
                 } catch(err) { alert("⚠️ Fichier invalide."); }
             };
             reader.readAsText(file); 
@@ -621,12 +639,6 @@
         }
 
         // --- OUTILS FORGE ---
-        function setCoeurDim(v) { 
-            document.getElementById('c-w').value = v; 
-            document.getElementById('c-h').value = v; 
-            updateAllCadresStats();
-        }
-
         function getPrevTotalH(block) {
             let prev = block.previousElementSibling;
             if(prev && prev.classList.contains('block-item')) {
@@ -699,31 +711,18 @@
             }
         }
 
-        function setMulti(btn, str) {
-            let block = btn.closest('.block-item');
-            if(block) {
-                block.querySelector('.s-h-multi').value = str;
-                updateSeqData(block);
-                triggerCascade(block);
-            }
-        }
-
         function setGraphikaMulti(btn) {
             let block = btn.closest('.block-item');
             if(!block) return;
-            
             let prevTotalH = getPrevTotalH(block);
             if(prevTotalH <= 5) prevTotalH = 10; 
-
             let hCenter = prevTotalH - 5; 
             let wCurrent = hCenter; 
             let qBorder = Math.max(1, Math.round(wCurrent / 2.5));
-
             let formule = `2.5x${qBorder} ${hCenter}x1 2.5x${qBorder}`;
             
             block.querySelector('.s-h-multi').value = formule;
             block.querySelector('.s-w').value = wCurrent; 
-            
             updateSeqData(block);
             triggerCascade(block);
         }
@@ -756,50 +755,7 @@
             let w = cadre.querySelector('.c-w').value || '?';
             let h = cadre.querySelector('.c-h').value || '?';
             cadre.querySelector('.cadre-label').innerText = `${seq || '(Vide)'} [${w}x${h}]`;
-            
             updateAllCadresStats();
-        }
-
-        function updateAllCadresStats() {
-            let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
-            let cw = parseFloat(document.getElementById('c-w').value) || 20;
-            let ch = parseFloat(document.getElementById('c-h').value) || 20;
-            
-            let currentW = cw;
-            let currentH = ch;
-            let prevJoint = cJoint;
-
-            document.querySelectorAll('#cadres-container .cadre-item').forEach(cadre => {
-                let bdW = parseFloat(cadre.querySelector('.c-w').value) || 10;
-                let bdH = parseFloat(cadre.querySelector('.c-h').value) || 10;
-                
-                let innerW = currentW + prevJoint * 2;
-                let innerH = currentH + prevJoint * 2;
-                
-                let newW = innerW + bdW * 2;
-                let newH = innerH + bdH * 2;
-
-                let Nx = Math.max(1, Math.round(newW / bdW));
-                let Ny = Math.max(1, Math.round(innerH / bdH));
-                let totalTiles = (Nx * 2) + (Ny * 2);
-
-                let counterEl = cadre.querySelector('.tile-counter');
-                if(counterEl) {
-                    let selects = Array.from(cadre.querySelectorAll('.m-sel'));
-                    let seqLen = selects.length;
-                    
-                    if(seqLen > 0 && totalTiles % seqLen !== 0) {
-                         counterEl.style.color = 'var(--magenta)';
-                         counterEl.innerText = `Périmètre : ${totalTiles} carreaux (⚠️ Reste ${totalTiles % seqLen} !)`;
-                    } else {
-                         counterEl.style.color = 'var(--vert)';
-                         counterEl.innerText = `Périmètre : ${totalTiles} carreaux (✅ Parfait pour ${seqLen})`;
-                    }
-                }
-                currentW = newW;
-                currentH = newH;
-                prevJoint = parseFloat(cadre.querySelector('.j-size').value) || 0;
-            });
         }
 
         function getModelsOptionsHTML(defaultChar) {
@@ -840,13 +796,10 @@
             if(type === 5) {
                 manualConf.style.display = 'block';
                 type = parseInt(block.querySelector('.manual-qty').value);
-            } else {
-                manualConf.style.display = 'none';
-            }
+            } else { manualConf.style.display = 'none'; }
 
             let dirRow = block.querySelector('.dir-row');
             dirRow.style.display = 'flex'; 
-            
             renderModelSelects(block, type);
         }
 
@@ -860,16 +813,13 @@
             if(type === 5) {
                 manualConf.style.display = 'block';
                 type = parseInt(cadre.querySelector('.manual-qty').value);
-            } else {
-                manualConf.style.display = 'none';
-            }
+            } else { manualConf.style.display = 'none'; }
             
             renderModelSelects(cadre, type);
         }
 
         function setSeqDir(btn, dir, force=false, runCascade=true) {
             let block = btn.closest('.block-item');
-            
             let dirRow = block.querySelector('.dir-row');
             if(dirRow) {
                 dirRow.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
@@ -909,7 +859,6 @@
                     }
                 }
             }
-            
             updateSeqData(block);
             if(runCascade) triggerCascade(block);
         }
@@ -987,9 +936,7 @@
             b.className = 'block-item';
             b.innerHTML = `
                 <div class="seq-header">
-                    <div class="seq-title">
-                        <span class="seq-label"></span>
-                    </div>
+                    <div class="seq-title"><span class="seq-label"></span></div>
                     <div style="display:flex; gap:4px; flex-shrink: 0;">
                         <button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button>
                         <button class="btn-icon btn-icon-sm" onclick="move(this.closest('.block-item'), 'up')">↑</button>
@@ -1002,46 +949,33 @@
                 <div class="seq-content">
                     <div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;">
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 1)">SIMPLE</button>
-                        <button class="btn-mini type-btn" onclick="setSeqMode(this,  DOUBLE</button>
+                        <button class="btn-mini type-btn" onclick="setSeqMode(this, 2)">DOUBLE</button>
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 3)">TRIPLE</button>
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 4)">QUAD.</button>
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 5)">MANUEL</button>
                         <input type="hidden" class="s-type" value="${type}">
                     </div>
-                    
                     <div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;">
-                        <span class="label-sm" style="display:inline-block; margin-right:5px;">Nombre de modèles :</span>
+                        <span class="label-sm" style="display:inline-block; margin-right:5px;">Nb:</span>
                         <input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;">
                     </div>
-                    
                     <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div>
-
                     <div class="row dir-row" style="margin-top:10px; justify-content:center;">
                         <button class="btn-mini dir-btn active" onclick="setSeqDir(this, 'H')">➡️ HORIZ.</button>
                         <button class="btn-mini dir-btn" onclick="setSeqDir(this, 'V')">⬇️ VERTI.</button>
                         <button class="btn-mini dir-btn" style="background:#421; border-color:var(--magenta); max-width:60px;" onclick="setSeqDir(this, 'M')">MULTI</button>
                         <input type="hidden" class="s-dir" value="H">
                     </div>
-
                     <div class="multi-dims-zone" style="display:none; background:#1a1a24; padding:10px; border-radius:4px; margin-top:5px; border:1px dashed var(--magenta);">
-                        <span class="label-sm" style="color:var(--magenta); text-align:center;">Découpe Chirurgicale (Formule: Hauteur x QtéH)</span>
                         <input type="text" class="s-h-multi" value="2.5x2 5x1 2.5x2" placeholder="Ex: 2.5x2 5x1" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center; margin-bottom:5px; color:var(--magenta); font-weight:bold;">
-                        <div class="quick-sizes" style="display:block; text-align:center; margin:0;">
-                            <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta); font-size:11px; padding:8px 15px;" onclick="setGraphikaMulti(this)">Rendu Graphika Auto-Adapté</button>
-                        </div>
+                        <button class="qs-btn" style="color:var(--magenta); border-color:var(--magenta); font-size:11px; padding:8px 15px; width:100%;" onclick="setGraphikaMulti(this)">Rendu Graphika Auto</button>
                     </div>
-
                     <div class="quick-sizes classic-sizes" style="margin-top:15px; grid-template-columns: repeat(4, 1fr);">
                         <button class="qs-btn" onclick="setDim(this, 2.5)">2.5</button>
                         <button class="qs-btn" onclick="setDim(this, 5)">5</button>
                         <button class="qs-btn" onclick="setDim(this, 7.5)">7.5</button>
                         <button class="qs-btn" onclick="setDim(this, 10)">10</button>
-                        <button class="qs-btn" onclick="setDim(this, 15)">15</button>
-                        <button class="qs-btn" onclick="setDim(this, 20)">20</button>
-                        <button class="qs-btn" onclick="setDim(this, 25)">25</button>
-                        <button class="qs-btn" onclick="setDim(this, 30)">30</button>
                     </div>
-
                     <div class="row">
                         <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="s-w" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
                         <div style="flex:1" class="dim-h-col"><span class="label-sm">Haut.</span><input type="number" class="s-h" value="10" oninput="updateSeqData(this.closest('.block-item')); triggerCascade(this.closest('.block-item'));" style="width:100%; text-align:center;"></div>
@@ -1052,7 +986,6 @@
             `;
             if (insertAfter) cont.insertBefore(b, insertAfter.nextSibling);
             else cont.appendChild(b);
-            
             let typeBtn = b.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1];
             setSeqMode(typeBtn, type); 
             triggerCascade(b); 
@@ -1064,9 +997,7 @@
             d.className = 'cadre-item';
             d.innerHTML = `
                 <div class="seq-header" style="border-bottom-color: var(--vert);">
-                    <div class="cadre-title">
-                        <span class="cadre-label"></span>
-                    </div>
+                    <div class="cadre-title"><span class="cadre-label"></span></div>
                     <input type="hidden" class="j-color" value="#111111">
                     <input type="hidden" class="j-size" value="0">
                     <div style="display:flex; gap:4px; flex-shrink: 0;">
@@ -1087,16 +1018,12 @@
                         <button class="btn-mini type-btn" onclick="setCadreMode(this, 5)">MANUEL</button>
                         <input type="hidden" class="c-type" value="${type}">
                     </div>
-                    
                     <div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;">
-                        <span class="label-sm" style="display:inline-block; margin-right:5px;">Nombre de modèles :</span>
+                        <span class="label-sm" style="display:inline-block; margin-right:5px;">Nb:</span>
                         <input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;">
                     </div>
-                    
                     <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div>
-
                     <div class="tile-counter">Périmètre: Calcul en cours...</div>
-
                     <div class="quick-sizes" style="margin-top:15px; grid-template-columns: repeat(4, 1fr);">
                         <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 2.5)">2.5</button>
                         <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 5)">5</button>
@@ -1113,25 +1040,8 @@
             const cont = document.getElementById('cadres-container');
             if (insertAfter) cont.insertBefore(d, insertAfter.nextSibling);
             else cont.appendChild(d);
-            
             let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1];
             setCadreMode(typeBtn, type);
-        }
-
-        function genererFractale() {
-            setMode('concentrique');
-            document.getElementById('c-mod').value = document.getElementById('f-mod').value;
-            document.getElementById('c-w').value = document.getElementById('f-size').value;
-            document.getElementById('c-h').value = document.getElementById('f-size').value;
-            let seq = document.getElementById('f-seq').value.split(' ').filter(Boolean);
-            let n = parseInt(document.getElementById('f-iter').value);
-            document.getElementById('cadres-container').innerHTML = "";
-            let curSize = parseFloat(document.getElementById('f-size').value);
-            for(let i=0; i<n; i++) {
-                curSize = curSize / seq.length;
-                ajouterCadre(null, seq.length, curSize, curSize);
-            }
-            render();
         }
 
         function move(el, dir) {
@@ -1190,7 +1100,6 @@
 
         function updateTransform() { canvasWrap.style.transform = `translate(${t_posX}px, ${t_posY}px) scale(${t_scale})`; }
         function closeRender() { document.getElementById('render-modal').style.display = 'none'; }
-
         function resetCamera(cssWidth, cssHeight) {
             let zoneW = touchZone.clientWidth;
             let zoneH = touchZone.clientHeight;
@@ -1201,7 +1110,7 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING (V43) ---
+        // --- 🧠 LE COEUR DE PARSING ---
         function parseWall() {
             let totalW = 0, totalH = 0;
             let tiles = [];
@@ -1221,7 +1130,6 @@
                         let h = parseFloat(bl.querySelector('.s-h').value) || 10; 
                         let q = parseInt(bl.querySelector('.s-q').value) || 1;
                         let dir = bl.querySelector('.s-dir').value;
-                        
                         if(sequence.length === 0) sequence = [''];
                         
                         if(dir === 'M') {
@@ -1232,10 +1140,7 @@
                                 let dims = part.split('x');
                                 let h = parseFloat(dims[0]);
                                 let qH = parseInt(dims[1]) || 1; 
-                                if(h) {
-                                    chirData.push({h, qH});
-                                    totalHMulti += h;
-                                }
+                                if(h) { chirData.push({h, qH}); totalHMulti += h; }
                             });
                             if(chirData.length > 0) {
                                 blocks.push({sequence, w, h: 0, q: 1, dir, bW: w, bH: totalHMulti, chirData});
@@ -1267,14 +1172,12 @@
                     let curX = (totalW - line.lw) / 2;
                     line.blocks.forEach(b => {
                         let startX = curX, startY = curY;
-                        
                         if(b.dir === 'M') {
                             let currentY = startY;
                             for(let i=0; i<b.chirData.length; i++) {
                                 let char = b.sequence[i % b.sequence.length];
                                 let segment = b.chirData[i];
                                 let actualWTile = b.w / segment.qH;
-                                
                                 for(let c=0; c<segment.qH; c++) {
                                     tiles.push({l: char, x: startX + c * actualWTile, y: currentY, w: actualWTile, h: segment.h});
                                 }
@@ -1296,7 +1199,6 @@
                 let cw = parseFloat(document.getElementById('c-w').value) || 30;
                 let ch = parseFloat(document.getElementById('c-h').value) || 30;
                 let cLetter = document.getElementById('c-mod').value.toUpperCase().split(' ').filter(Boolean)[0] || '';
-                
                 let cColor = document.getElementById('c-j-color').value || '#111111';
                 let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
                 
@@ -1321,44 +1223,28 @@
                     curJointSize = c.jSize; 
                 });
                 
-                // Ajout de l'EXTERIEUR
                 let extJoint = parseFloat(document.getElementById('ext-j-size').value) || 0;
                 let extColor = document.getElementById('ext-j-color').value || '#111111';
-                
-                totalW += extJoint * 2;
-                totalH += extJoint * 2;
+                totalW += extJoint * 2; totalH += extJoint * 2;
 
-                // --- GENERATION DES BACKGROUNDS ---
                 let curW = cw; let curH = ch;
-                let bgJoint = cJoint;
-                let bgColor = cColor;
+                let bgJoint = cJoint; let bgColor = cColor;
                 
-                if(bgJoint > 0 || cadres.length === 0) {
-                    backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor });
-                }
+                if(bgJoint > 0 || cadres.length === 0) backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor });
                 
                 cadres.forEach((c, idx) => {
-                    curW += 2*bgJoint + 2*c.w;
-                    curH += 2*bgJoint + 2*c.h;
-                    
+                    curW += 2*bgJoint + 2*c.w; curH += 2*bgJoint + 2*c.h;
                     if(idx < cadres.length - 1) {
-                        bgJoint = c.jSize;
-                        bgColor = c.color;
-                        if(bgJoint > 0) {
-                            backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor });
-                        }
+                        bgJoint = c.jSize; bgColor = c.color;
+                        if(bgJoint > 0) backgrounds.push({ w: curW + 2*bgJoint, h: curH + 2*bgJoint, color: bgColor });
                     }
                 });
                 
-                if (cadres.length > 0 && extJoint > 0) {
-                    backgrounds.push({ w: curW + 2*extJoint, h: curH + 2*extJoint, color: extColor });
-                } else if (cadres.length === 0 && extJoint > 0) {
-                    backgrounds.push({ w: curW + 2*bgJoint + 2*extJoint, h: curH + 2*bgJoint + 2*extJoint, color: extColor });
-                }
+                if (cadres.length > 0 && extJoint > 0) backgrounds.push({ w: curW + 2*extJoint, h: curH + 2*extJoint, color: extColor });
+                else if (cadres.length === 0 && extJoint > 0) backgrounds.push({ w: curW + 2*bgJoint + 2*extJoint, h: curH + 2*bgJoint + 2*extJoint, color: extColor });
                 
                 backgrounds.sort((a,b) => b.w - a.w);
 
-                // --- GENERATION DES TUILES ---
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
                 
                 let currentTotalW = cw, currentTotalH = ch;
@@ -1367,14 +1253,9 @@
                 cadres.forEach(c => {
                     let bdW = c.w, bdH = c.h;
                     let seq = c.seq.length > 0 ? c.seq : [''];
-                    
-                    let innerW = currentTotalW + curP * 2;
-                    let innerH = currentTotalH + curP * 2;
-                    let newTotalW = innerW + bdW * 2;
-                    let newTotalH = innerH + bdH * 2;
-                    
-                    let shiftX = (totalW - newTotalW)/2;
-                    let shiftY = (totalH - newTotalH)/2;
+                    let innerW = currentTotalW + curP * 2; let innerH = currentTotalH + curP * 2;
+                    let newTotalW = innerW + bdW * 2; let newTotalH = innerH + bdH * 2;
+                    let shiftX = (totalW - newTotalW)/2; let shiftY = (totalH - newTotalH)/2;
                     
                     let Nx = Math.max(1, Math.round(newTotalW / bdW)); let adjW = newTotalW / Nx; 
                     let Ny = Math.max(1, Math.round(innerH / bdH)); let adjH = innerH / Ny;
@@ -1393,6 +1274,74 @@
             return { tiles, backgrounds, totalW, totalH };
         }
 
+        // --- 🖼️ GENERATEUR DE CADRES 3D (V44) ---
+        function draw3DFrame(ctx, width, height, thickness, material, title) {
+            let baseColor, lightColor, darkColor;
+            
+            // Palette des matériaux
+            if(material === 'noyer') { baseColor = '#3E2723'; lightColor = '#5c4033'; darkColor = '#261412'; }
+            else if(material === 'chene') { baseColor = '#8B5A2B'; lightColor = '#a06f3d'; darkColor = '#6b421a'; }
+            else if(material === 'serpentine') { baseColor = '#2E4A35'; lightColor = '#3d6347'; darkColor = '#1f3323'; }
+            else if(material === 'amethyste') { baseColor = '#5B3256'; lightColor = '#7a4373'; darkColor = '#3d2139'; }
+            else if(material === 'obsidienne') { baseColor = '#1a1a1a'; lightColor = '#2a2a2a'; darkColor = '#0a0a0a'; }
+
+            // Dessin des 4 trapèzes pour le biseau 45°
+            
+            // HAUT (Éclairé)
+            ctx.fillStyle = lightColor;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(width, 0); ctx.lineTo(width - thickness, thickness); ctx.lineTo(thickness, thickness); ctx.fill();
+            
+            // BAS (Ombré)
+            ctx.fillStyle = darkColor;
+            ctx.beginPath(); ctx.moveTo(width, height); ctx.lineTo(0, height); ctx.lineTo(thickness, height - thickness); ctx.lineTo(width - thickness, height - thickness); ctx.fill();
+            
+            // GAUCHE (Base)
+            ctx.fillStyle = baseColor;
+            ctx.beginPath(); ctx.moveTo(0, height); ctx.lineTo(0, 0); ctx.lineTo(thickness, thickness); ctx.lineTo(thickness, height - thickness); ctx.fill();
+            
+            // DROITE (Base)
+            ctx.fillStyle = baseColor;
+            ctx.beginPath(); ctx.moveTo(width, 0); ctx.lineTo(width, height); ctx.lineTo(width - thickness, height - thickness); ctx.lineTo(width - thickness, thickness); ctx.fill();
+
+            // Bordure intérieure sombre pour le relief
+            ctx.strokeStyle = '#000'; ctx.lineWidth = thickness * 0.05;
+            ctx.strokeRect(thickness, thickness, width - thickness*2, height - thickness*2);
+
+            // Plaque en Or pour le Titre
+            if(title && title !== "") {
+                let plaqueW = width * 0.3; // La plaque fait 30% de la largeur totale
+                let plaqueH = thickness * 0.6; // 60% de l'épaisseur du cadre
+                let plaqueX = (width - plaqueW) / 2;
+                let plaqueY = height - (thickness * 0.8);
+
+                // Or dégradé
+                let gradient = ctx.createLinearGradient(plaqueX, plaqueY, plaqueX, plaqueY + plaqueH);
+                gradient.addColorStop(0, "#f1c40f");
+                gradient.addColorStop(0.5, "#d3b878");
+                gradient.addColorStop(1, "#b39858");
+                
+                ctx.fillStyle = gradient;
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetY = 5;
+                ctx.fillRect(plaqueX, plaqueY, plaqueW, plaqueH);
+                
+                // Bordure de la plaque
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = '#5a4611';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(plaqueX, plaqueY, plaqueW, plaqueH);
+
+                // Texte gravé
+                ctx.fillStyle = "#332505";
+                ctx.font = `bold ${plaqueH * 0.4}px serif`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(title, width / 2, plaqueY + (plaqueH / 2));
+            }
+        }
+
+        // RENDER PREVISUALISATION (Ancien bouton)
         function render() {
             const canvas = document.getElementById('c');
             const ctx = canvas.getContext('2d');
@@ -1425,6 +1374,83 @@
             }, 50);
         }
 
+        function updateFrameSize(delta) {
+            let input = document.getElementById('frame-size');
+            let val = Math.max(1, parseFloat(input.value) + delta);
+            input.value = val;
+        }
+
+        // 🖼️ EXPORT 8K AVEC ENCADREMENT 3D
+        function exportFramedImage() {
+            let { tiles, backgrounds, totalW, totalH } = parseWall();
+            let baseScale = 40; 
+            
+            let frameSizeCm = parseFloat(document.getElementById('frame-size').value) || 10;
+            let material = document.getElementById('frame-material').value;
+            let title = document.getElementById('artwork-title').value.trim();
+
+            let pxWallW = (totalW || 10) * baseScale;
+            let pxWallH = (totalH || 10) * baseScale;
+            let pxFrame = frameSizeCm * baseScale;
+
+            let totalPxW = pxWallW + (pxFrame * 2);
+            let totalPxH = pxWallH + (pxFrame * 2);
+            
+            const MAX_EXPORT = 8192; 
+            let scaleFactor = 1;
+            if(totalPxW > MAX_EXPORT || totalPxH > MAX_EXPORT) {
+                scaleFactor = MAX_EXPORT / Math.max(totalPxW, totalPxH);
+            }
+
+            let exportCanvas = document.createElement('canvas');
+            exportCanvas.width = totalPxW * scaleFactor;
+            exportCanvas.height = totalPxH * scaleFactor;
+            let ctx = exportCanvas.getContext('2d');
+            
+            ctx.scale(scaleFactor, scaleFactor);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            // 1. Dessiner le Cadre 3D sur toute la surface
+            draw3DFrame(ctx, totalPxW, totalPxH, pxFrame, material, title);
+
+            // 2. Ombre portée intérieure du cadre sur le mur
+            ctx.save();
+            ctx.translate(pxFrame, pxFrame);
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = 40 * scaleFactor;
+            ctx.shadowOffsetX = 10 * scaleFactor;
+            ctx.shadowOffsetY = 15 * scaleFactor;
+            ctx.fillStyle = "#111"; 
+            ctx.fillRect(0, 0, pxWallW, pxWallH);
+            ctx.restore();
+
+            // 3. Dessiner le mur (on se décale de l'épaisseur du cadre)
+            ctx.save();
+            ctx.translate(pxFrame, pxFrame);
+            
+            backgrounds.forEach(bg => {
+                ctx.fillStyle = bg.color;
+                if(mode === 'lineaire') {
+                    ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale);
+                } else {
+                    let x = (totalW - bg.w)/2;
+                    let y = (totalH - bg.h)/2;
+                    ctx.fillRect(x * baseScale, y * baseScale, bg.w * baseScale, bg.h * baseScale);
+                }
+            });
+            
+            tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
+            ctx.restore();
+            
+            let fileName = (title || 'Oeuvre_Daguerre').replace(/\s+/g, '_');
+            let link = document.createElement('a');
+            link.download = fileName + '_8K.jpg';
+            link.href = exportCanvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+        }
+
+        // Export Classique (Sans Cadre)
         function exporterImage() {
             let { tiles, backgrounds, totalW, totalH } = parseWall();
             let baseScale = 40; 
@@ -1464,7 +1490,7 @@
             
             let nom = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
             let link = document.createElement('a');
-            link.download = nom + '_8K.jpg';
+            link.download = nom + '_Plan_Sans_Cadre_8K.jpg';
             link.href = exportCanvas.toDataURL('image/jpeg', 0.95);
             link.click();
         }
@@ -1514,3 +1540,4 @@
     </script>
 </body>
 </html>
+
