@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V35.0</title>
+    <title>Daguerre OS V36.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V35.0</small>
+        <small>ÉDITION NUCLÉAIRE V36.0</small>
     </div>
 
     <div id="settings-area">
@@ -98,7 +98,7 @@
                 
                 <div class="row">
                     <button class="btn" style="background:var(--cyan); color:#000; flex:1;" onclick="loadFromLibrary()">⬇️ CHARGER</button>
-                    <button class="btn-icon-sm btn-red" style="width:40px; height:40px; font-size:14px;" onclick="deleteFromLibrary()">❌</button>
+                    <button class="btn btn-red" style="flex:0.5; padding: 12px 5px;" onclick="deleteFromLibrary()">❌ SUPP.</button>
                 </div>
                 <hr style="border-color:#333; margin:15px 0;">
                 <button class="btn" style="background:#333; color:#fff;" onclick="document.getElementById('templateUploader').click()">📂 IMPORTER UN JSON (Ancien)</button>
@@ -200,6 +200,10 @@
         let modeles = {}, letterIdx = 65, mode = 'lineaire';
         let library = JSON.parse(localStorage.getItem('daguerre_lib')) || {};
 
+        // V36 FIX : Les variables globales nettoyées
+        let ligneCounter = 0;
+        let cadreCounter = 0;
+
         function init() {
             updateLibraryUI();
             ajouterLigne();
@@ -230,7 +234,7 @@
         }
 
         function getForgeData() {
-            let data = { v: 35, mode: mode, lignes: [], coeur: {}, cadres: [] };
+            let data = { v: 36, mode: mode, lignes: [], coeur: {}, cadres: [] };
             
             document.querySelectorAll('.ligne-item').forEach(li => {
                 let lName = li.querySelector('.editable-name').value;
@@ -280,7 +284,7 @@
         function deleteFromLibrary() {
             let name = document.getElementById('library-select').value;
             if(!name) return;
-            if(confirm(`Supprimer le grimoire ${name} ?`)) {
+            if(confirm(`Es-tu sûr de vouloir brûler le grimoire "${name}" ?`)) {
                 delete library[name];
                 localStorage.setItem('daguerre_lib', JSON.stringify(library));
                 updateLibraryUI();
@@ -320,13 +324,12 @@
             if(!name || !library[name]) return;
             let data = library[name];
             
-            if(data.v !== 35) {
-                alert("⚠️ Attention: Ce grimoire utilise une ancienne architecture. Le rendu pourrait être incomplet.");
+            if(!data.v || data.v < 35) {
+                alert("⚠️ Ce grimoire utilise une très ancienne architecture. Le rendu peut être incomplet.");
             }
             
             if(data.mode) setMode(data.mode);
             
-            // Recharger Lignes
             if(data.lignes && data.lignes.length > 0) {
                 document.getElementById('lignes-container').innerHTML = '';
                 ligneCounter = 0;
@@ -337,7 +340,7 @@
                     currentLi.querySelector('.editable-name').value = l.name;
                     
                     let cont = currentLi.querySelector('.blocs-container');
-                    cont.innerHTML = ''; // Efface la sequence par defaut
+                    cont.innerHTML = ''; 
                     
                     l.blocks.forEach(b => {
                         ajouterSequence(cont, b.type);
@@ -367,7 +370,6 @@
                 });
             }
 
-            // Recharger Cadres
             if(data.coeur) {
                 document.getElementById('c-mod').value = data.coeur.mod || '';
                 document.getElementById('c-w').value = data.coeur.w || 20;
@@ -473,12 +475,21 @@
             }
         }
 
+        function setMulti(btn, str) {
+            let block = btn.closest('.block-item');
+            if(block) {
+                block.querySelector('.s-h-multi').value = str;
+                updateSeqData(block);
+                triggerCascade(block);
+            }
+        }
+
         function setGraphikaMulti(btn) {
             let block = btn.closest('.block-item');
             if(!block) return;
             
             let prevTotalH = getPrevTotalH(block);
-            if(prevTotalH <= 5) prevTotalH = 10;
+            if(prevTotalH <= 5) prevTotalH = 10; 
 
             let hCenter = prevTotalH - 5; 
             let wCurrent = hCenter; 
@@ -602,6 +613,9 @@
                 manualConf.style.display = 'none';
             }
 
+            let dirRow = block.querySelector('.dir-row');
+            dirRow.style.display = 'flex'; 
+            
             renderModelSelects(block, type);
         }
 
@@ -712,6 +726,7 @@
             else { realContent.style.display = 'none'; btn.innerText = '▶️'; }
         }
 
+        // --- GESTION LIGNES & SEQUENCES ---
         function ajouterLigne() {
             ligneCounter++;
             let d = document.createElement('div');
@@ -868,6 +883,22 @@
             
             let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1];
             setCadreMode(typeBtn, type);
+        }
+
+        function genererFractale() {
+            setMode('concentrique');
+            document.getElementById('c-mod').value = document.getElementById('f-mod').value;
+            document.getElementById('c-w').value = document.getElementById('f-size').value;
+            document.getElementById('c-h').value = document.getElementById('f-size').value;
+            let seq = document.getElementById('f-seq').value.split(' ').filter(Boolean);
+            let n = parseInt(document.getElementById('f-iter').value);
+            document.getElementById('cadres-container').innerHTML = "";
+            let curSize = parseFloat(document.getElementById('f-size').value);
+            for(let i=0; i<n; i++) {
+                curSize = curSize / seq.length;
+                ajouterCadre(null, seq.length, curSize, curSize);
+            }
+            render();
         }
 
         function move(el, dir) {
