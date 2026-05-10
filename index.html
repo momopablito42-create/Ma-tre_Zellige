@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V36.0</title>
+    <title>Daguerre OS V37.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V36.0</small>
+        <small>ÉDITION NUCLÉAIRE V37.0</small>
     </div>
 
     <div id="settings-area">
@@ -126,7 +126,7 @@
             </div>
 
             <div id="area-concentrique" style="display:none;">
-                <div class="box cadre-item" style="border-color: var(--vert);">
+                <div class="box" style="border-color: var(--vert);">
                     <span class="label-sm">Lettre(s) du Cœur</span>
                     <input type="text" id="c-mod" value="" placeholder="(Vide)" oninput="updateAllCadresStats()" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
                     <div class="quick-sizes" style="grid-template-columns: repeat(5, 1fr);">
@@ -199,8 +199,6 @@
     <script>
         let modeles = {}, letterIdx = 65, mode = 'lineaire';
         let library = JSON.parse(localStorage.getItem('daguerre_lib')) || {};
-
-        // V36 FIX : Les variables globales nettoyées
         let ligneCounter = 0;
         let cadreCounter = 0;
 
@@ -234,48 +232,59 @@
         }
 
         function getForgeData() {
-            let data = { v: 36, mode: mode, lignes: [], coeur: {}, cadres: [] };
-            
-            document.querySelectorAll('.ligne-item').forEach(li => {
-                let lName = li.querySelector('.editable-name').value;
-                let blocks = [];
-                li.querySelectorAll('.block-item').forEach(bl => {
-                    blocks.push({
-                        type: parseInt(bl.querySelector('.s-type').value),
-                        mQty: parseInt(bl.querySelector('.manual-qty').value),
-                        selects: Array.from(bl.querySelectorAll('.m-sel')).map(s=>s.value),
-                        dir: bl.querySelector('.s-dir').value,
-                        multi: bl.querySelector('.s-h-multi').value,
-                        w: parseFloat(bl.querySelector('.s-w').value),
-                        h: parseFloat(bl.querySelector('.s-h').value),
-                        q: parseInt(bl.querySelector('.s-q').value)
+            try {
+                let data = { v: 37, mode: mode, lignes: [], coeur: {}, cadres: [] };
+                
+                document.querySelectorAll('.ligne-item').forEach(li => {
+                    let lName = li.querySelector('.editable-name').value;
+                    let blocks = [];
+                    li.querySelectorAll('.block-item').forEach(bl => {
+                        blocks.push({
+                            type: parseInt(bl.querySelector('.s-type')?.value || 1),
+                            mQty: parseInt(bl.querySelector('.manual-qty')?.value || 5),
+                            selects: Array.from(bl.querySelectorAll('.m-sel')).map(s=>s.value),
+                            dir: bl.querySelector('.s-dir')?.value || 'H',
+                            multi: bl.querySelector('.s-h-multi')?.value || '',
+                            w: parseFloat(bl.querySelector('.s-w')?.value || 10),
+                            h: parseFloat(bl.querySelector('.s-h')?.value || 10),
+                            q: parseInt(bl.querySelector('.s-q')?.value || 1)
+                        });
+                    });
+                    data.lignes.push({name: lName, blocks});
+                });
+                
+                data.coeur = {
+                    mod: document.getElementById('c-mod').value,
+                    w: parseFloat(document.getElementById('c-w').value),
+                    h: parseFloat(document.getElementById('c-h').value)
+                };
+                
+                // On s'assure de ne cibler QUE les vrais cadres !
+                document.querySelectorAll('#cadres-container .cadre-item').forEach(ca => {
+                    data.cadres.push({
+                        type: parseInt(ca.querySelector('.c-type')?.value || 1),
+                        mQty: parseInt(ca.querySelector('.manual-qty')?.value || 5),
+                        selects: Array.from(ca.querySelectorAll('.m-sel')).map(s=>s.value),
+                        w: parseFloat(ca.querySelector('.c-w')?.value || 10),
+                        h: parseFloat(ca.querySelector('.c-h')?.value || 10)
                     });
                 });
-                data.lignes.push({name: lName, blocks});
-            });
-            
-            data.coeur = {
-                mod: document.getElementById('c-mod').value,
-                w: parseFloat(document.getElementById('c-w').value),
-                h: parseFloat(document.getElementById('c-h').value)
-            };
-            
-            document.querySelectorAll('.cadre-item').forEach(ca => {
-                data.cadres.push({
-                    type: parseInt(ca.querySelector('.c-type').value),
-                    mQty: parseInt(ca.querySelector('.manual-qty').value),
-                    selects: Array.from(ca.querySelectorAll('.m-sel')).map(s=>s.value),
-                    w: parseFloat(ca.querySelector('.c-w').value),
-                    h: parseFloat(ca.querySelector('.c-h').value)
-                });
-            });
-            return data;
+                return data;
+            } catch(e) {
+                console.error("Erreur de lecture de la Forge:", e);
+                alert("⚠️ Oups ! Une erreur s'est produite lors de l'enregistrement de la Forge.");
+                return null;
+            }
         }
 
         function saveToLibrary() {
+            let data = getForgeData();
+            if(!data) return; // Stoppe si erreur
+            
             let name = prompt("Nom de ce Grimoire :");
             if(!name) return;
-            library[name] = getForgeData();
+            
+            library[name] = data;
             localStorage.setItem('daguerre_lib', JSON.stringify(library));
             updateLibraryUI();
             alert("✅ Grimoire sauvegardé dans l'Arsenal !");
@@ -293,11 +302,16 @@
 
         function exportTemplate() {
             let data = getForgeData();
-            let nom = document.getElementById('nom-projet').value.trim() || 'Template';
+            if(!data) return; // Stoppe si erreur
+            
+            let defaultName = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
+            let nom = prompt("Nom du fichier JSON à sauvegarder :", defaultName);
+            if(!nom) return; // Si on annule
+            
             let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
             let link = document.createElement("a");
             link.href = URL.createObjectURL(blob); 
-            link.download = nom + "_Template.json"; 
+            link.download = nom + ".json"; 
             link.click();
         }
 
@@ -1110,80 +1124,6 @@
                 let cssH = (totalH || 10) * baseScale;
                 resetCamera(cssW, cssH);
             }, 50);
-        }
-
-        function exporterImage() {
-            let { tiles, totalW, totalH } = parseWall();
-            let baseScale = 40; 
-            let pixelW = (totalW || 10) * baseScale;
-            let pixelH = (totalH || 10) * baseScale;
-            
-            const MAX_EXPORT = 8192; 
-            let scaleFactor = 1;
-            if(pixelW > MAX_EXPORT || pixelH > MAX_EXPORT) {
-                scaleFactor = MAX_EXPORT / Math.max(pixelW, pixelH);
-            }
-
-            let exportCanvas = document.createElement('canvas');
-            exportCanvas.width = pixelW * scaleFactor;
-            exportCanvas.height = pixelH * scaleFactor;
-            let ctx = exportCanvas.getContext('2d');
-            
-            ctx.scale(scaleFactor, scaleFactor);
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-
-            ctx.fillStyle = "#111"; 
-            ctx.fillRect(0, 0, pixelW, pixelH);
-            
-            tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
-            
-            let nom = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre';
-            let link = document.createElement('a');
-            link.download = nom + '_8K.jpg';
-            link.href = exportCanvas.toDataURL('image/jpeg', 0.95);
-            link.click();
-        }
-
-        function prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr) {
-            let cssW = (totalW || 10) * baseScale;
-            let cssH = (totalH || 10) * baseScale;
-            let pixelW = cssW * dpr;
-            let pixelH = cssH * dpr;
-
-            const MAX_DIM = 3500; 
-            let scaleFactor = 1;
-            if(pixelW > MAX_DIM || pixelH > MAX_DIM) {
-                let maxCurrent = Math.max(pixelW, pixelH);
-                scaleFactor = MAX_DIM / maxCurrent;
-                pixelW = pixelW * scaleFactor;
-                pixelH = pixelH * scaleFactor;
-            }
-
-            canvas.style.width = cssW + 'px';
-            canvas.style.height = cssH + 'px';
-            canvas.width = pixelW;
-            canvas.height = pixelH;
-            
-            ctx.scale(dpr * scaleFactor, dpr * scaleFactor);
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-
-            ctx.fillStyle = "#111"; ctx.fillRect(0,0, cssW, cssH);
-        }
-
-        function drawTile(ctx, char, x, y, w, h) {
-            if(char && modeles[char]) {
-                ctx.drawImage(modeles[char].img, x, y, w, h);
-            } else {
-                ctx.strokeStyle = 'cyan'; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
-                ctx.fillStyle = "rgba(241, 196, 15, 0.15)"; ctx.fillRect(x, y, w, h);
-                if(char) {
-                    ctx.fillStyle = "#f1c40f"; ctx.font = `bold ${Math.max(12, h/3)}px monospace`;
-                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                    ctx.fillText(char, x + w/2, y + h/2);
-                }
-            }
         }
 
         window.onload = init;
