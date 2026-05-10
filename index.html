@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V42.0</title>
+    <title>Daguerre OS V43.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V42.0</small>
+        <small>ÉDITION NUCLÉAIRE V43.0</small>
     </div>
 
     <div id="settings-area">
@@ -165,7 +165,7 @@
         </div>
 
         <div id="tab-finition" class="tab-content">
-            <div class="section-title">💎 Sertissage & Joints</div>
+            <div class="section-title" id="finition-main-title">💎 Sertissage & Joints</div>
             
             <div class="box" id="finition-global-box" style="border-color: var(--cyan);">
                 <span class="label-sm" style="color:var(--cyan); margin-bottom:5px; display:block;">Épaisseur Globale des Joints (cm)</span>
@@ -261,9 +261,8 @@
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 🎨 GESTION FINITION V42 (SANS SCROLL JUMP) ---
+        // --- 🎨 GESTION FINITION V43 (Règle Juste) ---
         
-        // Fonction pour les boutons + et -
         function updateJointSizeUI(targetId, delta) {
             let dispInput = document.getElementById('disp-size-' + targetId);
             if(!dispInput) return;
@@ -271,7 +270,6 @@
             let val = Math.max(0, parseFloat(dispInput.value) + delta);
             dispInput.value = val.toFixed(1);
             
-            // Mise à jour de la vraie valeur cachée
             if(targetId === 'global') document.getElementById('joint-size').value = val.toFixed(1);
             else if(targetId === 'coeur') document.getElementById('c-j-size').value = val.toFixed(1);
             else if(targetId === 'exterior') document.getElementById('ext-j-size').value = val.toFixed(1);
@@ -282,7 +280,6 @@
             updateAllCadresStats();
         }
 
-        // Fonction pour l'input direct au clavier
         function handleDirectSizeInput(targetId, val) {
             let num = Math.max(0, parseFloat(val) || 0);
             let dispInput = document.getElementById('disp-size-' + targetId);
@@ -323,7 +320,6 @@
                 document.querySelectorAll('.cadre-item')[idx].querySelector('.j-color').value = hex;
             }
             
-            // Met à jour visuellement seulement la case concernée pour ne pas faire sauter le scroll
             let container = document.getElementById('finition-item-' + targetId);
             if(container) {
                 container.querySelector('input[type="color"]').value = hex;
@@ -374,17 +370,33 @@
             let container = document.getElementById('finition-dynamic-list');
             container.innerHTML = '';
             let globalBox = document.getElementById('finition-global-box');
+            let mainTitle = document.getElementById('finition-main-title'); // 🥷 V43
             
             if(mode === 'lineaire') {
                 globalBox.style.display = 'block';
-                document.querySelectorAll('.ligne-item').forEach((li, idx) => {
-                    let name = li.querySelector('.editable-name').value;
+                mainTitle.style.display = 'block'; // 🥷 V43 : Affiche le titre
+
+                // 🥷 V43 : La Règle Juste -> N Lignes = N-1 Joints
+                let ligns = document.querySelectorAll('.ligne-item');
+                let nbLignes = ligns.length;
+                let nbJoints = Math.max(0, nbLignes - 1);
+
+                for(let i = 0; i < nbJoints; i++) {
+                    let li = ligns[i];
+                    let liNext = ligns[i+1];
+                    let name1 = li.querySelector('.editable-name').value;
+                    let name2 = liNext.querySelector('.editable-name').value;
+                    
+                    // La couleur du joint est stockée dans la ligne 'avant'
                     let color = li.querySelector('.j-color').value || '#111111';
-                    container.appendChild(createFinitionItemUI(`Ligne: ${name}`, color, `ligne-${idx}`, null));
-                });
+                    
+                    let title = `Joint entre ${name1} et ${name2}`;
+                    container.appendChild(createFinitionItemUI(title, color, `ligne-${i}`, null));
+                }
             } else {
-                globalBox.style.display = 'none'; // Disparition du global !
-                
+                globalBox.style.display = 'none'; 
+                mainTitle.style.display = 'none'; // 🥷 V43 : Masque le titre fantôme
+
                 let cColor = document.getElementById('c-j-color').value || '#111111';
                 let cSize = document.getElementById('c-j-size').value || 0;
                 container.appendChild(createFinitionItemUI(`1ère Bordure (Autour du Cœur)`, cColor, `coeur`, cSize));
@@ -414,7 +426,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 42, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 43, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value;
@@ -990,7 +1002,7 @@
                 <div class="seq-content">
                     <div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;">
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 1)">SIMPLE</button>
-                        <button class="btn-mini type-btn" onclick="setSeqMode(this, 2)">DOUBLE</button>
+                        <button class="btn-mini type-btn" onclick="setSeqMode(this,  DOUBLE</button>
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 3)">TRIPLE</button>
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 4)">QUAD.</button>
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 5)">MANUEL</button>
@@ -1189,7 +1201,7 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING (V42: GESTION DE L'EXTÉRIEUR) ---
+        // --- 🧠 LE COEUR DE PARSING (V43) ---
         function parseWall() {
             let totalW = 0, totalH = 0;
             let tiles = [];
@@ -1338,7 +1350,6 @@
                     }
                 });
                 
-                // Dessin du fond extérieur final
                 if (cadres.length > 0 && extJoint > 0) {
                     backgrounds.push({ w: curW + 2*extJoint, h: curH + 2*extJoint, color: extColor });
                 } else if (cadres.length === 0 && extJoint > 0) {
@@ -1503,4 +1514,3 @@
     </script>
 </body>
 </html>
-
