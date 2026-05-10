@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V53.0</title>
+    <title>Daguerre OS V54.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -76,7 +76,7 @@
         #canvas-wrapper { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
         canvas { background: #111; border: 1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
 
-        /* --- 🖨️ STYLES D'IMPRESSION V53 --- */
+        /* --- 🖨️ STYLES D'IMPRESSION --- */
         @media print {
             body, #settings-area { background: #fff !important; color: #000 !important; overflow: visible !important; height: auto !important; }
             #header, #tab-bar, #tab-armurerie, #tab-forge, #tab-finition, #tab-encadrement, .btn { display: none !important; }
@@ -97,7 +97,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V53.0</small>
+        <small>ÉDITION NUCLÉAIRE V54.0</small>
     </div>
 
     <div id="settings-area">
@@ -164,6 +164,16 @@
                 
                 <div id="cadres-container"></div>
                 <button class="btn" style="background: var(--vert); color: #000; margin-top: 10px;" onclick="ajouterCadre()">+ NOUVEAU CADRE</button>
+            </div>
+
+            <div id="area-fractale" style="display:none;">
+                <div class="box">
+                    <span class="label-sm">Modèle Cœur</span><input type="text" id="f-mod" value="">
+                    <span class="label-sm" style="margin-top:10px;">Dimensions Cœur (cm)</span><input type="number" id="f-size" value="20">
+                    <span class="label-sm" style="margin-top:10px;">Séquence Frise (A B)</span><input type="text" id="f-seq" value="B C">
+                    <span class="label-sm" style="margin-top:10px;">Itérations (Nombre de cadres)</span><input type="number" id="f-iter" value="5">
+                    <button class="btn" style="background: var(--vert); color: #000; margin-top: 15px;" onclick="genererFractale()">⚡ GÉNÉRER FRACTALE</button>
+                </div>
             </div>
 
             <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">👁️ PRÉVISUALISER LE MUR (HD)</button>
@@ -296,7 +306,7 @@
             btn.classList.add('active');
             
             if(id === 'tab-finition') renderFinitionList();
-            if(id === 'tab-devis') genererDevis(); // 🥷 V53: Calcul automatique
+            if(id === 'tab-devis') genererDevis();
         }
 
         function setMode(m) {
@@ -308,16 +318,15 @@
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 📊 GESTION DU RAPPORT & DEVIS V53 ---
+        // --- 📊 GESTION DU RAPPORT & DEVIS ---
         function genererDevis() {
             let { tiles, totalW, totalH } = parseWall();
             let inventory = {};
             let stickerAreaCm2 = 0;
             let totalStickers = 0;
 
-            // Analyse de l'Inventaire (avec la taille exacte après grignotage)
             tiles.forEach(t => {
-                let j = t.j || 0; // Le retrait du joint
+                let j = t.j || 0; 
                 let actualW = Math.max(0.1, t.w - j);
                 let actualH = Math.max(0.1, t.h - j);
                 
@@ -334,7 +343,6 @@
             let stickerAreaM2 = stickerAreaCm2 / 10000;
             let wallAreaM2 = (totalW * totalH) / 10000;
 
-            // Calcul du Cadre (Surface réelle)
             let frameSizeCm = parseFloat(document.getElementById('frame-size').value) || 10;
             let material = document.getElementById('frame-material').value;
             
@@ -344,7 +352,6 @@
             let totalAreaWithFrameM2 = (extW * extH) / 10000;
             let frameOnlyAreaM2 = totalAreaWithFrameM2 - wallAreaM2;
 
-            // Tarifs V53
             let framePricePerM2 = 0;
             let matName = "";
             if(material === 'noyer') { framePricePerM2 = 140; matName = "Bois de Noyer Massif"; }
@@ -353,7 +360,7 @@
             else if(material === 'obsidienne') { framePricePerM2 = 100; matName = "Obsidienne (Feuille de Pierre)"; }
             else if(material === 'amethyste') { framePricePerM2 = 100; matName = "Améthyste (Placage Précieux)"; }
 
-            let costImpression = stickerAreaM2 * 22; // 🥷 V53 : 22€/m2 validé
+            let costImpression = stickerAreaM2 * 22; 
             let costPanneau = wallAreaM2 * 15;
             let costVernis = wallAreaM2 * 8;
             let costCadre = frameOnlyAreaM2 * framePricePerM2;
@@ -362,19 +369,16 @@
             let nomProjet = document.getElementById('devis-projet-nom').value || 'Empire_Daguerre';
             let dateStr = new Date().toLocaleDateString('fr-FR');
 
-            // HTML du Rapport
             let html = `
                 <div style="text-align:center; border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:15px;">
                     <h2 style="margin:0; color:var(--jaune); font-size:16px;">DEVIS DE LA FORGE</h2>
                     <div style="font-size:10px; color:#aaa;">Projet : ${nomProjet} | Date : ${dateStr}</div>
                 </div>
-
                 <div style="margin-bottom:15px;">
                     <span class="label-sm" style="color:var(--cyan);">DIMENSIONS</span>
                     <div style="font-size:12px;">Mosaïque (Panneau) : <b>${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm</b></div>
                     <div style="font-size:12px;">Encadrement Inclus : <b>${extW.toFixed(1)} x ${extH.toFixed(1)} cm</b></div>
                 </div>
-
                 <div style="margin-bottom:15px;">
                     <span class="label-sm" style="color:var(--cyan);">📦 INVENTAIRE (Total: ${totalStickers} stickers)</span>
                     <table style="width:100%; font-size:11px; color:#ddd; margin-top:5px;">
@@ -387,7 +391,6 @@
             html += `
                     </table>
                 </div>
-
                 <div style="margin-bottom:10px;">
                     <span class="label-sm" style="color:var(--cyan);">💸 DÉTAIL DES COÛTS MATÉRIAUX</span>
                     <table style="width:100%; font-size:11px; color:#ddd; margin-top:5px;">
@@ -404,7 +407,7 @@
             document.getElementById('rapport-data').innerHTML = html;
         }
 
-        // --- 🎨 GESTION FINITION V53 (Restauration V51) ---
+        // --- 🎨 GESTION FINITION ---
         function updateJointSizeUI(targetId, delta) {
             let dispInput = document.getElementById('disp-size-' + targetId);
             if(!dispInput) return;
@@ -414,6 +417,7 @@
             if(targetId === 'global') document.getElementById('joint-size').value = val.toFixed(1);
             else if(targetId === 'exterior') document.getElementById('ext-j-size').value = val.toFixed(1);
             updateAllCadresStats();
+            if(document.getElementById('tab-devis').classList.contains('active')) genererDevis();
         }
 
         function handleDirectSizeInput(targetId, val) {
@@ -424,6 +428,7 @@
             if(targetId === 'global') document.getElementById('joint-size').value = num.toFixed(1);
             else if(targetId === 'exterior') document.getElementById('ext-j-size').value = num.toFixed(1);
             updateAllCadresStats();
+            if(document.getElementById('tab-devis').classList.contains('active')) genererDevis();
         }
 
         function setGlobalColor(hex) {
@@ -527,7 +532,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 53, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 54, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value; let jColor = li.querySelector('.j-color').value; let blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
@@ -555,7 +560,7 @@
 
         function saveToLibrary() { let data = getForgeData(); if(!data) return; let name = prompt("Nom de ce Grimoire :"); if(!name) return; library[name] = data; localStorage.setItem('daguerre_lib', JSON.stringify(library)); updateLibraryUI(); alert("✅ Grimoire sauvegardé !"); }
         function deleteFromLibrary() { let name = document.getElementById('library-select').value; if(!name) return; if(confirm(`Es-tu sûr de vouloir brûler le grimoire "${name}" ?`)) { delete library[name]; localStorage.setItem('daguerre_lib', JSON.stringify(library)); updateLibraryUI(); } }
-        function exportTemplate() { let data = getForgeData(); if(!data) return; let defaultName = document.getElementById('nom-projet').value.trim() || 'Empire_Daguerre'; let nom = prompt("Nom du fichier JSON à sauvegarder :", defaultName); if(!nom) return; let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"}); let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = nom + ".json"; link.click(); }
+        function exportTemplate() { let data = getForgeData(); if(!data) return; let defaultName = document.getElementById('devis-projet-nom').value.trim() || 'Empire_Daguerre'; let nom = prompt("Nom du fichier JSON à sauvegarder :", defaultName); if(!nom) return; let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"}); let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = nom + ".json"; link.click(); }
         function importTemplate(e) { let file = e.target.files[0]; if(!file) return; let reader = new FileReader(); reader.onload = function(event) { try { let data = JSON.parse(event.target.result); let name = file.name.replace('.json', ''); library[name] = data; localStorage.setItem('daguerre_lib', JSON.stringify(library)); updateLibraryUI(); alert(`✅ Grimoire '${name}' importé !`); } catch(err) { alert("⚠️ Fichier invalide."); } }; reader.readAsText(file); e.target.value = ''; }
 
         function loadFromLibrary() {
@@ -907,7 +912,10 @@
             backgrounds.forEach(bg => {
                 ctx.fillStyle = bg.color;
                 if(bg.linear) { ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); } 
-                else { ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); }
+                else if(bg.type === 'joint') {
+                    let bx = bg.x * baseScale, by = bg.y * baseScale, bw = bg.w * baseScale, bh = bg.h * baseScale, bt = bg.t * baseScale;
+                    ctx.fillRect(bx, by, bw, bt); ctx.fillRect(bx, by + bh - bt, bw, bt); ctx.fillRect(bx, by + bt, bt, bh - 2*bt); ctx.fillRect(bx + bw - bt, by + bt, bt, bh - 2*bt); 
+                } else { ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); }
             });
         }
 
@@ -1053,4 +1061,3 @@
     </script>
 </body>
 </html>
-
