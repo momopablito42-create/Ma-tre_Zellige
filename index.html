@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V52.0</title>
+    <title>Daguerre OS V53.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -76,7 +76,7 @@
         #canvas-wrapper { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
         canvas { background: #111; border: 1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
 
-        /* --- 🖨️ STYLES D'IMPRESSION V52 --- */
+        /* --- 🖨️ STYLES D'IMPRESSION V53 --- */
         @media print {
             body, #settings-area { background: #fff !important; color: #000 !important; overflow: visible !important; height: auto !important; }
             #header, #tab-bar, #tab-armurerie, #tab-forge, #tab-finition, #tab-encadrement, .btn { display: none !important; }
@@ -97,7 +97,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V52.0</small>
+        <small>ÉDITION NUCLÉAIRE V53.0</small>
     </div>
 
     <div id="settings-area">
@@ -144,7 +144,6 @@
             <div id="area-concentrique" style="display:none;">
                 <div class="box" style="border-color: var(--vert);">
                     <input type="hidden" id="c-j-color" value="#111111">
-                    <input type="hidden" id="c-j-size" value="0">
                     <input type="hidden" id="ext-j-color" value="#111111">
                     <input type="hidden" id="ext-j-size" value="0">
 
@@ -165,16 +164,6 @@
                 
                 <div id="cadres-container"></div>
                 <button class="btn" style="background: var(--vert); color: #000; margin-top: 10px;" onclick="ajouterCadre()">+ NOUVEAU CADRE</button>
-            </div>
-
-            <div id="area-fractale" style="display:none;">
-                <div class="box">
-                    <span class="label-sm">Modèle Cœur</span><input type="text" id="f-mod" value="">
-                    <span class="label-sm" style="margin-top:10px;">Dimensions Cœur (cm)</span><input type="number" id="f-size" value="20">
-                    <span class="label-sm" style="margin-top:10px;">Séquence Frise (A B)</span><input type="text" id="f-seq" value="B C">
-                    <span class="label-sm" style="margin-top:10px;">Itérations (Nombre de cadres)</span><input type="number" id="f-iter" value="5">
-                    <button class="btn" style="background: var(--vert); color: #000; margin-top: 15px;" onclick="genererFractale()">⚡ GÉNÉRER FRACTALE</button>
-                </div>
             </div>
 
             <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">👁️ PRÉVISUALISER LE MUR (HD)</button>
@@ -222,11 +211,11 @@
             <div class="box" style="border-color: var(--amethyst);">
                 <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Matériau Noble (textures HD)</span>
                 <select id="frame-material" class="m-sel" style="width:100%; margin-bottom:15px; font-size:14px; background:#000;">
-                    <option value="noyer">🪵 Bois de Noyer (70€/ml)</option>
-                    <option value="chene">🪵 Bois de Chêne (45€/ml)</option>
-                    <option value="serpentine">💎 Serpentine (Placage 20€/ml)</option>
-                    <option value="obsidienne">🌑 Obsidienne (Placage 20€/ml)</option>
-                    <option value="amethyste">💎 Améthyste (Placage 35€/ml)</option>
+                    <option value="noyer">🪵 Bois de Noyer (140€/m²)</option>
+                    <option value="chene">🪵 Bois de Chêne (85€/m²)</option>
+                    <option value="serpentine">💎 Serpentine (Placage 100€/m²)</option>
+                    <option value="amethyste">💎 Améthyste (Placage 100€/m²)</option>
+                    <option value="obsidienne">🌑 Obsidienne (Placage 100€/m²)</option>
                 </select>
 
                 <span class="label-sm" style="color:var(--amethyst); margin-bottom:5px; display:block;">Épaisseur du Cadre (cm)</span>
@@ -257,13 +246,11 @@
             <div class="section-title">📊 Rapport & Devis</div>
             <div class="box">
                 <span class="label-sm">Nom du Projet pour le Devis</span>
-                <input type="text" id="devis-projet-nom" value="Empire_Daguerre" style="width: 100%; text-align: center; margin-bottom:10px;">
-                <button class="btn" style="background: var(--cyan); color: #000; margin-bottom: 10px; font-size:12px;" onclick="genererDevis()">🔄 RAFRAÎCHIR LE CALCUL</button>
+                <input type="text" id="devis-projet-nom" value="Empire_Daguerre" style="width: 100%; text-align: center; margin-bottom:10px;" oninput="genererDevis()">
             </div>
             
             <div id="rapport-data" class="box" style="background: #111; padding:15px;">
-                <p style="text-align:center; color:#888; font-size:12px;">Appuyez sur "Rafraîchir" pour générer l'inventaire.</p>
-            </div>
+                </div>
             
             <button class="btn" style="background: var(--jaune); color: #000; margin-bottom: 10px; font-size:14px;" onclick="window.print()">🖨️ EXPORTER LE DEVIS (PDF)</button>
             <button class="btn" style="background: #444; color: #fff; margin-bottom: 10px; font-size:12px;" onclick="exporterImage()">📸 TÉLÉCHARGER PLAN SANS CADRE</button>
@@ -309,7 +296,7 @@
             btn.classList.add('active');
             
             if(id === 'tab-finition') renderFinitionList();
-            if(id === 'tab-devis') genererDevis(); // 🥷 V52: Génère le devis en ouvrant l'onglet
+            if(id === 'tab-devis') genererDevis(); // 🥷 V53: Calcul automatique
         }
 
         function setMode(m) {
@@ -321,7 +308,7 @@
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 📊 GESTION DU RAPPORT & DEVIS V52 ---
+        // --- 📊 GESTION DU RAPPORT & DEVIS V53 ---
         function genererDevis() {
             let { tiles, totalW, totalH } = parseWall();
             let inventory = {};
@@ -330,7 +317,7 @@
 
             // Analyse de l'Inventaire (avec la taille exacte après grignotage)
             tiles.forEach(t => {
-                let j = t.j || 0; // Le retrait du joint (grignotage)
+                let j = t.j || 0; // Le retrait du joint
                 let actualW = Math.max(0.1, t.w - j);
                 let actualH = Math.max(0.1, t.h - j);
                 
@@ -347,28 +334,29 @@
             let stickerAreaM2 = stickerAreaCm2 / 10000;
             let wallAreaM2 = (totalW * totalH) / 10000;
 
-            // Calcul du Cadre
+            // Calcul du Cadre (Surface réelle)
             let frameSizeCm = parseFloat(document.getElementById('frame-size').value) || 10;
             let material = document.getElementById('frame-material').value;
             
-            // Périmètre extérieur du mur avec le cadre
             let extW = totalW + (frameSizeCm * 2);
             let extH = totalH + (frameSizeCm * 2);
-            let perimeterM = ((extW + extH) * 2) / 100;
+            
+            let totalAreaWithFrameM2 = (extW * extH) / 10000;
+            let frameOnlyAreaM2 = totalAreaWithFrameM2 - wallAreaM2;
 
-            // Tarifs
-            let framePricePerM = 0;
+            // Tarifs V53
+            let framePricePerM2 = 0;
             let matName = "";
-            if(material === 'noyer') { framePricePerM = 70; matName = "Bois de Noyer Massif"; }
-            else if(material === 'chene') { framePricePerM = 45; matName = "Bois de Chêne Massif"; }
-            else if(material === 'serpentine') { framePricePerM = 20; matName = "Serpentine (Feuille de Pierre)"; }
-            else if(material === 'obsidienne') { framePricePerM = 20; matName = "Obsidienne (Feuille de Pierre)"; }
-            else if(material === 'amethyste') { framePricePerM = 35; matName = "Améthyste (Placage Précieux)"; }
+            if(material === 'noyer') { framePricePerM2 = 140; matName = "Bois de Noyer Massif"; }
+            else if(material === 'chene') { framePricePerM2 = 85; matName = "Bois de Chêne Massif"; }
+            else if(material === 'serpentine') { framePricePerM2 = 100; matName = "Serpentine (Feuille de Pierre)"; }
+            else if(material === 'obsidienne') { framePricePerM2 = 100; matName = "Obsidienne (Feuille de Pierre)"; }
+            else if(material === 'amethyste') { framePricePerM2 = 100; matName = "Améthyste (Placage Précieux)"; }
 
-            let costImpression = stickerAreaM2 * 30;
+            let costImpression = stickerAreaM2 * 22; // 🥷 V53 : 22€/m2 validé
             let costPanneau = wallAreaM2 * 15;
             let costVernis = wallAreaM2 * 8;
-            let costCadre = perimeterM * framePricePerM;
+            let costCadre = frameOnlyAreaM2 * framePricePerM2;
             let totalTTC = costImpression + costPanneau + costVernis + costCadre;
 
             let nomProjet = document.getElementById('devis-projet-nom').value || 'Empire_Daguerre';
@@ -383,14 +371,14 @@
 
                 <div style="margin-bottom:15px;">
                     <span class="label-sm" style="color:var(--cyan);">DIMENSIONS</span>
-                    <div style="font-size:12px;">Mur (Mosaïque pure) : <b>${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm</b></div>
-                    <div style="font-size:12px;">Avec Encadrement : <b>${extW.toFixed(1)} x ${extH.toFixed(1)} cm</b></div>
+                    <div style="font-size:12px;">Mosaïque (Panneau) : <b>${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm</b></div>
+                    <div style="font-size:12px;">Encadrement Inclus : <b>${extW.toFixed(1)} x ${extH.toFixed(1)} cm</b></div>
                 </div>
 
                 <div style="margin-bottom:15px;">
-                    <span class="label-sm" style="color:var(--cyan);">📦 INVENTAIRE DES SYMBOLES (Total: ${totalStickers})</span>
+                    <span class="label-sm" style="color:var(--cyan);">📦 INVENTAIRE (Total: ${totalStickers} stickers)</span>
                     <table style="width:100%; font-size:11px; color:#ddd; margin-top:5px;">
-                        <tr><th style="text-align:left; color:var(--jaune); padding-bottom:4px;">Symbole [Taille]</th><th style="text-align:right; color:var(--jaune); padding-bottom:4px;">Qté</th></tr>`;
+                        <tr><th style="text-align:left; color:var(--jaune); padding-bottom:4px;">Symbole [Taille nette]</th><th style="text-align:right; color:var(--jaune); padding-bottom:4px;">Qté</th></tr>`;
             
             for(let key in inventory) {
                 html += `<tr><td style="border-top:1px dashed #333; padding:4px 0;">${key}</td><td style="border-top:1px dashed #333; text-align:right;">${inventory[key]}</td></tr>`;
@@ -403,12 +391,12 @@
                 <div style="margin-bottom:10px;">
                     <span class="label-sm" style="color:var(--cyan);">💸 DÉTAIL DES COÛTS MATÉRIAUX</span>
                     <table style="width:100%; font-size:11px; color:#ddd; margin-top:5px;">
-                        <tr><td style="padding:4px 0;">Impression Stickers & Encre (30€/m²)</td><td style="text-align:right;">${costImpression.toFixed(2)} €</td></tr>
-                        <tr><td style="padding:4px 0;">Panneau Bois CTBX 6mm (15€/m²)</td><td style="text-align:right;">${costPanneau.toFixed(2)} €</td></tr>
+                        <tr><td style="padding:4px 0;">Impression Stickers & Encre (22€/m²)</td><td style="text-align:right;">${costImpression.toFixed(2)} €</td></tr>
+                        <tr><td style="padding:4px 0;">Panneau CTBX 6mm (${wallAreaM2.toFixed(2)}m² à 15€)</td><td style="text-align:right;">${costPanneau.toFixed(2)} €</td></tr>
                         <tr><td style="padding:4px 0;">Vernis Protecteur Spray (8€/m²)</td><td style="text-align:right;">${costVernis.toFixed(2)} €</td></tr>
-                        <tr><td style="padding:4px 0;">Cadre ${matName} (${framePricePerM}€/ml x ${perimeterM.toFixed(2)}ml)</td><td style="text-align:right;">${costCadre.toFixed(2)} €</td></tr>
+                        <tr><td style="padding:4px 0;">Cadre ${matName} (${frameOnlyAreaM2.toFixed(2)}m² à ${framePricePerM2}€)</td><td style="text-align:right;">${costCadre.toFixed(2)} €</td></tr>
                         <tr><td colspan="2" style="border-top:2px solid var(--jaune); padding-top:8px;"></td></tr>
-                        <tr class="total-row" style="color:var(--vert); font-size:14px; font-weight:bold;"><td style="padding-top:4px;">TOTAL ESTIMÉ</td><td style="text-align:right;">${totalTTC.toFixed(2)} €</td></tr>
+                        <tr class="total-row" style="color:var(--vert); font-size:14px; font-weight:bold;"><td style="padding-top:4px;">COÛT TOTAL ESTIMÉ</td><td style="text-align:right;">${totalTTC.toFixed(2)} €</td></tr>
                     </table>
                 </div>
             `;
@@ -416,7 +404,7 @@
             document.getElementById('rapport-data').innerHTML = html;
         }
 
-        // --- 🎨 GESTION FINITION ---
+        // --- 🎨 GESTION FINITION V53 (Restauration V51) ---
         function updateJointSizeUI(targetId, delta) {
             let dispInput = document.getElementById('disp-size-' + targetId);
             if(!dispInput) return;
@@ -424,12 +412,7 @@
             dispInput.value = val.toFixed(1);
             
             if(targetId === 'global') document.getElementById('joint-size').value = val.toFixed(1);
-            else if(targetId === 'coeur') document.getElementById('c-j-size').value = val.toFixed(1);
             else if(targetId === 'exterior') document.getElementById('ext-j-size').value = val.toFixed(1);
-            else if(targetId.startsWith('cadre-')) {
-                let idx = parseInt(targetId.split('-')[1]);
-                document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size').value = val.toFixed(1);
-            }
             updateAllCadresStats();
         }
 
@@ -439,12 +422,7 @@
             if(dispInput) dispInput.value = num.toFixed(1);
             
             if(targetId === 'global') document.getElementById('joint-size').value = num.toFixed(1);
-            else if(targetId === 'coeur') document.getElementById('c-j-size').value = num.toFixed(1);
             else if(targetId === 'exterior') document.getElementById('ext-j-size').value = num.toFixed(1);
-            else if(targetId.startsWith('cadre-')) {
-                let idx = parseInt(targetId.split('-')[1]);
-                document.querySelectorAll('.cadre-item')[idx].querySelector('.j-size').value = num.toFixed(1);
-            }
             updateAllCadresStats();
         }
 
@@ -515,8 +493,10 @@
             let container = document.getElementById('finition-dynamic-list'); container.innerHTML = '';
             let globalBox = document.getElementById('finition-global-box'); let mainTitle = document.getElementById('finition-main-title'); 
             
+            globalBox.style.display = 'block'; 
+            mainTitle.style.display = 'block'; 
+
             if(mode === 'lineaire') {
-                globalBox.style.display = 'block'; mainTitle.style.display = 'block'; 
                 let ligns = document.querySelectorAll('.ligne-item'); let nbJoints = Math.max(0, ligns.length - 1);
                 for(let i = 0; i < nbJoints; i++) {
                     let name1 = ligns[i].querySelector('.editable-name').value; 
@@ -525,14 +505,15 @@
                     container.appendChild(createFinitionItemUI(`Joint entre ${name1} et ${name2}`, color, `ligne-${i+1}`, null));
                 }
             } else {
-                globalBox.style.display = 'none'; mainTitle.style.display = 'none'; 
-                let cColor = document.getElementById('c-j-color').value || '#111111'; let cSize = document.getElementById('c-j-size').value || 0;
-                container.appendChild(createFinitionItemUI(`1ère Bordure (Autour du Cœur)`, cColor, `coeur`, cSize));
+                let cColor = document.getElementById('c-j-color').value || '#111111'; 
+                container.appendChild(createFinitionItemUI(`Couleur Joint Cœur`, cColor, `coeur`, null));
+                
                 document.querySelectorAll('.cadre-item').forEach((ca, idx) => {
-                    let color = ca.querySelector('.j-color').value || '#111111'; let size = ca.querySelector('.j-size').value || 0;
+                    let color = ca.querySelector('.j-color').value || '#111111'; 
                     let name = ca.querySelector('.cadre-label').innerText || `Cadre ${idx+1}`;
-                    container.appendChild(createFinitionItemUI(`Bordure: ${name}`, color, `cadre-${idx}`, size));
+                    container.appendChild(createFinitionItemUI(`Couleur Joint: ${name}`, color, `cadre-${idx}`, null));
                 });
+                
                 let extColor = document.getElementById('ext-j-color').value || '#111111'; let extSize = document.getElementById('ext-j-size').value || 0;
                 container.appendChild(createFinitionItemUI(`Bordure Extérieure (Finition Finale)`, extColor, `exterior`, extSize));
             }
@@ -546,7 +527,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 52, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 53, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value; let jColor = li.querySelector('.j-color').value; let blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
@@ -559,12 +540,12 @@
                     });
                     data.lignes.push({name: lName, color: jColor, blocks});
                 });
-                data.coeur = { mod: document.getElementById('c-mod').value, w: parseFloat(document.getElementById('c-w').value), h: parseFloat(document.getElementById('c-h').value), color: document.getElementById('c-j-color').value, jSize: parseFloat(document.getElementById('c-j-size').value) || 0 };
+                data.coeur = { mod: document.getElementById('c-mod').value, w: parseFloat(document.getElementById('c-w').value), h: parseFloat(document.getElementById('c-h').value), color: document.getElementById('c-j-color').value };
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(ca => {
                     data.cadres.push({
                         type: parseInt(ca.querySelector('.c-type')?.value || 1), mQty: parseInt(ca.querySelector('.manual-qty')?.value || 5),
                         selects: Array.from(ca.querySelectorAll('.m-sel')).map(s=>s.value), w: parseFloat(ca.querySelector('.c-w')?.value || 10),
-                        h: parseFloat(ca.querySelector('.c-h')?.value || 10), color: ca.querySelector('.j-color').value, jSize: parseFloat(ca.querySelector('.j-size').value) || 0
+                        h: parseFloat(ca.querySelector('.c-h')?.value || 10), color: ca.querySelector('.j-color').value
                     });
                 });
                 data.finition = { jointSize: parseFloat(document.getElementById('joint-size').value) || 0, extSize: parseFloat(document.getElementById('ext-j-size').value) || 0, extColor: document.getElementById('ext-j-color').value || '#111111' };
@@ -596,12 +577,12 @@
                     });
                 });
             }
-            if(data.coeur) { document.getElementById('c-mod').value = data.coeur.mod || ''; document.getElementById('c-w').value = data.coeur.w || 20; document.getElementById('c-h').value = data.coeur.h || 20; if(data.coeur.color) document.getElementById('c-j-color').value = data.coeur.color; if(data.coeur.jSize !== undefined) document.getElementById('c-j-size').value = data.coeur.jSize; }
+            if(data.coeur) { document.getElementById('c-mod').value = data.coeur.mod || ''; document.getElementById('c-w').value = data.coeur.w || 20; document.getElementById('c-h').value = data.coeur.h || 20; if(data.coeur.color) document.getElementById('c-j-color').value = data.coeur.color; }
             if(data.cadres && data.cadres.length > 0) {
                 document.getElementById('cadres-container').innerHTML = ''; cadreCounter = 0;
                 data.cadres.forEach(c => {
                     ajouterCadre(null, c.type, c.w, c.h); let caNodes = document.querySelectorAll('.cadre-item'); let currCa = caNodes[caNodes.length - 1];
-                    if(c.color) currCa.querySelector('.j-color').value = c.color; if(c.jSize !== undefined) currCa.querySelector('.j-size').value = c.jSize;
+                    if(c.color) currCa.querySelector('.j-color').value = c.color; 
                     currCa.querySelector('.manual-qty').value = c.mQty || 5; let typeBtn = currCa.querySelectorAll('.type-btn')[c.type > 4 ? 4 : c.type - 1]; if(typeBtn) setCadreMode(typeBtn, c.type);
                     let selects = currCa.querySelectorAll('.m-sel'); if(c.selects) c.selects.forEach((val, idx) => { if(selects[idx]) selects[idx].value = val; });
                     updateCadreData(currCa);
@@ -670,15 +651,14 @@
         }
 
         function updateAllCadresStats() {
-            let cJoint = parseFloat(document.getElementById('c-j-size').value) || 0;
             let cw = parseFloat(document.getElementById('c-w').value) || 20; let ch = parseFloat(document.getElementById('c-h').value) || 20;
-            let currentW = cw; let currentH = ch; let prevJoint = cJoint;
+            let currentW = cw; let currentH = ch; 
 
             document.querySelectorAll('#cadres-container .cadre-item').forEach(cadre => {
                 let bdW = parseFloat(cadre.querySelector('.c-w').value) || 10; let bdH = parseFloat(cadre.querySelector('.c-h').value) || 10;
-                let innerW = currentW + prevJoint * 2; let innerH = currentH + prevJoint * 2;
-                let newW = innerW + bdW * 2; let newH = innerH + bdH * 2;
-                let Nx = Math.max(1, Math.round(newW / bdW)); let Ny = Math.max(1, Math.round(innerH / bdH)); let totalTiles = (Nx * 2) + (Ny * 2);
+                
+                let newW = currentW + bdW * 2; let newH = currentH + bdH * 2;
+                let Nx = Math.max(1, Math.round(newW / bdW)); let Ny = Math.max(1, Math.round(currentH / bdH)); let totalTiles = (Nx * 2) + (Ny * 2);
 
                 let counterEl = cadre.querySelector('.tile-counter');
                 if(counterEl) {
@@ -686,7 +666,7 @@
                     if(seqLen > 0 && totalTiles % seqLen !== 0) { counterEl.style.color = 'var(--magenta)'; counterEl.innerText = `Périmètre : ${totalTiles} carreaux (⚠️ Reste ${totalTiles % seqLen} !)`; } 
                     else { counterEl.style.color = 'var(--vert)'; counterEl.innerText = `Périmètre : ${totalTiles} carreaux (✅ Parfait pour ${seqLen})`; }
                 }
-                currentW = newW; currentH = newH; prevJoint = parseFloat(cadre.querySelector('.j-size').value) || 0;
+                currentW = newW; currentH = newH; 
             });
         }
 
@@ -751,7 +731,6 @@
         function toggleLine(btn) { let content = btn.closest('.ligne-item').querySelector('.line-content'); if (content.style.display === 'none') { content.style.display = 'block'; btn.innerText = '🔽'; } else { content.style.display = 'none'; btn.innerText = '▶️'; } }
         function toggleSeq(btn) { let content = btn.closest('.block-item') || btn.closest('.cadre-item'); let realContent = content.querySelector('.seq-content'); if (realContent.style.display === 'none') { realContent.style.display = 'block'; btn.innerText = '🔽'; } else { realContent.style.display = 'none'; btn.innerText = '▶️'; } }
 
-        // --- GESTION LIGNES & SEQUENCES ---
         function ajouterLigne() {
             ligneCounter++; let d = document.createElement('div'); d.className = 'box ligne-item';
             d.innerHTML = `
@@ -774,7 +753,7 @@
         function ajouterCadre(insertAfter = null, type = 2, w = 10, h = 10) {
             cadreCounter++; let d = document.createElement('div'); d.className = 'cadre-item';
             d.innerHTML = `
-                <div class="seq-header" style="border-bottom-color: var(--vert);"><div class="cadre-title"><span class="cadre-label"></span></div><input type="hidden" class="j-color" value="#111111"><input type="hidden" class="j-size" value="0"><div style="display:flex; gap:4px; flex-shrink: 0;"><button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'down')">↓</button><button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button><button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.cadre-item'))">👯</button><button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.cadre-item').remove()">❌</button></div></div>
+                <div class="seq-header" style="border-bottom-color: var(--vert);"><div class="cadre-title"><span class="cadre-label"></span></div><input type="hidden" class="j-color" value="#111111"><div style="display:flex; gap:4px; flex-shrink: 0;"><button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'down')">↓</button><button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button><button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.cadre-item'))">👯</button><button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.cadre-item').remove()">❌</button></div></div>
                 <div class="seq-content"><div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;"><button class="btn-mini type-btn" onclick="setCadreMode(this, 1)">SIMPLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 2)">DOUBLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 3)">TRIPLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 4)">QUAD.</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 5)">MANUEL</button><input type="hidden" class="c-type" value="${type}"></div><div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;"><span class="label-sm" style="display:inline-block; margin-right:5px;">Nb:</span><input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;"></div><div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div><div class="tile-counter">Périmètre: Calcul en cours...</div><div class="quick-sizes" style="margin-top:15px; grid-template-columns: repeat(4, 1fr);"><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 2.5)">2.5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 5)">5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 7.5)">7.5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 10)">10</button></div><div class="row"><div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div><div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div><input type="hidden" class="c-seq" value=""></div></div>
             `;
             const cont = document.getElementById('cadres-container');
@@ -782,7 +761,6 @@
             let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1]; setCadreMode(typeBtn, type);
         }
 
-        // --- FONCTIONS DE DÉPLACEMENT RÉPARÉES ---
         function duplicateBlock(el) { 
             let clone = el.cloneNode(true); let origInputs = el.querySelectorAll('input, select'); let cloneInputs = clone.querySelectorAll('input, select');
             for(let i=0; i<origInputs.length; i++) { cloneInputs[i].value = origInputs[i].value; }
@@ -903,7 +881,6 @@
                     curW -= cadres[i].w * 2; curH -= cadres[i].h * 2;
                 }
                 backgrounds.push({ w: cw, h: ch, color: cColor }); 
-
                 backgrounds.forEach(bg => { bg.x = (totalW - bg.w) / 2; bg.y = (totalH - bg.h) / 2; });
 
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter, j: globalJointSize });
@@ -930,10 +907,7 @@
             backgrounds.forEach(bg => {
                 ctx.fillStyle = bg.color;
                 if(bg.linear) { ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); } 
-                else if(bg.type === 'joint') {
-                    let bx = bg.x * baseScale, by = bg.y * baseScale, bw = bg.w * baseScale, bh = bg.h * baseScale, bt = bg.t * baseScale;
-                    ctx.fillRect(bx, by, bw, bt); ctx.fillRect(bx, by + bh - bt, bw, bt); ctx.fillRect(bx, by + bt, bt, bh - 2*bt); ctx.fillRect(bx + bw - bt, by + bt, bt, bh - 2*bt); 
-                } else { ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); }
+                else { ctx.fillRect(bg.x * baseScale, bg.y * baseScale, bg.w * baseScale, bg.h * baseScale); }
             });
         }
 
