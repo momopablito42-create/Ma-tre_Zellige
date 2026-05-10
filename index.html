@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V49.0</title>
+    <title>Daguerre OS V50.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V49.0</small>
+        <small>ÉDITION NUCLÉAIRE V50.0</small>
     </div>
 
     <div id="settings-area">
@@ -286,7 +286,6 @@
             document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
-            
             if(id === 'tab-finition') renderFinitionList();
         }
 
@@ -295,11 +294,10 @@
             document.querySelectorAll('#m-lin, #m-con, #m-fra').forEach(b=>b.classList.remove('active'));
             document.getElementById('m-'+m.substring(0,3)).classList.add('active');
             ['lineaire','concentrique','fractale'].forEach(x => document.getElementById(`area-${x}`).style.display = (x===m)?'block':'none');
-            
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
 
-        // --- 🎨 GESTION FINITION V49 ---
+        // --- 🎨 GESTION FINITION ---
         function updateJointSizeUI(targetId, delta) {
             let dispInput = document.getElementById('disp-size-' + targetId);
             if(!dispInput) return;
@@ -394,7 +392,7 @@
             return div;
         }
 
-        // 🥷 V49 FIX : Le ciblage N+1 pour la Ligne a été corrigé ici
+        // 🥷 V50 FIX : La Règle Juste pour les lignes (N lignes = N-1 joints) parfaitement synchronisée.
         function renderFinitionList() {
             let container = document.getElementById('finition-dynamic-list'); container.innerHTML = '';
             let globalBox = document.getElementById('finition-global-box'); let mainTitle = document.getElementById('finition-main-title'); 
@@ -405,7 +403,6 @@
                 for(let i = 0; i < nbJoints; i++) {
                     let name1 = ligns[i].querySelector('.editable-name').value; 
                     let name2 = ligns[i+1].querySelector('.editable-name').value;
-                    // Le joint "i" utilise la couleur de la ligne "i+1"
                     let color = ligns[i+1].querySelector('.j-color').value || '#111111';
                     container.appendChild(createFinitionItemUI(`Joint entre ${name1} et ${name2}`, color, `ligne-${i+1}`, null));
                 }
@@ -431,7 +428,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 49, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 50, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value; let jColor = li.querySelector('.j-color').value; let blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
@@ -454,7 +451,7 @@
                 });
                 data.finition = { jointSize: parseFloat(document.getElementById('joint-size').value) || 0, extSize: parseFloat(document.getElementById('ext-j-size').value) || 0, extColor: document.getElementById('ext-j-color').value || '#111111' };
                 return data;
-            } catch(e) { return null; }
+            } catch(e) { console.error("Erreur de sauvegarde:", e); return null; }
         }
 
         function saveToLibrary() { let data = getForgeData(); if(!data) return; let name = prompt("Nom de ce Grimoire :"); if(!name) return; library[name] = data; localStorage.setItem('daguerre_lib', JSON.stringify(library)); updateLibraryUI(); alert("✅ Grimoire sauvegardé !"); }
@@ -655,17 +652,18 @@
             let typeBtn = b.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1]; setSeqMode(typeBtn, type); triggerCascade(b); 
         }
 
+        // 🥷 V50 FIX : L'adresse de destination (cont) a été restaurée, le bouton "+ NOUVEAU CADRE" est sauvé !
         function ajouterCadre(insertAfter = null, type = 2, w = 10, h = 10) {
             cadreCounter++; let d = document.createElement('div'); d.className = 'cadre-item';
             d.innerHTML = `
                 <div class="seq-header" style="border-bottom-color: var(--vert);"><div class="cadre-title"><span class="cadre-label"></span></div><input type="hidden" class="j-color" value="#111111"><input type="hidden" class="j-size" value="0"><div style="display:flex; gap:4px; flex-shrink: 0;"><button class="btn-icon btn-icon-sm" style="background:#000;" onclick="toggleSeq(this)">🔽</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'up')">↑</button><button class="btn-icon btn-icon-sm" onclick="move(this.closest('.cadre-item'), 'down')">↓</button><button class="btn-icon btn-icon-sm" style="background:var(--vert); color:#000;" onclick="ajouterCadre(this.closest('.cadre-item'))">➕</button><button class="btn-icon btn-icon-sm" onclick="duplicateBlock(this.closest('.cadre-item'))">👯</button><button class="btn-icon btn-icon-sm btn-red" onclick="this.closest('.cadre-item').remove()">❌</button></div></div>
                 <div class="seq-content"><div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;"><button class="btn-mini type-btn" onclick="setCadreMode(this, 1)">SIMPLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 2)">DOUBLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 3)">TRIPLE</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 4)">QUAD.</button><button class="btn-mini type-btn" onclick="setCadreMode(this, 5)">MANUEL</button><input type="hidden" class="c-type" value="${type}"></div><div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;"><span class="label-sm" style="display:inline-block; margin-right:5px;">Nb:</span><input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;"></div><div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div><div class="tile-counter">Périmètre: Calcul en cours...</div><div class="quick-sizes" style="margin-top:15px; grid-template-columns: repeat(4, 1fr);"><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 2.5)">2.5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 5)">5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 7.5)">7.5</button><button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 10)">10</button></div><div class="row"><div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div><div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div><input type="hidden" class="c-seq" value=""></div></div>
             `;
-            if (insertAfter) cont.insertBefore(d, insertAfter.nextSibling); else cont.appendChild(d);
+            const cont = document.getElementById('cadres-container');
+            if (insertAfter) { cont.insertBefore(d, insertAfter.nextSibling); } else { cont.appendChild(d); }
             let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1]; setCadreMode(typeBtn, type);
         }
 
-        // 🥷 V49 FIX : Le mot 'function' a été restauré pour éviter le crash général !
         function duplicateBlock(el) { 
             let clone = el.cloneNode(true); let origInputs = el.querySelectorAll('input, select'); let cloneInputs = clone.querySelectorAll('input, select');
             for(let i=0; i<origInputs.length; i++) { cloneInputs[i].value = origInputs[i].value; }
@@ -702,7 +700,7 @@
             updateTransform();
         }
 
-        // --- 🧠 LE COEUR DE PARSING V49 (JOINTS CREUX SANS BAVURE) ---
+        // --- 🧠 LE COEUR DE PARSING ---
         function parseWall() {
             let totalW = 0, totalH = 0; let tiles = []; let backgrounds = [];
             let globalJointSize = parseFloat(document.getElementById('joint-size').value) || 0;
@@ -803,7 +801,6 @@
             } return { tiles, backgrounds, totalW, totalH };
         }
 
-        // 🥷 V49 FIX : Dessin CREUX des joints pour ne pas "mordre" sur les PNG !
         function drawBackgrounds(ctx, backgrounds, baseScale, dpr) {
             backgrounds.forEach(bg => {
                 ctx.fillStyle = bg.color;
@@ -819,7 +816,6 @@
             });
         }
 
-        // --- 🖼️ GENERATEUR DE CADRES 3D (V49 : Ombres fines et biseau photoréaliste) ---
         function generateMarbleTexture(width, height, baseColor, veinColor1, veinColor2) {
             let canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; let ctx = canvas.getContext('2d');
             ctx.fillStyle = baseColor; ctx.fillRect(0, 0, width, height); ctx.globalAlpha = 0.5;
@@ -873,7 +869,6 @@
             ctx.beginPath(); ctx.moveTo(0,height); ctx.lineTo(thickness, height-thickness); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(width,height); ctx.lineTo(width-thickness, height-thickness); ctx.stroke();
 
-            // 🥷 V49 FIX : Centrage parfait de la Plaque en Or
             if(usePlaque && title && title !== "") {
                 let plaqueW = width * 0.45; let plaqueH = thickness * 0.5; 
                 let plaqueX = (width - plaqueW) / 2; let plaqueY = height - thickness + (thickness * 0.25);
@@ -898,7 +893,7 @@
             setTimeout(() => { let cssW = (totalW || 10) * baseScale; let cssH = (totalH || 10) * baseScale; resetCamera(cssW, cssH); }, 50);
         }
 
-        // --- 🖼️ EXPORT ULTIME 8K ENCADRE V49 ---
+        // --- 🖼️ EXPORT ULTIME 8K ENCADRE V50 ---
         function exportFramedImage() {
             let { tiles, backgrounds, totalW, totalH } = parseWall();
             let baseScale = 40; 
