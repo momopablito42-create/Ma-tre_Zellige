@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V54.0</title>
+    <title>Daguerre OS V55.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,6 +23,7 @@
         .section-title { color: var(--magenta); font-size: 14px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
         
         .box { background: rgba(0, 255, 255, 0.05); border-left: 2px solid var(--cyan); padding: 10px; border-radius: 4px; margin-bottom: 15px; position: relative; }
+        .box-ai { background: rgba(155, 89, 182, 0.1); border-left: 3px solid var(--amethyst); border-right: 3px solid var(--amethyst); box-shadow: 0 0 15px rgba(155,89,182,0.2); }
         .row { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
         
         input, select, textarea { background: #000; color: var(--cyan); border: 1px solid #444; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; }
@@ -97,7 +98,7 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V54.0</small>
+        <small>ÉDITION NUCLÉAIRE V55.0</small>
     </div>
 
     <div id="settings-area">
@@ -125,6 +126,34 @@
         <div id="tab-forge" class="tab-content">
             <div class="section-title">⛩️ Forge Zellige</div>
             
+            <div class="box box-ai">
+                <div class="row" style="margin-bottom:0;" onclick="toggleApprenti()">
+                    <span style="color:var(--amethyst); font-weight:bold; font-size:14px; text-transform:uppercase;">🤖 L'Apprenti Architecte</span>
+                    <button class="btn-icon-sm" style="background:var(--amethyst); color:#fff; font-size:14px; border:none;" id="btn-apprenti-toggle">🔽</button>
+                </div>
+                <div id="apprenti-content" style="display:none; margin-top:15px;">
+                    <span class="label-sm" style="color:#aaa;">Dimensions Cibles du Mur (cm)</span>
+                    <div class="row">
+                        <input type="number" id="ai-w" value="60" style="flex:1; text-align:center;">
+                        <span style="color:#555;">X</span>
+                        <input type="number" id="ai-h" value="60" style="flex:1; text-align:center;">
+                    </div>
+                    <span class="label-sm" style="color:#aaa;">Structure Désirée</span>
+                    <select id="ai-mode" class="m-sel" style="width:100%; margin-bottom:10px;">
+                        <option value="concentrique">⛩️ Cadres Concentriques</option>
+                        <option value="lineaire">📏 Lignes Linéaires</option>
+                    </select>
+                    <span class="label-sm" style="color:#aaa;">Style & Humeur (Algorithme)</span>
+                    <select id="ai-style" class="m-sel" style="width:100%; margin-bottom:15px;">
+                        <option value="imperial">👑 Zellige Impérial (Micro-détails, Or, Obsidienne)</option>
+                        <option value="minimaliste">🌿 Minimaliste (Grands Carreaux, Chêne, Pur)</option>
+                        <option value="echo">🪞 L'Écho du Maître (Inspiré de ta Bibliothèque)</option>
+                    </select>
+                    <button class="btn" style="background:var(--amethyst); color:#fff;" onclick="invoquerApprenti()">✨ CRÉER UNE ŒUVRE ALÉATOIRE</button>
+                    <p style="font-size:9px; color:#888; text-align:center; margin-top:5px; margin-bottom:0;">L'Apprenti remplira la Forge, le Sertissage et l'Encadrement à ta place.</p>
+                </div>
+            </div>
+
             <div class="row" style="margin-bottom: 20px; background:#111; padding:5px; border-radius:4px; border:1px dashed #444;">
                 <button class="btn-mini" style="background:#222; border-color:#555;" onclick="saveToLibrary()">💾 SAUVER (BIBLIO)</button>
                 <button class="btn-mini" style="background:#222; border-color:#555;" onclick="exportTemplate()">⬇️ EXPORT JSON</button>
@@ -317,6 +346,129 @@
             
             if(document.getElementById('tab-finition').classList.contains('active')) renderFinitionList();
         }
+
+        // --- 🤖 L'APPRENTI ARCHITECTE V55 ---
+        function toggleApprenti() {
+            let content = document.getElementById('apprenti-content');
+            let btn = document.getElementById('btn-apprenti-toggle');
+            if (content.style.display === 'none') { content.style.display = 'block'; btn.innerText = '🔼'; } 
+            else { content.style.display = 'none'; btn.innerText = '🔽'; }
+        }
+
+        // Fonction pour analyser la couleur moyenne (Photorécepteur du Druide)
+        function analyzeAverageColor(imgElement) {
+            let c = document.createElement('canvas'); c.width = 50; c.height = 50; let ctx = c.getContext('2d');
+            ctx.drawImage(imgElement, 0, 0, 50, 50);
+            try {
+                let data = ctx.getImageData(0,0,50,50).data;
+                let r=0, g=0, b=0, count=0;
+                for(let i=0; i<data.length; i+=4) { r+=data[i]; g+=data[i+1]; b+=data[i+2]; count++; }
+                return { r: Math.round(r/count), g: Math.round(g/count), b: Math.round(b/count) };
+            } catch(e) { return { r: 128, g: 128, b: 128 }; } // Fallback si image illisible
+        }
+        
+        function rgbToHex(r, g, b) { return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1); }
+
+        function invoquerApprenti() {
+            let keys = Object.keys(modeles);
+            if(keys.length === 0) { alert("⚠️ Le Druide est aveugle ! Charge des images dans l'Arsenal d'abord."); return; }
+            
+            let wCible = parseFloat(document.getElementById('ai-w').value) || 60;
+            let style = document.getElementById('ai-style').value;
+            let modeChoisi = document.getElementById('ai-mode').value;
+            
+            // Le fantôme de la Matrice
+            let data = { v: 55, mode: modeChoisi, lignes: [], coeur: {}, cadres: [], finition: {} };
+
+            if(style === 'echo') {
+                // "L'écho du Maître" : Copie la structure du dernier Grimoire (si existant) mais l'adapte
+                let libKeys = Object.keys(library);
+                if(libKeys.length > 0) {
+                    let randomKey = libKeys[Math.floor(Math.random() * libKeys.length)];
+                    let tpl = library[randomKey];
+                    data = JSON.parse(JSON.stringify(tpl)); // Clonage parfait
+                    style = 'imperial'; // On fallback sur la logique de finition Impériale
+                } else {
+                    style = 'imperial'; // Pas d'archives, le Druide improvise en mode luxe
+                }
+            }
+            
+            if(style !== 'echo' || Object.keys(data.cadres).length === 0) {
+                // Création Procédurale "Tabula Rasa"
+                if (modeChoisi === 'concentrique') {
+                    let currentW = 0;
+                    let cw = (style === 'minimaliste') ? 20 : 10;
+                    data.coeur = { mod: keys[Math.floor(Math.random()*keys.length)], w: cw, h: cw, color: '#111111' };
+                    currentW += cw;
+                    
+                    let steps = 0;
+                    while (currentW < wCible && steps < 10) {
+                        let rem = (wCible - currentW) / 2; 
+                        if(rem <= 0) break;
+                        
+                        let bw = 10;
+                        if (style === 'imperial') {
+                            if (rem >= 10 && Math.random() > 0.5) bw = 10;
+                            else if (rem >= 5) bw = 5;
+                            else bw = 2.5;
+                        } else if (style === 'minimaliste') {
+                            if (rem >= 20) bw = 20;
+                            else if (rem >= 10) bw = 10;
+                            else bw = rem;
+                        }
+                        
+                        let type = style === 'imperial' ? Math.floor(Math.random() * 3) + 1 : 1; 
+                        let selects = [];
+                        for(let i=0; i<type; i++) selects.push(keys[Math.floor(Math.random()*keys.length)]);
+                        
+                        data.cadres.push({ type: type, selects: selects, w: bw, h: bw, color: '#111111', jSize: 0 });
+                        currentW += bw * 2;
+                        steps++;
+                    }
+                } else {
+                    let currentH = 0; let step = 0;
+                    while(currentH < wCible && step < 10) {
+                        let rem = wCible - currentH; if(rem <= 0) break;
+                        let h = (style==='imperial' && rem>=5) ? 5 : (rem>=10 ? 10 : rem);
+                        let type = style === 'imperial' ? 2 : 1;
+                        let selects = []; for(let i=0; i<type; i++) selects.push(keys[Math.floor(Math.random()*keys.length)]);
+                        data.lignes.push({ name: "Ligne Auto " + (step+1), color: '#111111', blocks: [{ type: type, selects: selects, dir: 'H', w: 10, h: h, q: 1, mQty: 5 }] });
+                        currentH += h; step++;
+                    }
+                }
+            }
+            
+            // 🎨 Décisions de Style (Sertissage et Encadrement)
+            let avgR = 0, avgG = 0, avgB = 0;
+            keys.forEach(k => { avgR += modeles[k].color.r; avgG += modeles[k].color.g; avgB += modeles[k].color.b; });
+            avgR /= keys.length; avgG /= keys.length; avgB /= keys.length;
+            // On calcule une couleur "contrastante/complémentaire" (simple inversion ici pour le fun, ou choix fixe)
+            
+            if (style === 'imperial') {
+                data.finition.jointSize = 0.5; data.finition.extSize = 0;
+                document.getElementById('frame-material').value = 'obsidienne';
+                document.getElementById('artwork-title').value = "Vision Impériale du Druide";
+            } else {
+                data.finition.jointSize = 0; data.finition.extSize = 0;
+                document.getElementById('frame-material').value = 'chene';
+                document.getElementById('artwork-title').value = "Pureté Minimaliste";
+            }
+
+            // Injection Silencieuse (On charge l'oeuvre sans toucher à l'Arsenal)
+            library['AutoForge_Temp'] = data;
+            document.getElementById('library-select').innerHTML += `<option value="AutoForge_Temp">AutoForge_Temp</option>`;
+            document.getElementById('library-select').value = 'AutoForge_Temp';
+            loadFromLibrary();
+            delete library['AutoForge_Temp'];
+            
+            // On applique la couleur globalement via l'UI pour forcer la mise à jour des CSS
+            let col = (style === 'imperial') ? '#d3b878' : '#ffffff';
+            setGlobalColor(col);
+
+            toggleApprenti();
+            alert("✨ L'Apprenti a terminé. Son œuvre est dans la Forge ! Tu peux maintenant la prévisualiser ou l'ajuster.");
+        }
+
 
         // --- 📊 GESTION DU RAPPORT & DEVIS ---
         function genererDevis() {
@@ -532,7 +684,7 @@
 
         function getForgeData() {
             try {
-                let data = { v: 54, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
+                let data = { v: 55, mode: mode, lignes: [], coeur: {}, cadres: [], finition: {} };
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lName = li.querySelector('.editable-name').value; let jColor = li.querySelector('.j-color').value; let blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
@@ -717,12 +869,16 @@
             updateSeqData(block); if(runCascade) triggerCascade(block);
         }
 
+        // 🥷 V55: Le Photorécepteur de l'Apprenti (Extraction Couleur)
         function chargerModeles(e) {
             if(!e.target.files.length) return;
             Array.from(e.target.files).forEach(f => {
                 let r = new FileReader(); r.onload = ev => {
                     let i = new Image(); i.onload = () => {
-                        let l = String.fromCharCode(letterIdx++); modeles[l] = { img: i, uri: ev.target.result };
+                        let l = String.fromCharCode(letterIdx++); 
+                        let avgColor = analyzeAverageColor(i); // V55 Analyse
+                        modeles[l] = { img: i, uri: ev.target.result, color: avgColor };
+                        
                         let d = document.createElement('div'); d.style.cssText = "position:relative; background:#111; border:1px solid var(--magenta); padding:5px; text-align:center; height:60px;";
                         d.innerHTML = `<div style="position:absolute; top:-5px; left:-5px; background:var(--magenta); border-radius:50%; width:16px; height:16px; font-size:10px; color:white;">${l}</div><img src="${ev.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
                         document.getElementById('model-list').appendChild(d);
@@ -886,6 +1042,7 @@
                     curW -= cadres[i].w * 2; curH -= cadres[i].h * 2;
                 }
                 backgrounds.push({ w: cw, h: ch, color: cColor }); 
+
                 backgrounds.forEach(bg => { bg.x = (totalW - bg.w) / 2; bg.y = (totalH - bg.h) / 2; });
 
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter, j: globalJointSize });
