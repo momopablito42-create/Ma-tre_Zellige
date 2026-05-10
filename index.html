@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daguerre OS V28.0</title>
+    <title>Daguerre OS V29.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020208">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -63,7 +63,8 @@
         .quick-sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 10px 0; }
         .qs-btn { background: #222; border: 1px solid #444; color: var(--cyan); font-size: 10px; padding: 8px 0; border-radius: 3px; cursor: pointer; font-weight: bold;}
 
-        .m-sel { background: #222; color: var(--jaune); font-weight: bold; border: 1px solid #555; border-radius: 4px; text-align: center; height: 35px; flex: 1; }
+        .m-sel { background: #222; color: var(--jaune); font-weight: bold; border: 1px solid #555; border-radius: 4px; text-align: center; height: 35px; flex: 1; min-width: 40px; }
+        .tile-counter { font-size: 10px; text-align: center; margin-top: 8px; padding: 4px; background: rgba(0,0,0,0.5); border-radius: 3px; font-weight: bold; border: 1px dashed #555;}
 
         /* --- 👁️ MODAL PLEIN ECRAN --- */
         #render-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #010104; z-index: 2000; display: none; flex-direction: column; }
@@ -80,11 +81,10 @@
 
     <div id="header">
         <h1>⛩️ DAGUERRE OS</h1>
-        <small>ÉDITION NUCLÉAIRE V28.0</small>
+        <small>ÉDITION NUCLÉAIRE V29.0</small>
     </div>
 
     <div id="settings-area">
-        <!-- --- ARSENAL --- -->
         <div id="tab-armurerie" class="tab-content active">
             <div class="section-title">⚔️ Arsenal des Sceaux</div>
             <button class="btn" style="background: var(--magenta); color: #fff;" onclick="document.getElementById('fileUploader').click()">+ INJECTER DES MODÈLES</button>
@@ -92,7 +92,6 @@
             <div id="model-list" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:15px;"></div>
         </div>
 
-        <!-- --- FORGE --- -->
         <div id="tab-forge" class="tab-content">
             <div class="section-title">⛩️ Forge Zellige</div>
             <div class="row" style="margin-bottom: 20px;">
@@ -101,17 +100,15 @@
                 <button id="m-fra" class="btn btn-mini" onclick="setMode('fractale')">FRACTAL</button>
             </div>
 
-            <!-- Area Linéaire -->
             <div id="area-lineaire">
                 <div id="lignes-container"></div>
                 <button class="btn" style="background: var(--magenta); color: #fff; margin-top: 10px;" onclick="ajouterLigne()">+ NOUVELLE LIGNE</button>
             </div>
 
-            <!-- Area Concentrique -->
             <div id="area-concentrique" style="display:none;">
                 <div class="box cadre-item" style="border-color: var(--vert);">
                     <span class="label-sm">Lettre(s) du Cœur</span>
-                    <input type="text" id="c-mod" value="" placeholder="(Vide)" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
+                    <input type="text" id="c-mod" value="" placeholder="(Vide)" oninput="updateAllCadresStats()" style="width: 100%; color: var(--jaune); font-weight: bold; text-align:center;">
                     <div class="quick-sizes" style="grid-template-columns: repeat(5, 1fr);">
                         <button class="qs-btn" style="color:#fff;" onclick="setCoeurDim(50)">50</button>
                         <button class="qs-btn" style="color:#fff;" onclick="setCoeurDim(40)">40</button>
@@ -120,8 +117,8 @@
                         <button class="qs-btn" style="color:#fff;" onclick="setCoeurDim(10)">10</button>
                     </div>
                     <div class="row" style="margin-top: 5px;">
-                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" id="c-w" value="20" style="text-align:center;"></div>
-                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" id="c-h" value="20" style="text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" id="c-w" value="20" oninput="updateAllCadresStats()" style="text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" id="c-h" value="20" oninput="updateAllCadresStats()" style="text-align:center;"></div>
                     </div>
                 </div>
                 
@@ -129,7 +126,6 @@
                 <button class="btn" style="background: var(--vert); color: #000; margin-top: 10px;" onclick="ajouterCadre()">+ NOUVEAU CADRE</button>
             </div>
 
-            <!-- Area Fractale -->
             <div id="area-fractale" style="display:none;">
                 <div class="box">
                     <span class="label-sm">Modèle Cœur</span><input type="text" id="f-mod" value="">
@@ -143,7 +139,6 @@
             <button class="btn" style="background: var(--jaune); color: #000; margin-top: 30px; font-size: 16px;" onclick="render()">💎 FORGER LE MUR (HD)</button>
         </div>
 
-        <!-- --- FINITION --- -->
         <div id="tab-finition" class="tab-content">
             <div class="section-title">💎 Sertissage & Finition</div>
             <div class="box" style="text-align: center; color: #555; border-style: dashed;">
@@ -151,7 +146,6 @@
             </div>
         </div>
 
-        <!-- --- RAPPORT --- -->
         <div id="tab-devis" class="tab-content">
             <div class="section-title">📊 Rapport & Devis</div>
             <div class="box">
@@ -159,12 +153,10 @@
                 <input type="text" id="nom-projet" value="Empire_Daguerre" style="width: 100%; text-align: center;">
             </div>
             <div id="rapport-data" class="box" style="background: #000;">Forgez un mur d'abord.</div>
-            <!-- V28 : ACTIVATION DU BOUTON TELECHARGER 8K ! -->
             <button class="btn" style="background: var(--jaune); color: #000; margin-bottom: 10px; font-size:14px;" onclick="exporterImage()">📸 TÉLÉCHARGER PLAN 8K</button>
         </div>
     </div>
 
-    <!-- 👁️ L'ŒIL DU FAUCON -->
     <div id="render-modal">
         <div id="render-header">
             <span id="render-dim">0 x 0 cm</span>
@@ -201,9 +193,13 @@
             ['lineaire','concentrique','fractale'].forEach(x => document.getElementById(`area-${x}`).style.display = (x===m)?'block':'none');
         }
 
-        function setCoeurDim(v) { document.getElementById('c-w').value = v; document.getElementById('c-h').value = v; }
+        function setCoeurDim(v) { 
+            document.getElementById('c-w').value = v; 
+            document.getElementById('c-h').value = v; 
+            updateAllCadresStats();
+        }
 
-        // 🧠 L'ARCHITECTURE AUTONOME : EFFET CASCADE
+        // 🧠 L'ARCHITECTURE AUTONOME : LIGNES
         function getPrevTotalH(block) {
             let prev = block.previousElementSibling;
             if(prev && prev.classList.contains('block-item')) {
@@ -253,16 +249,15 @@
                     }
                 }
                 updateSeqData(block);
-                triggerCascade(block); // 🌊 DECLENCHEMENT DE LA CASCADE !
+                triggerCascade(block);
             }
             if(cadre) {
                 cadre.querySelector('.c-w').value = val;
                 cadre.querySelector('.c-h').value = val;
-                updateCadreTitle(cadre);
+                updateCadreData(cadre);
             }
         }
 
-        // 👁️ TITRES DYNAMIQUES
         function updateSeqData(block) {
             let selects = Array.from(block.querySelectorAll('.m-sel'));
             let seq = selects.map(s => s.value).join(' ');
@@ -276,24 +271,55 @@
             block.querySelector('.seq-label').innerText = `${seq || '(Vide)'} [${w}x${h}] x${q} ${dir}`;
         }
 
-        function updateCadreTitle(cadre) {
-            let seq = cadre.querySelector('.c-seq').value.trim() || '(Vide)';
+        // 🧠 L'ARCHITECTURE AUTONOME : CADRES
+        function updateCadreData(cadre) {
+            let selects = Array.from(cadre.querySelectorAll('.m-sel'));
+            let seq = selects.map(s => s.value).join(' ');
+            cadre.querySelector('.c-seq').value = seq;
+            
             let w = cadre.querySelector('.c-w').value || '?';
             let h = cadre.querySelector('.c-h').value || '?';
-            cadre.querySelector('.cadre-label').innerText = `${seq} [${w}x${h}]`;
+            cadre.querySelector('.cadre-label').innerText = `${seq || '(Vide)'} [${w}x${h}]`;
+            
+            updateAllCadresStats(); // Recalcul du périmètre pour tous les cadres en cascade
         }
 
-        function appendSeq(btn, str) {
-            let cadre = btn.closest('.cadre-item');
-            if(!cadre) return;
-            let input = cadre.querySelector('.c-seq');
-            let current = input.value.trim();
-            let newVal = current ? current + " " + str : str;
-            input.value = newVal.replace(/\s+/g, ' '); 
-            updateCadreTitle(cadre);
+        function updateAllCadresStats() {
+            let cw = parseFloat(document.getElementById('c-w').value) || 20;
+            let ch = parseFloat(document.getElementById('c-h').value) || 20;
+            let currentW = cw;
+            let currentH = ch;
+
+            document.querySelectorAll('#cadres-container .cadre-item').forEach(cadre => {
+                let bdW = parseFloat(cadre.querySelector('.c-w').value) || 10;
+                let bdH = parseFloat(cadre.querySelector('.c-h').value) || 10;
+                
+                let newW = currentW + bdW * 2;
+                let newH = currentH + bdH * 2;
+
+                let Nx = Math.max(1, Math.round(newW / bdW));
+                let Ny = Math.max(1, Math.round(currentH / bdH));
+                let totalTiles = (Nx * 2) + (Ny * 2);
+
+                let counterEl = cadre.querySelector('.tile-counter');
+                if(counterEl) {
+                    let selects = Array.from(cadre.querySelectorAll('.m-sel'));
+                    let seqLen = selects.length;
+                    
+                    if(seqLen > 0 && totalTiles % seqLen !== 0) {
+                         counterEl.style.color = 'var(--magenta)';
+                         counterEl.innerText = `Périmètre : ${totalTiles} carreaux (⚠️ Reste ${totalTiles % seqLen} !)`;
+                    } else {
+                         counterEl.style.color = 'var(--vert)';
+                         counterEl.innerText = `Périmètre : ${totalTiles} carreaux (✅ Parfait pour ${seqLen})`;
+                    }
+                }
+                currentW = newW;
+                currentH = newH;
+            });
         }
 
-        // --- WIZARD DE SÉQUENCES ---
+        // --- WIZARD GENERATOR ---
         function getModelsOptionsHTML(defaultChar) {
             let keys = Object.keys(modeles);
             if(keys.length === 0) keys = ['A', 'B', 'C', 'D'];
@@ -301,16 +327,25 @@
             return keys.map(k => `<option value="${k}" ${k === defaultChar ? 'selected' : ''}>${k}</option>`).join('');
         }
 
-        function renderModelSelects(block, type) {
-            let cont = block.querySelector('.models-container');
+        function renderModelSelects(container, typeStr) {
+            let block = container.closest('.block-item');
+            let cadre = container.closest('.cadre-item');
+            let item = block || cadre;
+            
+            let cont = item.querySelector('.models-container');
+            let type = parseInt(typeStr);
             let currentSelects = Array.from(cont.querySelectorAll('.m-sel')).map(s => s.value);
-            let defaults = ['A', 'B', 'C', 'D'];
+            let defaults = ['A', 'B', 'C', 'D', 'E'];
             let html = '';
             for(let i=0; i<type; i++) {
                 let char = currentSelects[i] || defaults[i % defaults.length];
-                html += `<select class="m-sel" onchange="updateSeqData(this.closest('.block-item'))">${getModelsOptionsHTML(char)}</select>`;
+                let isBlock = block ? "updateSeqData(this.closest('.block-item'))" : "updateCadreData(this.closest('.cadre-item'))";
+                html += `<select class="m-sel" onchange="${isBlock}">${getModelsOptionsHTML(char)}</select>`;
             }
             cont.innerHTML = html;
+            
+            if(block) updateSeqData(block);
+            if(cadre) updateCadreData(cadre);
         }
 
         function setSeqMode(btn, type) {
@@ -319,12 +354,40 @@
             btn.classList.add('active');
             block.querySelector('.s-type').value = type;
             
-            // V28 : Le mode Simple (type 1) n'est plus forcé en horizontal, le dir-row est dispo pour tous !
+            let manualConf = block.querySelector('.manual-config');
+            if(type === 5) {
+                manualConf.style.display = 'block';
+                type = parseInt(block.querySelector('.manual-qty').value);
+            } else {
+                manualConf.style.display = 'none';
+            }
+
             let dirRow = block.querySelector('.dir-row');
-            dirRow.style.display = 'flex';
+            if(type === 1 && block.querySelector('.s-type').value != 5) {
+                dirRow.style.display = 'none';
+                setSeqDir(block.querySelector('.dir-btn'), 'H', true); // Force Horizontal pour Simple
+            } else {
+                dirRow.style.display = 'flex';
+            }
             
             renderModelSelects(block, type);
-            updateSeqData(block);
+        }
+
+        function setCadreMode(btn, type) {
+            let cadre = btn.closest('.cadre-item');
+            cadre.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            cadre.querySelector('.c-type').value = type;
+            
+            let manualConf = cadre.querySelector('.manual-config');
+            if(type === 5) {
+                manualConf.style.display = 'block';
+                type = parseInt(cadre.querySelector('.manual-qty').value);
+            } else {
+                manualConf.style.display = 'none';
+            }
+            
+            renderModelSelects(cadre, type);
         }
 
         function setSeqDir(btn, dir, force=false, runCascade=true) {
@@ -366,8 +429,11 @@
                         
                         document.querySelectorAll('.block-item').forEach(b => {
                             let type = parseInt(b.querySelector('.s-type').value);
-                            renderModelSelects(b, type);
-                            updateSeqData(b);
+                            renderModelSelects(b, type === 5 ? b.querySelector('.manual-qty').value : type);
+                        });
+                        document.querySelectorAll('.cadre-item').forEach(c => {
+                            let type = parseInt(c.querySelector('.c-type').value);
+                            renderModelSelects(c, type === 5 ? c.querySelector('.manual-qty').value : type);
                         });
                     };
                     i.src = ev.target.result;
@@ -434,15 +500,21 @@
                     </div>
                 </div>
                 <div class="seq-content">
-                    <div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto;">
+                    <div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;">
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 1)">SIMPLE</button>
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 2)">DOUBLE</button>
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 3)">TRIPLE</button>
                         <button class="btn-mini type-btn" onclick="setSeqMode(this, 4)">QUAD.</button>
+                        <button class="btn-mini type-btn" onclick="setSeqMode(this, 5)">MANUEL</button>
                         <input type="hidden" class="s-type" value="${type}">
                     </div>
                     
-                    <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px;"></div>
+                    <div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;">
+                        <span class="label-sm" style="display:inline-block; margin-right:5px;">Nombre de modèles :</span>
+                        <input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;">
+                    </div>
+                    
+                    <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div>
 
                     <div class="row dir-row" style="display:none; margin-top:10px;">
                         <button class="btn-mini dir-btn" onclick="setSeqDir(this, 'H')">➡️ HORIZ.</button>
@@ -472,14 +544,14 @@
             if (insertAfter) cont.insertBefore(b, insertAfter.nextSibling);
             else cont.appendChild(b);
             
-            let typeBtn = b.querySelectorAll('.type-btn')[type-1];
+            let typeBtn = b.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1];
             setSeqMode(typeBtn, type); 
-            triggerCascade(b); // Active la cascade sur ajout de block
+            triggerCascade(b); 
         }
 
         // --- GESTION CADRES ---
         let cadreCounter = 0;
-        function ajouterCadre(insertAfter = null, seq = "", w = 10, h = 10) {
+        function ajouterCadre(insertAfter = null, type = 2, w = 10, h = 10) {
             cadreCounter++;
             let d = document.createElement('div');
             d.className = 'cadre-item';
@@ -498,33 +570,43 @@
                     </div>
                 </div>
                 <div class="seq-content">
-                    <div class="row">
-                        <div style="flex:1"><span class="label-sm">Séquence (Ajout Multiple)</span>
-                        <input type="text" class="c-seq" value="${seq}" placeholder="(Vide)" oninput="updateCadreTitle(this.closest('.cadre-item'))" style="width:100%; color:var(--jaune); font-weight:bold; text-align:center;">
-                        </div>
+                    <div class="row" style="background:#000; padding:5px; border-radius:4px; overflow-x: auto; white-space: nowrap;">
+                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 1)">SIMPLE</button>
+                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 2)">DOUBLE</button>
+                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 3)">TRIPLE</button>
+                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 4)">QUAD.</button>
+                        <button class="btn-mini type-btn" onclick="setCadreMode(this, 5)">MANUEL</button>
+                        <input type="hidden" class="c-type" value="${type}">
                     </div>
-                    <div class="quick-sizes">
-                        <button class="qs-btn" onclick="appendSeq(this, 'A B')">A B</button>
-                        <button class="qs-btn" onclick="appendSeq(this, 'A B C')">A B C</button>
-                        <button class="qs-btn" onclick="appendSeq(this, 'A B C D')">A B C D</button>
-                        <button class="qs-btn" onclick="appendSeq(this, 'A B C D E')">A B C D E</button>
+                    
+                    <div class="manual-config" style="display:none; text-align:center; margin-top:5px; padding:5px; background:#1a1a24; border-radius:4px;">
+                        <span class="label-sm" style="display:inline-block; margin-right:5px;">Nombre de modèles :</span>
+                        <input type="number" class="manual-qty" value="5" min="1" max="20" onchange="renderModelSelects(this, this.value);" style="width:60px; text-align:center; background:#000;">
                     </div>
-                    <div class="quick-sizes" style="margin-top:0;">
+                    
+                    <div class="row models-container" style="justify-content: center; gap: 8px; margin-top:10px; flex-wrap:wrap;"></div>
+
+                    <div class="tile-counter">Périmètre: Calcul en cours...</div>
+
+                    <div class="quick-sizes" style="margin-top:15px;">
                         <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 2.5)">2.5</button>
                         <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 5)">5</button>
                         <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 7.5)">7.5</button>
                         <button class="qs-btn" style="color:#fff; background:#111;" onclick="setDim(this, 10)">10</button>
                     </div>
                     <div class="row">
-                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" oninput="updateCadreTitle(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
-                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" oninput="updateCadreTitle(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Larg.</span><input type="number" class="c-w" value="${w}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
+                        <div style="flex:1"><span class="label-sm">Haut.</span><input type="number" class="c-h" value="${h}" oninput="updateCadreData(this.closest('.cadre-item'))" style="width:100%; text-align:center;"></div>
+                        <input type="hidden" class="c-seq" value="">
                     </div>
                 </div>
             `;
             const cont = document.getElementById('cadres-container');
             if (insertAfter) cont.insertBefore(d, insertAfter.nextSibling);
             else cont.appendChild(d);
-            updateCadreTitle(d);
+            
+            let typeBtn = d.querySelectorAll('.type-btn')[type > 4 ? 4 : type-1];
+            setCadreMode(typeBtn, type);
         }
 
         function genererFractale() {
@@ -538,7 +620,7 @@
             let curSize = parseFloat(document.getElementById('f-size').value);
             for(let i=0; i<n; i++) {
                 curSize = curSize / seq.length;
-                ajouterCadre(null, seq.join(' '), curSize, curSize);
+                let d = ajouterCadre(null, seq.length, curSize, curSize);
             }
             render();
         }
@@ -546,24 +628,18 @@
         function move(el, dir) {
             if(dir==='up' && el.previousElementSibling) el.parentNode.insertBefore(el, el.previousElementSibling);
             if(dir==='down' && el.nextElementSibling) el.parentNode.insertBefore(el.nextElementSibling, el);
-            if(el.classList.contains('block-item')) {
-                triggerCascade(el.previousElementSibling || el);
-            }
+            if(el.classList.contains('block-item')) triggerCascade(el.previousElementSibling || el);
+            if(el.classList.contains('cadre-item')) updateAllCadresStats();
         }
         
         function duplicateBlock(el) { 
             let clone = el.cloneNode(true); 
             let origInputs = el.querySelectorAll('input, select');
             let cloneInputs = clone.querySelectorAll('input, select');
-            for(let i=0; i<origInputs.length; i++) {
-                cloneInputs[i].value = origInputs[i].value;
-            }
+            for(let i=0; i<origInputs.length; i++) { cloneInputs[i].value = origInputs[i].value; }
             el.parentNode.insertBefore(clone, el.nextSibling); 
-            if(clone.classList.contains('block-item')) {
-                updateSeqData(clone);
-                triggerCascade(clone);
-            }
-            if(clone.classList.contains('cadre-item')) updateCadreTitle(clone);
+            if(clone.classList.contains('block-item')) { updateSeqData(clone); triggerCascade(clone); }
+            if(clone.classList.contains('cadre-item')) { updateCadreData(clone); }
         }
 
         // --- GESTION DU ZOOM TACTILE ---
@@ -603,9 +679,8 @@
 
         touchZone.addEventListener('touchend', e => { if(e.touches.length < 2) isDragging = false; });
 
-        function updateTransform() {
-            canvasWrap.style.transform = `translate(${t_posX}px, ${t_posY}px) scale(${t_scale})`;
-        }
+        function updateTransform() { canvasWrap.style.transform = `translate(${t_posX}px, ${t_posY}px) scale(${t_scale})`; }
+        function closeRender() { document.getElementById('render-modal').style.display = 'none'; }
 
         function resetCamera(cssWidth, cssHeight) {
             let zoneW = touchZone.clientWidth;
@@ -617,9 +692,7 @@
             updateTransform();
         }
 
-        function closeRender() { document.getElementById('render-modal').style.display = 'none'; }
-
-        // --- 🧠 LE COEUR DE PARSING UNIVERSEL ---
+        // --- 🧠 LE COEUR DE PARSING ---
         function parseWall() {
             let totalW = 0, totalH = 0;
             let tiles = [];
@@ -629,7 +702,8 @@
                 document.querySelectorAll('.ligne-item').forEach(li => {
                     let lw = 0, lh = 0, blocks = [];
                     li.querySelectorAll('.block-item').forEach(bl => {
-                        let sequence = bl.querySelector('.s-seq').value.toUpperCase().split(' ').filter(Boolean);
+                        let selects = Array.from(bl.querySelectorAll('.m-sel'));
+                        let sequence = selects.map(s => s.value).filter(Boolean);
                         let w = parseFloat(bl.querySelector('.s-w').value) || 10, h = parseFloat(bl.querySelector('.s-h').value) || 10, q = parseInt(bl.querySelector('.s-q').value) || 1;
                         let dir = bl.querySelector('.s-dir').value;
                         if(sequence.length === 0) sequence = [''];
@@ -665,8 +739,9 @@
                 
                 let cadres = [];
                 document.querySelectorAll('#cadres-container .cadre-item').forEach(cc => {
+                    let selects = Array.from(cc.querySelectorAll('.m-sel'));
                     cadres.push({
-                        seq: cc.querySelector('.c-seq').value.toUpperCase().split(' ').filter(Boolean),
+                        seq: selects.map(s => s.value).filter(Boolean),
                         w: parseFloat(cc.querySelector('.c-w').value) || 10,
                         h: parseFloat(cc.querySelector('.c-h').value) || 10
                     });
@@ -674,7 +749,6 @@
 
                 totalW = cw; totalH = ch;
                 cadres.forEach(c => { totalW += c.w * 2; totalH += c.h * 2; });
-                
                 tiles.push({ x: (totalW - cw)/2, y: (totalH - ch)/2, w: cw, h: ch, l: cLetter });
                 
                 let currentTotalW = cw, currentTotalH = ch;
@@ -703,7 +777,7 @@
             return { tiles, totalW, totalH };
         }
 
-        // --- RENDERER V28 (AFFICHAGE) ---
+        // --- RENDERER V29 (AFFICHAGE) ---
         function render() {
             const canvas = document.getElementById('c');
             const ctx = canvas.getContext('2d');
@@ -713,7 +787,6 @@
             let { tiles, totalW, totalH } = parseWall();
 
             prepareCanvas(canvas, ctx, totalW, totalH, baseScale, dpr);
-            
             tiles.forEach(t => drawTile(ctx, t.l, t.x * baseScale, t.y * baseScale, t.w * baseScale, t.h * baseScale));
 
             document.getElementById('render-dim').innerText = `${totalW.toFixed(1)} x ${totalH.toFixed(1)} cm 💎 HD`;
@@ -729,11 +802,9 @@
         function exporterImage() {
             let { tiles, totalW, totalH } = parseWall();
             let baseScale = 40; 
-            
             let pixelW = (totalW || 10) * baseScale;
             let pixelH = (totalH || 10) * baseScale;
             
-            // Limite absolue de sécurité 8K pour forcer le tel à exporter sans crash mémoire
             const MAX_EXPORT = 8192; 
             let scaleFactor = 1;
             if(pixelW > MAX_EXPORT || pixelH > MAX_EXPORT) {
@@ -805,6 +876,7 @@
         // Init
         ajouterLigne();
         ajouterCadre();
+        updateAllCadresStats();
     </script>
 </body>
 </html>
